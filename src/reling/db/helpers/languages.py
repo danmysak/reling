@@ -1,7 +1,6 @@
-from pathlib import Path
-
 from sqlalchemy.sql import exists, func
 
+from ...data import LANGUAGES_PATH
 from ...utils.csv import read_csv
 from .. import start_session
 from ..models import Language
@@ -12,12 +11,12 @@ __all__ = [
 ]
 
 
-def populate_languages(data: Path) -> None:
+def populate_languages() -> None:
     """Populate the languages table with data from the CSV file, if it is empty."""
     with start_session() as session:
         if not session.query(exists().where(Language.id.isnot(None))).scalar():
             for language in read_csv(
-                data,
+                LANGUAGES_PATH,
                 ['id', 'short_code', 'name', 'extra_name_a', 'extra_name_b'],
                 empty_as_none=True,
             ):

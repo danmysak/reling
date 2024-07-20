@@ -25,7 +25,7 @@ def typer_func_parser[R](func: Callable[[str], R | None]) -> Callable[[str], R]:
 
 def typer_enum_options(enum: type[Enum]) -> str:
     """Return a string of the enum options for use in Typer help messages."""
-    return ', '.join(f"'{member.lower()}'" for member in enum.__members__)
+    return ', '.join(f'"{member.lower()}"' for member in enum.__members__)
 
 
 def typer_enum_parser(enum: type[Enum]) -> Callable[[str | Enum], Enum]:

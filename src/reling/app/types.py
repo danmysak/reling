@@ -1,4 +1,6 @@
+import re
 from typing import Annotated, Optional
+# The `Optional` type is used instead of the union with `None` due to https://github.com/tiangolo/typer/issues/533
 
 import typer
 
@@ -10,13 +12,18 @@ from ..utils.typer import typer_enum_options, typer_enum_parser, typer_func_pars
 
 __all__ = [
     'API_KEY',
-    'CONTENT',
-    'CONTENT_CATEGORY_ARG',
+    'ARCHIVE_OPT',
+    'CONTENT_ARG',
     'CONTENT_CATEGORY_OPT',
+    'FORCE_OPT',
     'LANGUAGE_ARG',
     'LANGUAGE_OPT',
+    'LANGUAGE_OPT_ARG',
+    'LANGUAGE_OPT_FROM',
     'LEVEL_OPT',
     'MODEL',
+    'NEW_NAME_ARG',
+    'REGEX_OPT',
     'SPEAKER_OPT',
     'STYLE_OPT',
     'TOPIC_OPT',
@@ -24,17 +31,17 @@ __all__ = [
 
 API_KEY = Annotated[str, typer.Option(
     envvar='RELING_API_KEY',
-    help='OpenAI API key',
-    prompt='OpenAI API key',
+    help='Your OpenAI API key',
+    prompt='Enter your OpenAI API key',
 )]
 
 MODEL = Annotated[str, typer.Option(
     envvar='RELING_MODEL',
-    help='GPT model',
-    prompt='GPT model',
+    help='Identifier for the GPT model to be used',
+    prompt='Enter the GPT model identifier',
 )]
 
-CONTENT = Annotated[Text | Dialog, typer.Argument(
+CONTENT_ARG = Annotated[Text | Dialog, typer.Argument(
     parser=typer_func_parser(find_content),
     help='Name of the text or dialog',
 )]
@@ -44,36 +51,57 @@ LANGUAGE_ARG = Annotated[Language, typer.Argument(
     help='Language code or name',
 )]
 
+LANGUAGE_OPT_ARG = Annotated[Language | None, typer.Argument(
+    parser=typer_func_parser(find_language),
+    help='Language code or name',
+)]
+
 LANGUAGE_OPT = Annotated[Language | None, typer.Option(
     parser=typer_func_parser(find_language),
     help='Language code or name',
 )]
 
-CONTENT_CATEGORY_ARG = Annotated[ContentCategory, typer.Argument(
-    parser=typer_enum_parser(ContentCategory),
-    help=f'Content category (one of {typer_enum_options(ContentCategory)})',
+LANGUAGE_OPT_FROM = Annotated[Language | None, typer.Option(
+    '--from',  # `from` is a reserved keyword
+    parser=typer_func_parser(find_language),
+    help='Language code or name',
 )]
 
 CONTENT_CATEGORY_OPT = Annotated[ContentCategory | None, typer.Option(
     parser=typer_enum_parser(ContentCategory),
-    help=f'Content category (one of {typer_enum_options(ContentCategory)})',
+    help=f'Content category, one of: {typer_enum_options(ContentCategory)}',
 )]
 
 LEVEL_OPT = Annotated[Level | None, typer.Option(
     parser=typer_enum_parser(Level),
-    help=f'Level (one of {typer_enum_options(Level)})',
+    help=f'Level, one of: {typer_enum_options(Level)}',
 )]
 
-# The `Optional` type is used instead of the union with `None` due to https://github.com/tiangolo/typer/issues/533
-
 TOPIC_OPT = Annotated[Optional[str], typer.Option(
-    help='Topic of the text (like "food" or "zoology")',
+    help='Topic of the content, e.g., "food" or "zoology"',
 )]
 
 STYLE_OPT = Annotated[Optional[str], typer.Option(
-    help='Style of the text (like "mystery" or "news article")',
+    help='Style of the text, e.g., "mystery" or "news article"',
 )]
 
 SPEAKER_OPT = Annotated[Optional[str], typer.Option(
-    help='Your interlocutor (like "waiter" or "friend")',
+    help='Interlocutor in the dialog, e.g., "waiter" or "friend"',
+)]
+
+NEW_NAME_ARG = Annotated[str, typer.Argument(
+    help='New name for the text or dialog',
+)]
+
+REGEX_OPT = Annotated[re.Pattern | None, typer.Option(
+    parser=re.compile,
+    help='Regular expression to filter results',
+)]
+
+ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(
+    help='Search within archived items',
+)]
+
+FORCE_OPT = Annotated[Optional[bool], typer.Option(
+    help='Force execution of the operation',
 )]

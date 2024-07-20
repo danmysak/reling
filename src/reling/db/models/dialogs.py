@@ -22,6 +22,7 @@ class Dialog(Base):
     id: Mapped[str] = mapped_column(primary_key=True)
     language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
     level: Mapped[Level]
+    topic: Mapped[str | None]
     speaker: Mapped[str]
     created_at: Mapped[datetime]
     archived_at: Mapped[datetime | None] = mapped_column(index=True)
