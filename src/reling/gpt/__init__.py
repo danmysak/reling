@@ -2,7 +2,8 @@ from typing import Generator
 
 from openai import OpenAI
 
-from ..utils.feeders import Feeder, LineFeeder
+from reling.utils.feeders import Feeder, LineFeeder
+from reling.utils.transformers import Transformer
 
 __all__ = [
     'GPTClient',
@@ -17,8 +18,15 @@ class GPTClient:
         self._client = OpenAI(api_key=api_key)
         self._model = model
 
-    def ask(self, request: str, feeder_type: type[Feeder] = LineFeeder) -> Generator[str, None, None]:
-        """Ask the model a question and yield sections of the response as they become available."""
+    def ask(
+            self,
+            request: str,
+            feeder_type: type[Feeder] = LineFeeder,
+            transformers: list[Transformer] | None = None,
+    ) -> Generator[str, None, None]:
+        """
+        Ask the model a question and yield sections of the response as they become available, applying transformers.
+        """
         feeder = feeder_type()
         stream = self._client.chat.completions.create(
             model=self._model,
@@ -26,11 +34,18 @@ class GPTClient:
             messages=[{'role': 'user', 'content': request}],
         )
 
+        def flush() -> Generator[str, None, None]:
+            while (section := feeder.get()) is not None:
+                for transformer in transformers or []:
+                    section = transformer(section)
+                    if section is None:
+                        break
+                else:
+                    yield section
+
         for chunk in stream:
             feeder.put(chunk.choices[0].delta.content or '')
-            while (line := feeder.get()) is not None:
-                yield line
+            yield from flush()
 
         feeder.end()
-        while (line := feeder.get()) is not None:
-            yield line
+        yield from flush()

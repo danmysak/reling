@@ -1,5 +1,5 @@
-from ..app import app
-from ..types import CONTENT_ARG, LANGUAGE_OPT_ARG
+from reling.app.app import app
+from reling.app.types import CONTENT_ARG, LANGUAGE_OPT_ARG
 
 __all__ = [
     'show',

@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ..db import init_db as do_init_db
+from reling.db import init_db as do_init_db
 
 __all__ = [
     'get_db_path',

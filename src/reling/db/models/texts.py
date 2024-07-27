@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ..base import Base
-from ..enums import Level
+from reling.db.base import Base
+from reling.db.enums import Level
 from .languages import Language
 
 __all__ = [

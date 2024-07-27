@@ -3,8 +3,8 @@ from datetime import datetime
 from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column
 
-from ..base import Base
-from ..enums import Level
+from reling.db.base import Base
+from reling.db.enums import Level
 from .languages import Language
 
 __all__ = [
@@ -34,7 +34,7 @@ class DialogExchange(Base):
     dialog_id: Mapped[str] = mapped_column(ForeignKey(Dialog.id, ondelete='CASCADE'), primary_key=True)
     index: Mapped[int] = mapped_column(primary_key=True)
     speaker: Mapped[str]
-    self: Mapped[str]
+    user: Mapped[str]
 
 
 class DialogExchangeTranslation(Base):
@@ -44,7 +44,7 @@ class DialogExchangeTranslation(Base):
     language_id: Mapped[str] = mapped_column(ForeignKey(Language.id), primary_key=True)
     dialog_exchange_index: Mapped[int] = mapped_column(primary_key=True)
     speaker: Mapped[str]
-    self: Mapped[str]
+    user: Mapped[str]
 
 
 class DialogExam(Base):

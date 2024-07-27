@@ -9,10 +9,11 @@ from .base import Base
 
 __all__ = [
     'init_db',
-    'start_session',
+    'single_session',
 ]
 
 ENGINE: Engine | None = None
+SESSION: Session | None = None
 
 
 def init_db(url: str) -> None:
@@ -23,8 +24,16 @@ def init_db(url: str) -> None:
 
 
 @contextmanager
-def start_session() -> Generator[Session, None, None]:
+def single_session() -> Generator[Session, None, None]:
+    global SESSION
+    if SESSION is not None:
+        yield SESSION
+        return
     if ENGINE is None:
         raise RuntimeError('Database engine is not initialized')
-    with Session(ENGINE) as session:
-        yield session
+    try:
+        with Session(ENGINE) as session:
+            SESSION = session
+            yield session
+    finally:
+        SESSION = None

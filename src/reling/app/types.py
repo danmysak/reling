@@ -4,11 +4,12 @@ from typing import Annotated, Optional
 
 import typer
 
-from ..db.enums import ContentCategory, Level
-from ..db.helpers.content import find_content
-from ..db.helpers.languages import find_language
-from ..db.models import Dialog, Language, Text
-from ..utils.typer import typer_enum_options, typer_enum_parser, typer_func_parser
+from reling.db.enums import ContentCategory, Level
+from reling.db.helpers.content import find_content
+from reling.db.helpers.ids import find_ids_by_prefix
+from reling.db.helpers.languages import find_language, find_languages_by_prefix
+from reling.db.models import Dialog, Language, Text
+from reling.utils.typer import typer_enum_autocompletion, typer_enum_options, typer_enum_parser, typer_func_parser
 
 __all__ = [
     'API_KEY',
@@ -44,37 +45,44 @@ MODEL = Annotated[str, typer.Option(
 CONTENT_ARG = Annotated[Text | Dialog, typer.Argument(
     parser=typer_func_parser(find_content),
     help='Name of the text or dialog',
+    autocompletion=find_ids_by_prefix,
 )]
 
 LANGUAGE_ARG = Annotated[Language, typer.Argument(
     parser=typer_func_parser(find_language),
     help='Language code or name',
+    autocompletion=find_languages_by_prefix,
 )]
 
 LANGUAGE_OPT_ARG = Annotated[Language | None, typer.Argument(
     parser=typer_func_parser(find_language),
     help='Language code or name',
+    autocompletion=find_languages_by_prefix,
 )]
 
 LANGUAGE_OPT = Annotated[Language | None, typer.Option(
     parser=typer_func_parser(find_language),
     help='Language code or name',
+    autocompletion=find_languages_by_prefix,
 )]
 
 LANGUAGE_OPT_FROM = Annotated[Language | None, typer.Option(
     '--from',  # `from` is a reserved keyword
     parser=typer_func_parser(find_language),
     help='Language code or name',
+    autocompletion=find_languages_by_prefix,
 )]
 
 CONTENT_CATEGORY_OPT = Annotated[ContentCategory | None, typer.Option(
     parser=typer_enum_parser(ContentCategory),
     help=f'Content category, one of: {typer_enum_options(ContentCategory)}',
+    autocompletion=typer_enum_autocompletion(ContentCategory),
 )]
 
 LEVEL_OPT = Annotated[Level | None, typer.Option(
     parser=typer_enum_parser(Level),
     help=f'Level, one of: {typer_enum_options(Level)}',
+    autocompletion=typer_enum_autocompletion(Level),
 )]
 
 TOPIC_OPT = Annotated[Optional[str], typer.Option(

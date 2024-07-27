@@ -1,5 +1,5 @@
-from ..app import app
-from ..types import ARCHIVE_OPT, CONTENT_CATEGORY_OPT, LANGUAGE_OPT, LANGUAGE_OPT_FROM, LEVEL_OPT, REGEX_OPT
+from reling.app.app import app
+from reling.app.types import ARCHIVE_OPT, CONTENT_CATEGORY_OPT, LANGUAGE_OPT, LANGUAGE_OPT_FROM, LEVEL_OPT, REGEX_OPT
 
 __all__ = [
     'list_',

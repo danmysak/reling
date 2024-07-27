@@ -1,5 +1,5 @@
-from ..app import app
-from ..types import CONTENT_ARG, FORCE_OPT
+from reling.app.app import app
+from reling.app.types import CONTENT_ARG, FORCE_OPT
 
 __all__ = [
     'delete',

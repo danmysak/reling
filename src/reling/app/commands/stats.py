@@ -1,5 +1,5 @@
-from ..app import app
-from ..types import CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM
+from reling.app.app import app
+from reling.app.types import CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM
 
 __all__ = [
     'stats',

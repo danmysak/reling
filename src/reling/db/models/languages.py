@@ -2,7 +2,7 @@ from sqlalchemy import Index
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
-from ..base import Base
+from reling.db.base import Base
 
 __all__ = [
     'Language',

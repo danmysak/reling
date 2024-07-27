@@ -1,6 +1,6 @@
-from ...gpt import GPTClient
-from ..app import app
-from ..types import API_KEY, CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM, MODEL
+from reling.app.app import app
+from reling.app.types import API_KEY, CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM, MODEL
+from reling.gpt import GPTClient
 
 __all__ = [
     'exam',

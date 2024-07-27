@@ -1,4 +1,4 @@
-from enum import Enum, StrEnum
+from enum import StrEnum
 
 __all__ = [
     'ContentCategory',
@@ -11,7 +11,7 @@ class ContentCategory(StrEnum):
     DIALOG = 'dialog'
 
 
-class Level(Enum):
-    BASIC = 0
-    INTERMEDIATE = 1
-    ADVANCED = 2
+class Level(StrEnum):
+    BASIC = 'basic'
+    INTERMEDIATE = 'intermediate'
+    ADVANCED = 'advanced'

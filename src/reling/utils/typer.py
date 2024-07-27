@@ -1,10 +1,12 @@
 from enum import Enum
-
 from typing import Callable
 
 import typer
 
+from .strings import replace_prefix_casing
+
 __all__ = [
+    'typer_enum_autocompletion',
     'typer_enum_options',
     'typer_enum_parser',
     'typer_func_parser',
@@ -40,5 +42,18 @@ def typer_enum_parser(enum: type[Enum]) -> Callable[[str | Enum], Enum]:
             raise typer.BadParameter(
                 f'{arg} (expected one of {typer_enum_options(enum)})',
             )
+
+    return wrapper
+
+
+def typer_enum_autocompletion(enum: type[Enum]) -> Callable[[str], list[str]]:
+    """Create a Typer autocompletion function from an Enum type."""
+
+    def wrapper(prefix: str) -> list[str]:
+        lower = prefix.lower()
+        return [
+            replace_prefix_casing(member.lower(), prefix)
+            for member in enum.__members__ if member.lower().startswith(lower)
+        ]
 
     return wrapper
