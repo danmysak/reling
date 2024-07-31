@@ -15,7 +15,7 @@ __all__ = [
 
 
 def typer_raise(message: str) -> Never:
-    typer.echo(message)
+    typer.echo(message, err=True)
     raise typer.Exit(code=1)
 
 

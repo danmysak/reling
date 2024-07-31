@@ -1,9 +1,10 @@
 from typing import Generator
 
-from openai import OpenAI
+from openai import APIError, OpenAI
 
 from reling.utils.feeders import Feeder, LineFeeder
 from reling.utils.transformers import Transformer
+from reling.utils.typer import typer_raise
 
 __all__ = [
     'GPTClient',
@@ -28,11 +29,15 @@ class GPTClient:
         Ask the model a question and yield sections of the response as they become available, applying transformers.
         """
         feeder = feeder_type()
-        stream = self._client.chat.completions.create(
-            model=self._model,
-            stream=True,
-            messages=[{'role': 'user', 'content': request}],
-        )
+
+        try:
+            stream = self._client.chat.completions.create(
+                model=self._model,
+                stream=True,
+                messages=[{'role': 'user', 'content': request}],
+            )
+        except APIError as e:
+            typer_raise(f'OpenAI API error:\n{e}')
 
         section_index = 0
 
