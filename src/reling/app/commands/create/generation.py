@@ -3,7 +3,8 @@ from typing import Generator
 from reling.db.enums import ContentCategory, Level
 from reling.db.models import Language
 from reling.gpt import GPTClient
-from reling.utils.iterables import pair_items
+from reling.types import DialogExchangeData
+from reling.utils.iterables import map_asterisk, pair_items
 from reling.utils.transformers import omit_empty, remove_numbering, slugify, strip
 
 __all__ = [
@@ -57,7 +58,7 @@ def generate_text_sentences(
             f'Number each sentence and put each sentence on a new line.',
             build_level_prompt(level, ContentCategory.TEXT),
         ]),
-        transformers=[strip, remove_numbering, omit_empty],
+        transformers=[strip, omit_empty, remove_numbering],
     )
 
 
@@ -68,8 +69,8 @@ def generate_dialog_exchanges(
         level: Level,
         speaker: str,
         topic: str | None,
-) -> Generator[tuple[str, str], None, None]:
-    return pair_items(gpt.ask(
+) -> Generator[DialogExchangeData, None, None]:
+    return map_asterisk(DialogExchangeData, pair_items(gpt.ask(
         '\n'.join([
             f'Generate a dialog in {language.name} consisting of {num_exchanges * 2} sentences.',
             f'The dialog should be between two speakers, {speaker} and me.',
@@ -81,8 +82,8 @@ def generate_dialog_exchanges(
             f'Do not prefix the sentences with the speakers’ names.',
             build_level_prompt(level, ContentCategory.DIALOG),
         ]),
-        transformers=[strip, remove_numbering, omit_empty],
-    ))
+        transformers=[strip, omit_empty, remove_numbering],
+    )))
 
 
 def generate_id(

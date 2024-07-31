@@ -6,6 +6,7 @@ from reling.db import single_session
 from reling.db.enums import ContentCategory, Level
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.models import Dialog, DialogExchange, IdIndex, Language, Text, TextSentence
+from reling.types import DialogExchangeData
 
 
 __all__ = [
@@ -63,7 +64,7 @@ def save_text(
 
 def save_dialog(
         suggested_id: str,
-        exchanges: list[tuple[str, str]],
+        exchanges: list[DialogExchangeData],
         language: Language,
         level: Level,
         speaker: str,
@@ -86,10 +87,10 @@ def save_dialog(
             DialogExchange(
                 dialog_id=dialog.id,
                 index=index,
-                speaker=speaker,
-                user=user,
+                speaker=exchange.speaker,
+                user=exchange.user,
             )
-            for index, (speaker, user) in enumerate(exchanges)
+            for index, exchange in enumerate(exchanges)
         ])
         session.add(IdIndex(
             id=dialog_id,

@@ -7,6 +7,7 @@ from reling.db.enums import Level
 from reling.db.helpers.modifiers import get_random_modifier
 from reling.db.models import Speaker, Style, Topic
 from reling.gpt import GPTClient
+from reling.utils.typer import typer_raise
 from .generation import generate_dialog_exchanges, generate_id, generate_text_sentences
 from .storage import save_dialog, save_text
 
@@ -52,8 +53,7 @@ def text(
         total=NUM_TEXT_SENTENCES,
     ))
     if len(sentences) <= 1:
-        typer.echo('Failed to generate the text.')
-        raise typer.Exit(code=1)
+        typer_raise('Failed to generate the text.')
 
     text_id = save_text(
         suggested_id=generate_id(gpt, sentences),
@@ -92,11 +92,10 @@ def dialog(
         total=NUM_DIALOG_EXCHANGES,
     ))
     if len(exchanges) <= 1:
-        typer.echo('Failed to generate the dialog.')
-        raise typer.Exit(code=1)
+        typer_raise('Failed to generate the dialog.')
 
     dialog_id = save_dialog(
-        suggested_id=generate_id(gpt, [sentence for exchange in exchanges for sentence in exchange]),
+        suggested_id=generate_id(gpt, [sentence for exchange in exchanges for sentence in exchange.all()]),
         exchanges=exchanges,
         language=language,
         level=level,

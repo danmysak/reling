@@ -4,4 +4,4 @@ __all__ = [
     'app',
 ]
 
-app = typer.Typer()
+app = typer.Typer(pretty_exceptions_enable=False)

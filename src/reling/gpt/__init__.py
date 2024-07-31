@@ -34,14 +34,18 @@ class GPTClient:
             messages=[{'role': 'user', 'content': request}],
         )
 
+        section_index = 0
+
         def flush() -> Generator[str, None, None]:
+            nonlocal section_index
             while (section := feeder.get()) is not None:
                 for transformer in transformers or []:
-                    section = transformer(section)
+                    section = transformer(section, section_index)
                     if section is None:
                         break
                 else:
                     yield section
+                    section_index += 1
 
         for chunk in stream:
             feeder.put(chunk.choices[0].delta.content or '')

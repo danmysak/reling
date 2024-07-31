@@ -1,0 +1,60 @@
+from typing import Generator
+
+from reling.db.models import Language
+from reling.gpt import GPTClient
+from reling.types import DialogExchangeData
+from reling.utils.iterables import map_asterisk, pair_items
+from reling.utils.transformers import add_numbering, apply, omit_empty, remove_numbering, strip
+
+__all__ = [
+    'translate_dialog',
+    'translate_text',
+]
+
+
+def translate_sentences(
+        gpt: GPTClient,
+        sentences: list[str],
+        source_language: Language,
+        target_language: Language,
+) -> Generator[str, None, None]:
+    return gpt.ask(
+        '\n'.join([
+            f'Translate the following sentences from {source_language.name} into {target_language.name}.',
+            f'Generate only the specified translations without any additional text.',
+            f'Number each translated sentence and place each on a new line.'
+            f'---',
+            *apply(add_numbering, sentences),
+        ]),
+        transformers=[strip, omit_empty, remove_numbering],
+    )
+
+
+def translate_text(
+        gpt: GPTClient,
+        sentences: list[str],
+        source_language: Language,
+        target_language: Language,
+) -> Generator[str, None, None]:
+    return translate_sentences(
+        gpt=gpt,
+        sentences=sentences,
+        source_language=source_language,
+        target_language=target_language,
+    )
+
+
+def translate_dialog(
+        gpt: GPTClient,
+        exchanges: list[DialogExchangeData],
+        source_language: Language,
+        target_language: Language,
+) -> Generator[DialogExchangeData, None, None]:
+    return map_asterisk(DialogExchangeData, pair_items(
+        translate_sentences(
+            gpt=gpt,
+            sentences=[sentence for exchange in exchanges for sentence in exchange.all()],
+            source_language=source_language,
+            target_language=target_language,
+        )
+    ))

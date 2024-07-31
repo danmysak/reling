@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Callable
+from typing import Callable, Never
 
 import typer
 
@@ -10,7 +10,13 @@ __all__ = [
     'typer_enum_options',
     'typer_enum_parser',
     'typer_func_parser',
+    'typer_raise',
 ]
+
+
+def typer_raise(message: str) -> Never:
+    typer.echo(message)
+    raise typer.Exit(code=1)
 
 
 def typer_func_parser[R](func: Callable[[str], R | None]) -> Callable[[str], R]:

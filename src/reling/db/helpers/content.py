@@ -9,4 +9,4 @@ __all__ = [
 def find_content(name: str) -> Text | Dialog | None:
     """Find a text or dialog by its name."""
     with single_session() as session:
-        return session.get(Text, name) | session.get(Dialog, name)
+        return session.get(Text, name) or session.get(Dialog, name)

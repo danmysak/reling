@@ -1,7 +1,8 @@
+from __future__ import annotations
 from datetime import datetime
 
 from sqlalchemy import ForeignKey
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from reling.db.base import Base
 from reling.db.enums import Level
@@ -21,11 +22,13 @@ class Dialog(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
     language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
+    language: Mapped[Language] = relationship(Language)
     level: Mapped[Level]
     topic: Mapped[str | None]
     speaker: Mapped[str]
     created_at: Mapped[datetime]
     archived_at: Mapped[datetime | None] = mapped_column(index=True)
+    exchanges: Mapped[list[DialogExchange]] = relationship('DialogExchange')
 
 
 class DialogExchange(Base):
@@ -53,7 +56,9 @@ class DialogExam(Base):
     id: Mapped[str] = mapped_column(primary_key=True)
     dialog_id: Mapped[str] = mapped_column(ForeignKey(Dialog.id, ondelete='CASCADE'))
     source_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
+    source_language: Mapped[Language] = relationship(Language, foreign_keys=source_language_id)
     target_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
+    target_language: Mapped[Language] = relationship(Language, foreign_keys=target_language_id)
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
 
