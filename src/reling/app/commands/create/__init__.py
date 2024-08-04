@@ -2,7 +2,17 @@ from tqdm import tqdm
 import typer
 
 from reling.app.app import app
-from reling.app.types import API_KEY, LANGUAGE_ARG, LEVEL_OPT, MODEL, SPEAKER_OPT, STYLE_OPT, TOPIC_OPT
+from reling.app.types import (
+    API_KEY,
+    COUNT_DIALOG_OPT,
+    COUNT_TEXT_OPT,
+    LANGUAGE_ARG,
+    LEVEL_OPT,
+    MODEL,
+    SPEAKER_OPT,
+    STYLE_OPT,
+    TOPIC_OPT,
+)
 from reling.db.enums import Level
 from reling.db.helpers.modifiers import get_random_modifier
 from reling.db.models import Speaker, Style, Topic
@@ -15,8 +25,10 @@ __all__ = [
     'create',
 ]
 
-NUM_TEXT_SENTENCES = 10
-NUM_DIALOG_EXCHANGES = 10
+DEFAULT_COUNT_TEXT = 10
+DEFAULT_COUNT_DIALOG = 10
+
+MIN_COUNT_THRESHOLD = 0.9
 
 create = typer.Typer()
 app.add_typer(
@@ -34,6 +46,7 @@ def text(
         level: LEVEL_OPT = Level.INTERMEDIATE,
         topic: TOPIC_OPT = None,
         style: STYLE_OPT = None,
+        count: COUNT_TEXT_OPT = DEFAULT_COUNT_TEXT,
 ) -> None:
     """Create a text and save it to the database."""
     gpt = GPTClient(api_key=api_key, model=model)
@@ -43,16 +56,16 @@ def text(
     sentences = list(tqdm(
         generate_text_sentences(
             gpt=gpt,
-            num_sentences=NUM_TEXT_SENTENCES,
+            num_sentences=count,
             language=language,
             level=level,
             topic=topic,
             style=style,
         ),
         desc='Generating sentences',
-        total=NUM_TEXT_SENTENCES,
+        total=count,
     ))
-    if len(sentences) <= 1:
+    if len(sentences) < round(count * MIN_COUNT_THRESHOLD):
         typer_raise('Failed to generate the text.')
 
     text_id = save_text(
@@ -74,6 +87,7 @@ def dialog(
         level: LEVEL_OPT = Level.INTERMEDIATE,
         speaker: SPEAKER_OPT = None,
         topic: TOPIC_OPT = None,
+        count: COUNT_DIALOG_OPT = DEFAULT_COUNT_DIALOG,
 ) -> None:
     """Create a dialog and save it to the database."""
     gpt = GPTClient(api_key=api_key, model=model)
@@ -82,16 +96,16 @@ def dialog(
     exchanges = list(tqdm(
         generate_dialog_exchanges(
             gpt=gpt,
-            num_exchanges=NUM_DIALOG_EXCHANGES,
+            num_exchanges=count,
             language=language,
             level=level,
             speaker=speaker,
             topic=topic,
         ),
         desc='Generating exchanges',
-        total=NUM_DIALOG_EXCHANGES,
+        total=count,
     ))
-    if len(exchanges) <= 1:
+    if len(exchanges) < round(count * MIN_COUNT_THRESHOLD):
         typer_raise('Failed to generate the dialog.')
 
     dialog_id = save_dialog(

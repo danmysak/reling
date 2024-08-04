@@ -16,6 +16,8 @@ __all__ = [
     'ARCHIVE_OPT',
     'CONTENT_ARG',
     'CONTENT_CATEGORY_OPT',
+    'COUNT_DIALOG_OPT',
+    'COUNT_TEXT_OPT',
     'FORCE_OPT',
     'LANGUAGE_ARG',
     'LANGUAGE_OPT',
@@ -40,6 +42,16 @@ MODEL = Annotated[str, typer.Option(
     envvar='RELING_MODEL',
     help='Identifier for the GPT model to be used',
     prompt='Enter the GPT model identifier',
+)]
+
+COUNT_TEXT_OPT = Annotated[int, typer.Option(
+    min=1,
+    help='Number of sentences in the text',
+)]
+
+COUNT_DIALOG_OPT = Annotated[int, typer.Option(
+    min=1,
+    help='Number of exchanges in the dialog',
 )]
 
 CONTENT_ARG = Annotated[Text | Dialog, typer.Argument(
