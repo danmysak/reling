@@ -4,6 +4,7 @@ from reling.db.enums import ContentCategory, Level
 from reling.db.models import Language
 from reling.gpt import GPTClient
 from reling.types import DialogExchangeData, WordWithSense
+from reling.utils.english import pluralize
 from reling.utils.iterables import map_asterisk, pair_items
 from reling.utils.transformers import omit_empty, remove_numbering, slugify, strip
 
@@ -45,7 +46,7 @@ def build_level_prompt(level: Level, category: ContentCategory) -> str:
 def build_include_prompt(include: list[WordWithSense]) -> list[str]:
     """Return a prompt section describing the words or phrases to include in the content."""
     return [] if len(include) == 0 else [
-        f'Include the following word{'' if len(include) == 1 else 's'} or phrase{'' if len(include) == 1 else 's'}:',
+        f'Include the following {pluralize('word', len(include))} or {pluralize('phrase', len(include))}:',
         *(item.format() for item in include),
     ]
 
@@ -61,7 +62,7 @@ def generate_text_sentences(
 ) -> Generator[str, None, None]:
     return gpt.ask(
         '\n'.join([
-            f'Generate a text in {language.name} consisting of {num_sentences} sentences.',
+            f'Generate a text in {language.name} consisting of {num_sentences} {pluralize('sentence', num_sentences)}.',
             f'The text should be about {topic} and be written in the style of {style}.',
             f'Do not include any additional text; only generate the text as specified.',
             f'Number each sentence and put each sentence on a new line.',
