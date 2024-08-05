@@ -3,7 +3,7 @@ from typing import Generator
 from reling.db.enums import ContentCategory, Level
 from reling.db.models import Language
 from reling.gpt import GPTClient
-from reling.types import DialogExchangeData
+from reling.types import DialogExchangeData, WordWithSense
 from reling.utils.iterables import map_asterisk, pair_items
 from reling.utils.transformers import omit_empty, remove_numbering, slugify, strip
 
@@ -42,6 +42,14 @@ def build_level_prompt(level: Level, category: ContentCategory) -> str:
             f'and use {get_vocabulary_description()} vocabulary.')
 
 
+def build_include_prompt(include: list[WordWithSense]) -> list[str]:
+    """Return a prompt section describing the words or phrases to include in the content."""
+    return [] if len(include) == 0 else [
+        f'Include the following word{'' if len(include) == 1 else 's'} or phrase{'' if len(include) == 1 else 's'}:',
+        *(item.format() for item in include),
+    ]
+
+
 def generate_text_sentences(
         gpt: GPTClient,
         num_sentences: int,
@@ -49,6 +57,7 @@ def generate_text_sentences(
         level: Level,
         topic: str,
         style: str,
+        include: list[WordWithSense],
 ) -> Generator[str, None, None]:
     return gpt.ask(
         '\n'.join([
@@ -57,6 +66,7 @@ def generate_text_sentences(
             f'Do not include any additional text; only generate the text as specified.',
             f'Number each sentence and put each sentence on a new line.',
             build_level_prompt(level, ContentCategory.TEXT),
+            *build_include_prompt(include),
         ]),
         transformers=[strip, omit_empty, remove_numbering],
     )
@@ -69,6 +79,7 @@ def generate_dialog_exchanges(
         level: Level,
         speaker: str,
         topic: str | None,
+        include: list[WordWithSense],
 ) -> Generator[DialogExchangeData, None, None]:
     return map_asterisk(DialogExchangeData, pair_items(gpt.ask(
         '\n'.join([
@@ -81,6 +92,7 @@ def generate_dialog_exchanges(
             f'The second, fourth, etc. sentences should be spoken by me.'
             f'Do not prefix the sentences with the speakers’ names.',
             build_level_prompt(level, ContentCategory.DIALOG),
+            *build_include_prompt(include),
         ]),
         transformers=[strip, omit_empty, remove_numbering],
     )))

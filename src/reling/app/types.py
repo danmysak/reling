@@ -9,6 +9,7 @@ from reling.db.helpers.content import find_content
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
 from reling.db.models import Dialog, Language, Text
+from reling.types import WordWithSense
 from reling.utils.typer import typer_enum_autocompletion, typer_enum_options, typer_enum_parser, typer_func_parser
 
 __all__ = [
@@ -19,6 +20,7 @@ __all__ = [
     'COUNT_DIALOG_OPT',
     'COUNT_TEXT_OPT',
     'FORCE_OPT',
+    'INCLUDE_OPT',
     'LANGUAGE_ARG',
     'LANGUAGE_OPT',
     'LANGUAGE_OPT_ARG',
@@ -42,16 +44,6 @@ MODEL = Annotated[str, typer.Option(
     envvar='RELING_MODEL',
     help='Identifier for the GPT model to be used',
     prompt='Enter the GPT model identifier',
-)]
-
-COUNT_TEXT_OPT = Annotated[int, typer.Option(
-    min=1,
-    help='Number of sentences in the text',
-)]
-
-COUNT_DIALOG_OPT = Annotated[int, typer.Option(
-    min=1,
-    help='Number of exchanges in the dialog',
 )]
 
 CONTENT_ARG = Annotated[Text | Dialog, typer.Argument(
@@ -107,6 +99,21 @@ STYLE_OPT = Annotated[Optional[str], typer.Option(
 
 SPEAKER_OPT = Annotated[Optional[str], typer.Option(
     help='Interlocutor in the dialog, e.g., "waiter" or "friend"',
+)]
+
+COUNT_TEXT_OPT = Annotated[int, typer.Option(
+    min=1,
+    help='Number of sentences in the text',
+)]
+
+COUNT_DIALOG_OPT = Annotated[int, typer.Option(
+    min=1,
+    help='Number of exchanges in the dialog',
+)]
+
+INCLUDE_OPT = Annotated[Optional[list[str]], typer.Option(
+    help=f'Word or phrase to be included in the content '
+         f'(e.g., "bank" or "bank{WordWithSense.DIVIDER_WITH_WHITE_SPACE}financial institution" for disambiguation)',
 )]
 
 NEW_NAME_ARG = Annotated[str, typer.Argument(
