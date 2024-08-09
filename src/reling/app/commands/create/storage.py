@@ -69,7 +69,7 @@ def save_dialog(
         speaker: str,
         topic: str | None,
 ) -> str:
-    """Save a dialog with the given turns and return its ID."""
+    """Save a dialog with the given exchanges and return its ID."""
     with single_session() as session:
         dialog_id = generate_id(suggested_id)
         dialog = Dialog(
