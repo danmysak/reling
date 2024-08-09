@@ -1,6 +1,7 @@
 from tqdm import tqdm
 
 from reling.app.app import app
+from reling.app.exceptions import AlgorithmException
 from reling.app.types import API_KEY, CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM, MODEL
 from reling.db.models import Dialog, Language, Text
 from reling.gpt import GPTClient
@@ -52,11 +53,14 @@ def perform_text_exam(
     started_at = now()
     translated = list(collect_text_translations(sentences))
     finished_at = now()
-    results = list(tqdm(
-        score_text_translations(gpt, translated, source_language, target_language),
-        desc='Scoring translations',
-        total=len(translated),
-    ))
+    try:
+        results = list(tqdm(
+            score_text_translations(gpt, translated, source_language, target_language),
+            desc='Scoring translations',
+            total=len(translated),
+        ))
+    except AlgorithmException as e:
+        typer_raise(e.msg)
     save_text_exam(
         text=text,
         source_language=source_language,
@@ -80,11 +84,14 @@ def perform_dialog_exam(
     started_at = now()
     translated = list(collect_dialog_translations(exchanges, original_translations))
     finished_at = now()
-    results = list(tqdm(
-        score_dialog_translations(gpt, translated, original_translations, source_language, target_language),
-        desc='Scoring translations',
-        total=len(translated),
-    ))
+    try:
+        results = list(tqdm(
+            score_dialog_translations(gpt, translated, original_translations, source_language, target_language),
+            desc='Scoring translations',
+            total=len(translated),
+        ))
+    except AlgorithmException as e:
+        typer_raise(e.msg)
     save_dialog_exam(
         dialog=dialog,
         source_language=source_language,
