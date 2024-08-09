@@ -13,7 +13,7 @@ def find_ids_by_prefix(prefix: str) -> list[str]:
         return [
             result.id
             for result in session.query(IdIndex)
-            .filter(IdIndex.id.startswith(prefix))
+            .where(IdIndex.id.startswith(prefix))
             .order_by(IdIndex.id)
             .all()
         ]

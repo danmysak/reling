@@ -10,6 +10,8 @@ __all__ = [
     'GPTClient',
 ]
 
+CREATIVE_TEMPERATURE = 1.0
+
 
 class GPTClient:
     _client: OpenAI
@@ -21,7 +23,8 @@ class GPTClient:
 
     def ask(
             self,
-            request: str,
+            prompt: str,
+            creative: bool = True,
             feeder_type: type[Feeder] = LineFeeder,
             transformers: list[Transformer] | None = None,
     ) -> Generator[str, None, None]:
@@ -34,7 +37,8 @@ class GPTClient:
             stream = self._client.chat.completions.create(
                 model=self._model,
                 stream=True,
-                messages=[{'role': 'user', 'content': request}],
+                messages=[{'role': 'user', 'content': prompt}],
+                temperature=CREATIVE_TEMPERATURE if creative else 0.0,
             )
         except APIError as e:
             typer_raise(f'OpenAI API error:\n{e}')

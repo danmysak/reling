@@ -1,5 +1,5 @@
 import re
-from typing import Callable
+from typing import Callable, Iterable, Generator
 
 __all__ = [
     'add_numbering',
@@ -15,8 +15,9 @@ Transformer = Callable[[str, int], str | None]
 # The second argument is the index of the item in the list.
 
 
-def apply(transformer: Transformer, items: list[str]) -> list[str]:
-    return [transformer(item, index) for index, item in enumerate(items)]
+def apply(transformer: Transformer, items: Iterable[str]) -> Generator[str, None, None]:
+    for index, item in enumerate(items):
+        yield transformer(item, index)
 
 
 def add_numbering(text: str, index: int) -> str:

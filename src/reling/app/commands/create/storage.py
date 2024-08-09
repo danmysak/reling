@@ -1,12 +1,11 @@
 from itertools import count
 
-from sqlalchemy import func
-
 from reling.db import single_session
 from reling.db.enums import ContentCategory, Level
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.models import Dialog, DialogExchange, IdIndex, Language, Text, TextSentence
 from reling.types import DialogExchangeData
+from reling.utils.time import now
 
 
 __all__ = [
@@ -42,7 +41,7 @@ def save_text(
             level=level,
             topic=topic,
             style=style,
-            created_at=func.now(),
+            created_at=now(),
             archived_at=None,
         )
         session.add(text)
@@ -70,7 +69,7 @@ def save_dialog(
         speaker: str,
         topic: str | None,
 ) -> str:
-    """Save a dialog with the given exchanges and return its ID."""
+    """Save a dialog with the given turns and return its ID."""
     with single_session() as session:
         dialog_id = generate_id(suggested_id)
         dialog = Dialog(
@@ -79,7 +78,7 @@ def save_dialog(
             level=level,
             topic=topic,
             speaker=speaker,
-            created_at=func.now(),
+            created_at=now(),
             archived_at=None,
         )
         session.add(dialog)

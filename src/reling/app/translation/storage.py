@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from reling.db import single_session
 from reling.db.models import Dialog, DialogExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.types import DialogExchangeData
-from .exceptions import TranslationExistsError
+from .exceptions import TranslationExistsException
 
 
 __all__ = [
@@ -34,7 +34,7 @@ def save_text_translation(
             ])
             session.commit()
     except IntegrityError:
-        raise TranslationExistsError
+        raise TranslationExistsException
 
 
 def save_dialog_translation(
@@ -60,4 +60,4 @@ def save_dialog_translation(
             ])
             session.commit()
     except IntegrityError:
-        raise TranslationExistsError
+        raise TranslationExistsException

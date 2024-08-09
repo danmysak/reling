@@ -84,5 +84,5 @@ class DialogExamResult(Base):
     )
     dialog_exchange_index: Mapped[int] = mapped_column(primary_key=True)
     answer: Mapped[str]
-    suggested_answer: Mapped[str]
+    suggested_answer: Mapped[str | None]
     score: Mapped[int]

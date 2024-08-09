@@ -40,7 +40,7 @@ def find_language(language: str) -> Language | None:
 
     with single_session() as session:
         for condition in conditions:
-            if result := session.query(Language).filter(condition).first():
+            if result := session.query(Language).where(condition).first():
                 return result
 
     return None
@@ -52,17 +52,17 @@ def find_languages_by_prefix(prefix: str) -> list[str]:
     with single_session() as session:
         return sorted([
             language.id
-            for language in session.query(Language).filter(Language.id.startswith(prefix)).all()
+            for language in session.query(Language).where(Language.id.startswith(prefix)).all()
         ] + [
             language.short_code
-            for language in session.query(Language).filter(Language.short_code.startswith(prefix)).all()
+            for language in session.query(Language).where(Language.short_code.startswith(prefix)).all()
         ] + [
             replace_prefix_casing(language.name, prefix)
-            for language in session.query(Language).filter(func.lower(Language.name).startswith(lower)).all()
+            for language in session.query(Language).where(func.lower(Language.name).startswith(lower)).all()
         ] + [
             replace_prefix_casing(language.extra_name_a, prefix)
-            for language in session.query(Language).filter(func.lower(Language.extra_name_a).startswith(lower)).all()
+            for language in session.query(Language).where(func.lower(Language.extra_name_a).startswith(lower)).all()
         ] + [
             replace_prefix_casing(language.extra_name_b, prefix)
-            for language in session.query(Language).filter(func.lower(Language.extra_name_b).startswith(lower)).all()
+            for language in session.query(Language).where(func.lower(Language.extra_name_b).startswith(lower)).all()
         ])

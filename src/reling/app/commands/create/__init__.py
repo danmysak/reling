@@ -66,7 +66,7 @@ def text(
             style=style,
             include=list(map(WordWithSense.parse, include or [])),
         ),
-        desc='Generating sentences',
+        desc=f'Generating sentences in {language.name}',
         total=count,
     ))
     if len(sentences) < round(count * MIN_COUNT_THRESHOLD):
@@ -108,14 +108,14 @@ def dialog(
             topic=topic,
             include=list(map(WordWithSense.parse, include or [])),
         ),
-        desc='Generating exchanges',
+        desc=f'Generating exchanges in {language.name}',
         total=count,
     ))
     if len(exchanges) < round(count * MIN_COUNT_THRESHOLD):
         typer_raise('Failed to generate the dialog.')
 
     dialog_id = save_dialog(
-        suggested_id=generate_id(gpt, [sentence for exchange in exchanges for sentence in exchange.all()]),
+        suggested_id=generate_id(gpt, [turn for exchange in exchanges for turn in exchange.all()]),
         exchanges=exchanges,
         language=language,
         level=level,
