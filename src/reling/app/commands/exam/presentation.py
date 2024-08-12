@@ -1,6 +1,7 @@
 from typing import Iterable
 
 from reling.types import DialogExchangeData
+from reling.utils.scores import format_average_score
 from reling.utils.transformers import add_numbering, apply
 from .scoring import MAX_SCORE
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
@@ -22,12 +23,14 @@ def present_results(
         results: Iterable[ScoreWithSuggestion],
 ) -> None:
     """Present the results of scoring translations."""
+    scores: list[int] = []
     for title, provided_translation, original_translation, result in zip(
             titles,
             provided_translations,
             original_translations,
             results,
     ):
+        scores.append(result.score)
         print(title)
         print(f'Your score: {result.score}/{MAX_SCORE}')
         print(f'Provided: {provided_translation}')
@@ -35,6 +38,7 @@ def present_results(
             print(f'Improved: {result.suggestion}')
         print(f'Original: {original_translation}')
         wait_for_key_press()
+    print('Your average score:', format_average_score(scores))
 
 
 def present_text_results(
