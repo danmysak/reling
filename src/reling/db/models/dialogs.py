@@ -40,7 +40,7 @@ class Dialog(Base):
     exams: Mapped[list[DialogExam]] = relationship('DialogExam', passive_deletes=True)
 
     __table_args__ = (
-        Index('archived_at_created_at_index', 'archived_at', 'created_at'),
+        Index('dialog_chronological', 'archived_at', 'created_at'),
     )
 
 

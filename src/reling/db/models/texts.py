@@ -40,7 +40,7 @@ class Text(Base):
     exams: Mapped[list[TextExam]] = relationship('TextExam', passive_deletes=True)
 
     __table_args__ = (
-        Index('archived_at_created_at_index', 'archived_at', 'created_at'),
+        Index('text_chronological', 'archived_at', 'created_at'),
     )
 
 

@@ -19,7 +19,7 @@ class Language(Base):
     extra_name_b: Mapped[str | None]
 
     __table_args__ = (
-        Index('name_index', func.lower('name')),
-        Index('extra_name_a_index', func.lower('extra_name_a')),
-        Index('extra_name_b_index', func.lower('extra_name_b')),
+        Index('language_name', func.lower('name')),
+        Index('language_extra_name_a', func.lower('extra_name_a')),
+        Index('language_extra_name_b', func.lower('extra_name_b')),
     )
