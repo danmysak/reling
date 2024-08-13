@@ -4,12 +4,12 @@ import typer
 from reling.app.app import app
 from reling.app.types import (
     API_KEY,
-    COUNT_DIALOG_OPT,
-    COUNT_TEXT_OPT,
     INCLUDE_OPT,
     LANGUAGE_ARG,
     LEVEL_OPT,
     MODEL,
+    SIZE_DIALOG_OPT,
+    SIZE_TEXT_OPT,
     SPEAKER_OPT,
     STYLE_OPT,
     TOPIC_OPT,
@@ -27,10 +27,10 @@ __all__ = [
     'create',
 ]
 
-DEFAULT_COUNT_TEXT = 10
-DEFAULT_COUNT_DIALOG = 10
+DEFAULT_SIZE_TEXT = 10
+DEFAULT_SIZE_DIALOG = 10
 
-MIN_COUNT_THRESHOLD = 0.9
+MIN_SIZE_THRESHOLD = 0.9
 
 create = typer.Typer()
 app.add_typer(
@@ -48,7 +48,7 @@ def text(
         level: LEVEL_OPT = Level.INTERMEDIATE,
         topic: TOPIC_OPT = None,
         style: STYLE_OPT = None,
-        count: COUNT_TEXT_OPT = DEFAULT_COUNT_TEXT,
+        size: SIZE_TEXT_OPT = DEFAULT_SIZE_TEXT,
         include: INCLUDE_OPT = None,
 ) -> None:
     """Create a text and save it to the database."""
@@ -59,7 +59,7 @@ def text(
     sentences = list(tqdm(
         generate_text_sentences(
             gpt=gpt,
-            num_sentences=count,
+            num_sentences=size,
             language=language,
             level=level,
             topic=topic,
@@ -67,9 +67,9 @@ def text(
             include=list(map(WordWithSense.parse, include or [])),
         ),
         desc=f'Generating sentences in {language.name}',
-        total=count,
+        total=size,
     ))
-    if len(sentences) < round(count * MIN_COUNT_THRESHOLD):
+    if len(sentences) < round(size * MIN_SIZE_THRESHOLD):
         typer_raise('Failed to generate the text.')
 
     text_id = save_text(
@@ -91,7 +91,7 @@ def dialog(
         level: LEVEL_OPT = Level.INTERMEDIATE,
         speaker: SPEAKER_OPT = None,
         topic: TOPIC_OPT = None,
-        count: COUNT_DIALOG_OPT = DEFAULT_COUNT_DIALOG,
+        size: SIZE_DIALOG_OPT = DEFAULT_SIZE_DIALOG,
         include: INCLUDE_OPT = None,
 ) -> None:
     """Create a dialog and save it to the database."""
@@ -101,7 +101,7 @@ def dialog(
     exchanges = list(tqdm(
         generate_dialog_exchanges(
             gpt=gpt,
-            num_exchanges=count,
+            num_exchanges=size,
             language=language,
             level=level,
             speaker=speaker,
@@ -109,9 +109,9 @@ def dialog(
             include=list(map(WordWithSense.parse, include or [])),
         ),
         desc=f'Generating exchanges in {language.name}',
-        total=count,
+        total=size,
     ))
-    if len(exchanges) < round(count * MIN_COUNT_THRESHOLD):
+    if len(exchanges) < round(size * MIN_SIZE_THRESHOLD):
         typer_raise('Failed to generate the dialog.')
 
     dialog_id = save_dialog(

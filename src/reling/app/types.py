@@ -23,8 +23,6 @@ __all__ = [
     'ARCHIVE_OPT',
     'CONTENT_ARG',
     'CONTENT_CATEGORY_OPT',
-    'COUNT_DIALOG_OPT',
-    'COUNT_TEXT_OPT',
     'FORCE_OPT',
     'IDS_ONLY_OPT',
     'INCLUDE_OPT',
@@ -36,6 +34,8 @@ __all__ = [
     'MODEL',
     'NEW_NAME_ARG',
     'REGEX_CONTENT_OPT',
+    'SIZE_DIALOG_OPT',
+    'SIZE_TEXT_OPT',
     'SPEAKER_OPT',
     'STYLE_OPT',
     'TOPIC_OPT',
@@ -108,12 +108,12 @@ SPEAKER_OPT = Annotated[Optional[str], typer.Option(
     help='Interlocutor in the dialog, e.g., "waiter" or "friend"',
 )]
 
-COUNT_TEXT_OPT = Annotated[int, typer.Option(
+SIZE_TEXT_OPT = Annotated[int, typer.Option(
     min=1,
     help='Number of sentences in the text',
 )]
 
-COUNT_DIALOG_OPT = Annotated[int, typer.Option(
+SIZE_DIALOG_OPT = Annotated[int, typer.Option(
     min=1,
     help='Number of exchanges in the dialog',
 )]
