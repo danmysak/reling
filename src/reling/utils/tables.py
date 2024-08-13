@@ -1,3 +1,5 @@
+from typing import Iterable
+
 from rich.console import Console, JustifyMethod
 from rich.table import Table
 
@@ -14,15 +16,17 @@ DEFAULT_JUSTIFY_METHOD: JustifyMethod = 'left'
 
 def build_table(
         *,
+        title: str | None = None,
         headers: list[str],
-        data: list[dict[str, str]],
+        data: Iterable[dict[str, str]],
         justify: dict[str, JustifyMethod] | None = None,
         group_by: list[str] | None = None,
 ) -> Table:
     """
     Build a Rich Table from headers and data.
+    :param title: Table title.
     :param headers: List of column headers.
-    :param data: List of dictionaries with data. Keys must match headers.
+    :param data: Iterable of dictionaries with data. Keys must match headers.
     :param justify: Dictionary of column justifications. Keys must be in headers. Default is DEFAULT_JUSTIFY_METHOD.
     :param group_by: List of columns to group by: rows with the same values in these columns will be grouped together.
                      Only the first row of each group will have the group values displayed.
@@ -32,7 +36,7 @@ def build_table(
     if any(col not in headers for col in justify.keys()):
         raise ValueError('Justify columns must be in headers.')
 
-    table = Table()
+    table = Table(title=title)
     for header in headers:
         table.add_column(header, justify=justify.get(header, DEFAULT_JUSTIFY_METHOD))
 

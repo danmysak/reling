@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from reling.db.base import Base
@@ -27,13 +27,21 @@ class Dialog(Base):
     topic: Mapped[str | None]
     speaker: Mapped[str]
     created_at: Mapped[datetime]
-    archived_at: Mapped[datetime | None] = mapped_column(index=True)
-    exchanges: Mapped[list[DialogExchange]] = relationship('DialogExchange', passive_deletes=True)
+    archived_at: Mapped[datetime | None]
+    exchanges: Mapped[list[DialogExchange]] = relationship(
+        'DialogExchange',
+        order_by='DialogExchange.index',
+        passive_deletes=True,
+    )
     exchange_translations: Mapped[list[DialogExchangeTranslation]] = relationship(
         'DialogExchangeTranslation',
         passive_deletes=True,
     )
     exams: Mapped[list[DialogExam]] = relationship('DialogExam', passive_deletes=True)
+
+    __table_args__ = (
+        Index('archived_at_created_at_index', 'archived_at', 'created_at'),
+    )
 
 
 class DialogExchange(Base):
@@ -72,7 +80,11 @@ class DialogExam(Base):
     target_language: Mapped[Language] = relationship(Language, foreign_keys=target_language_id)
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
-    results: Mapped[list[DialogExamResult]] = relationship('DialogExamResult', passive_deletes=True)
+    results: Mapped[list[DialogExamResult]] = relationship(
+        'DialogExamResult',
+        order_by='DialogExamResult.dialog_exchange_index',
+        passive_deletes=True,
+    )
 
 
 class DialogExamResult(Base):

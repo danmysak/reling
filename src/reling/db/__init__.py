@@ -10,6 +10,7 @@ from .base import Base
 
 __all__ = [
     'init_db',
+    'Session',
     'single_session',
 ]
 

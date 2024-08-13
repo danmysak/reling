@@ -1,4 +1,5 @@
 from enum import Enum
+import re
 from typing import Callable, Never
 
 import typer
@@ -11,6 +12,7 @@ __all__ = [
     'typer_enum_parser',
     'typer_func_parser',
     'typer_raise',
+    'typer_regex_parser',
 ]
 
 
@@ -50,6 +52,14 @@ def typer_enum_parser(enum: type[Enum]) -> Callable[[str | Enum], Enum]:
             )
 
     return wrapper
+
+
+def typer_regex_parser(arg: str) -> re.Pattern:
+    """Parse a regular expression string and return a compiled pattern or raise a Typer error."""
+    try:
+        return re.compile(arg)
+    except re.error as e:
+        raise typer.BadParameter(str(e))
 
 
 def typer_enum_autocompletion(enum: type[Enum]) -> Callable[[str], list[str]]:

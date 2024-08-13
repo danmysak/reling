@@ -10,7 +10,13 @@ from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
 from reling.db.models import Dialog, Language, Text
 from reling.types import WordWithSense
-from reling.utils.typer import typer_enum_autocompletion, typer_enum_options, typer_enum_parser, typer_func_parser
+from reling.utils.typer import (
+    typer_enum_autocompletion,
+    typer_enum_options,
+    typer_enum_parser,
+    typer_func_parser,
+    typer_regex_parser,
+)
 
 __all__ = [
     'API_KEY',
@@ -20,6 +26,7 @@ __all__ = [
     'COUNT_DIALOG_OPT',
     'COUNT_TEXT_OPT',
     'FORCE_OPT',
+    'IDS_ONLY_OPT',
     'INCLUDE_OPT',
     'LANGUAGE_ARG',
     'LANGUAGE_OPT',
@@ -27,9 +34,8 @@ __all__ = [
     'LANGUAGE_OPT_FROM',
     'LEVEL_OPT',
     'MODEL',
-    'NAMES_ONLY_OPT',
     'NEW_NAME_ARG',
-    'REGEX_OPT',
+    'REGEX_CONTENT_OPT',
     'SPEAKER_OPT',
     'STYLE_OPT',
     'TOPIC_OPT',
@@ -121,17 +127,17 @@ NEW_NAME_ARG = Annotated[str, typer.Argument(
     help='New name for the text or dialog',
 )]
 
-REGEX_OPT = Annotated[re.Pattern | None, typer.Option(
-    parser=re.compile,
-    help='Regular expression to filter results',
+REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
+    parser=typer_regex_parser,
+    help='Regular expression to filter results by content, topic, style, or speaker',
 )]
 
 ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(
     help='Search within archived items',
 )]
 
-NAMES_ONLY_OPT = Annotated[Optional[bool], typer.Option(
-    help='Display only the names of the items',
+IDS_ONLY_OPT = Annotated[Optional[bool], typer.Option(
+    help='Display only the IDs of the items',
 )]
 
 FORCE_OPT = Annotated[Optional[bool], typer.Option(

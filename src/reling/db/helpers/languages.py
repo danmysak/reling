@@ -17,7 +17,7 @@ __all__ = [
 def populate_languages(data: Path) -> None:
     """Populate the languages table with data from the CSV file, if the table is empty."""
     with single_session() as session:
-        if not session.query(exists().where(Language.id.isnot(None))).scalar():
+        if not session.query(exists().where(Language.id.is_not(None))).scalar():
             for language in read_csv(
                 data,
                 ['id', 'short_code', 'name', 'extra_name_a', 'extra_name_b'],

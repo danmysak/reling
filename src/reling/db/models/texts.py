@@ -1,7 +1,7 @@
 from __future__ import annotations
 from datetime import datetime
 
-from sqlalchemy import ForeignKey
+from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from reling.db.base import Base
@@ -27,13 +27,21 @@ class Text(Base):
     topic: Mapped[str]
     style: Mapped[str]
     created_at: Mapped[datetime]
-    archived_at: Mapped[datetime | None] = mapped_column(index=True)
-    sentences: Mapped[list[TextSentence]] = relationship('TextSentence', passive_deletes=True)
+    archived_at: Mapped[datetime | None]
+    sentences: Mapped[list[TextSentence]] = relationship(
+        'TextSentence',
+        order_by='TextSentence.index',
+        passive_deletes=True,
+    )
     sentence_translations: Mapped[list[TextSentenceTranslation]] = relationship(
         'TextSentenceTranslation',
         passive_deletes=True,
     )
     exams: Mapped[list[TextExam]] = relationship('TextExam', passive_deletes=True)
+
+    __table_args__ = (
+        Index('archived_at_created_at_index', 'archived_at', 'created_at'),
+    )
 
 
 class TextSentence(Base):
@@ -64,7 +72,11 @@ class TextExam(Base):
     target_language: Mapped[Language] = relationship(Language, foreign_keys=target_language_id)
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
-    results: Mapped[list[TextExamResult]] = relationship('TextExamResult', passive_deletes=True)
+    results: Mapped[list[TextExamResult]] = relationship(
+        'TextExamResult',
+        order_by='TextExamResult.text_sentence_index',
+        passive_deletes=True,
+    )
 
 
 class TextExamResult(Base):
