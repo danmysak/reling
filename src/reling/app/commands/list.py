@@ -26,6 +26,7 @@ LEVEL = 'Level'
 TOPIC = 'Topic'
 STYLE = 'Style'
 SPEAKER = 'Speaker'
+SIZE = 'Size'
 CREATED_AT = 'Created at'
 ARCHIVED_AT = 'Archived at'
 
@@ -104,9 +105,13 @@ def list_(
                         *([SPEAKER] if model is Dialog else []),
                         TOPIC,
                         *([STYLE] if model is Text else []),
+                        SIZE,
                         CREATED_AT,
                         *([ARCHIVED_AT] if archive else []),
                     ],
+                    justify={
+                        SIZE: 'right',
+                    },
                     data=({
                         ID: item.id,
                         LANGUAGE: item.language.name,
@@ -114,6 +119,7 @@ def list_(
                         **({SPEAKER: item.speaker} if model is Dialog else {}),
                         TOPIC: item.topic or NO_TOPIC,
                         **({STYLE: item.style} if model is Text else {}),
+                        SIZE: str(len(item.sentences if model is Text else item.exchanges)),
                         CREATED_AT: format_time(item.created_at),
                         **({ARCHIVED_AT: format_time(item.archived_at)} if archive else {}),
                     } for item in items),
