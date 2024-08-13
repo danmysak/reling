@@ -27,6 +27,7 @@ __all__ = [
     'LANGUAGE_OPT_FROM',
     'LEVEL_OPT',
     'MODEL',
+    'NAMES_ONLY_OPT',
     'NEW_NAME_ARG',
     'REGEX_OPT',
     'SPEAKER_OPT',
@@ -127,6 +128,10 @@ REGEX_OPT = Annotated[re.Pattern | None, typer.Option(
 
 ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(
     help='Search within archived items',
+)]
+
+NAMES_ONLY_OPT = Annotated[Optional[bool], typer.Option(
+    help='Display only the names of the items',
 )]
 
 FORCE_OPT = Annotated[Optional[bool], typer.Option(
