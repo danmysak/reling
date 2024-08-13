@@ -2,6 +2,7 @@ from tqdm import tqdm
 
 from reling.app.app import app
 from reling.app.exceptions import AlgorithmException
+from reling.app.translation import get_dialog_exchanges, get_text_sentences
 from reling.app.types import API_KEY, CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM, MODEL
 from reling.db.models import Dialog, Language, Text
 from reling.gpt import GPTClient
@@ -11,7 +12,6 @@ from .input import collect_dialog_translations, collect_text_translations
 from .presentation import present_dialog_results, present_text_results
 from .scoring import score_dialog_translations, score_text_translations
 from .storage import save_dialog_exam, save_text_exam
-from .translation import get_dialog_exchanges, get_text_sentences
 from .types import ExchangeWithTranslation, SentenceWithTranslation
 
 __all__ = [

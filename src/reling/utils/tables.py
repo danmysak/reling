@@ -24,6 +24,7 @@ def build_table(
 ) -> Table:
     """
     Build a Rich Table from headers and data.
+
     :param title: Table title.
     :param headers: List of column headers.
     :param data: Iterable of dictionaries with data. Keys must match headers.

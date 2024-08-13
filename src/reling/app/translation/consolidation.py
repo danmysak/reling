@@ -1,10 +1,11 @@
 from reling.app.exceptions import AlgorithmException
-from reling.app.translation import translate_dialog, translate_text, TranslationExistsException
 from reling.db import single_session
 from reling.db.models import Dialog, DialogExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.gpt import GPTClient
 from reling.types import DialogExchangeData
 from reling.utils.typer import typer_raise
+from .exceptions import TranslationExistsException
+from .operation import translate_dialog, translate_text
 
 __all__ = [
     'get_dialog_exchanges',
