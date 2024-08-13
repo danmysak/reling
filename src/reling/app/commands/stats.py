@@ -27,7 +27,7 @@ def get_sort_key(exam: TextExam | DialogExam) -> tuple:
     return (
         exam.source_language.name,
         exam.target_language.name,
-        exam.started_at,
+        -exam.started_at.timestamp(),
     )
 
 
