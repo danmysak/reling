@@ -79,10 +79,10 @@ def find_items[T: type[Text | Dialogue]](
 @app.command(name='list')
 def list_(
         category: CONTENT_CATEGORY_OPT = None,
-        archive: ARCHIVE_OPT = False,
         level: LEVEL_OPT = None,
         language: LANGUAGE_OPT = None,
         search: REGEX_CONTENT_OPT = None,
+        archive: ARCHIVE_OPT = False,
         ids_only: IDS_ONLY_OPT = False,
 ) -> None:
     """List texts and/or dialogues, optionally filtered by name or other criteria."""
