@@ -9,7 +9,7 @@ from reling.app.types import (
     LANGUAGE_ARG,
     LEVEL_OPT,
     MODEL,
-    SIZE_DIALOG_OPT,
+    SIZE_DIALOGUE_OPT,
     SIZE_TEXT_OPT,
     SPEAKER_OPT,
     SPEAKER_SEX_OPT,
@@ -23,15 +23,15 @@ from reling.db.models import Speaker, Style, Topic
 from reling.gpt import GPTClient
 from reling.types import WordWithSense
 from reling.utils.typer import typer_raise
-from .generation import generate_dialog_exchanges, generate_id, generate_text_sentences
-from .storage import save_dialog, save_text
+from .generation import generate_dialogue_exchanges, generate_id, generate_text_sentences
+from .storage import save_dialogue, save_text
 
 __all__ = [
     'create',
 ]
 
 DEFAULT_SIZE_TEXT = 10
-DEFAULT_SIZE_DIALOG = 10
+DEFAULT_SIZE_DIALOGUE = 10
 
 MIN_SIZE_THRESHOLD = 0.9
 
@@ -39,7 +39,7 @@ create = typer.Typer()
 app.add_typer(
     create,
     name='create',
-    help='Create a new text or dialog.',
+    help='Create a new text or dialogue.',
 )
 
 
@@ -87,7 +87,7 @@ def text(
 
 
 @create.command()
-def dialog(
+def dialogue(
         api_key: API_KEY,
         model: MODEL,
         user_sex: USER_SEX,
@@ -96,16 +96,16 @@ def dialog(
         speaker: SPEAKER_OPT = None,
         speaker_sex: SPEAKER_SEX_OPT = None,
         topic: TOPIC_OPT = None,
-        size: SIZE_DIALOG_OPT = DEFAULT_SIZE_DIALOG,
+        size: SIZE_DIALOGUE_OPT = DEFAULT_SIZE_DIALOGUE,
         include: INCLUDE_OPT = None,
 ) -> None:
-    """Create a dialog and save it to the database."""
+    """Create a dialogue and save it to the database."""
     gpt = GPTClient(api_key=api_key, model=model)
     speaker = speaker or get_random_modifier(Speaker).name
     speaker_sex = speaker_sex or choice([Sex.MALE, Sex.FEMALE])
 
     exchanges = list(tqdm(
-        generate_dialog_exchanges(
+        generate_dialogue_exchanges(
             gpt=gpt,
             num_exchanges=size,
             language=language,
@@ -120,9 +120,9 @@ def dialog(
         total=size,
     ))
     if len(exchanges) < round(size * MIN_SIZE_THRESHOLD):
-        typer_raise('Failed to generate the dialog.')
+        typer_raise('Failed to generate the dialogue.')
 
-    dialog_id = save_dialog(
+    dialogue_id = save_dialogue(
         suggested_id=generate_id(gpt, [turn for exchange in exchanges for turn in exchange.all()]),
         exchanges=exchanges,
         language=language,
@@ -132,4 +132,4 @@ def dialog(
         speaker_sex=speaker_sex,
         user_sex=user_sex,
     )
-    print(f'Generated dialog with the following ID:\n{dialog_id}')
+    print(f'Generated dialogue with the following ID:\n{dialogue_id}')

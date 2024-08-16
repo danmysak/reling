@@ -2,7 +2,7 @@ import sys
 
 from reling.app.app import app
 from reling.app.types import CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM
-from reling.db.models import DialogExam, Language, TextExam
+from reling.db.models import DialogueExam, Language, TextExam
 from reling.utils.scores import format_average_score
 from reling.utils.tables import build_table, print_table
 from reling.utils.time import format_time, format_time_delta
@@ -18,12 +18,12 @@ DURATION = 'Duration'
 SCORE = 'Score'
 
 
-def match(exam: TextExam | DialogExam, from_: Language | None, to: Language | None) -> bool:
+def match(exam: TextExam | DialogueExam, from_: Language | None, to: Language | None) -> bool:
     return ((from_ is None or exam.source_language.id == from_.id)
             and (to is None or exam.target_language.id == to.id))
 
 
-def get_sort_key(exam: TextExam | DialogExam) -> tuple:
+def get_sort_key(exam: TextExam | DialogueExam) -> tuple:
     return (
         exam.source_language.name,
         exam.target_language.name,

@@ -3,13 +3,13 @@ from typing import Generator
 from reling.db.enums import ContentCategory, Level, Sex
 from reling.db.models import Language
 from reling.gpt import GPTClient
-from reling.types import DialogExchangeData, WordWithSense
+from reling.types import DialogueExchangeData, WordWithSense
 from reling.utils.english import pluralize
 from reling.utils.iterables import map_asterisk, pair_items
 from reling.utils.transformers import omit_empty, remove_numbering, slugify, strip
 
 __all__ = [
-    'generate_dialog_exchanges',
+    'generate_dialogue_exchanges',
     'generate_id',
     'generate_text_sentences',
 ]
@@ -73,7 +73,7 @@ def generate_text_sentences(
     )
 
 
-def generate_dialog_exchanges(
+def generate_dialogue_exchanges(
         gpt: GPTClient,
         num_exchanges: int,
         language: Language,
@@ -83,18 +83,18 @@ def generate_dialog_exchanges(
         speaker_sex: Sex,
         topic: str | None,
         include: list[WordWithSense],
-) -> Generator[DialogExchangeData, None, None]:
-    return map_asterisk(DialogExchangeData, pair_items(gpt.ask(
+) -> Generator[DialogueExchangeData, None, None]:
+    return map_asterisk(DialogueExchangeData, pair_items(gpt.ask(
         '\n'.join([
-            f'Generate a dialog in {language.name} consisting of {num_exchanges * 2} sentences.',
-            f'The dialog should be between two speakers, {speaker} and me.',
-            *([f'The dialog should be about {topic}.'] if topic else []),
+            f'Generate a dialogue in {language.name} consisting of {num_exchanges * 2} sentences.',
+            f'The dialogue should be between two speakers, {speaker} and me.',
+            *([f'The dialogue should be about {topic}.'] if topic else []),
             f'Do not include any additional text; only generate the text as specified.',
             f'Number each sentence and put each sentence on a new line.',
             f'The first, third, etc. sentences should be spoken by {speaker} ({speaker_sex.describe()}).'
             f'The second, fourth, etc. sentences should be spoken by me ({user_sex.describe()}).'
             f'Do not prefix the sentences with the speakers’ names.',
-            build_level_prompt(level, ContentCategory.DIALOG),
+            build_level_prompt(level, ContentCategory.DIALOGUE),
             *build_include_prompt(include),
         ]),
         transformers=[strip, omit_empty, remove_numbering],

@@ -8,7 +8,7 @@ from reling.db.enums import ContentCategory, Level, Sex
 from reling.db.helpers.content import find_content
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
-from reling.db.models import Dialog, Language, Text
+from reling.db.models import Dialogue, Language, Text
 from reling.types import WordWithSense
 from reling.utils.typer import (
     typer_enum_autocompletion,
@@ -34,7 +34,7 @@ __all__ = [
     'MODEL',
     'NEW_NAME_ARG',
     'REGEX_CONTENT_OPT',
-    'SIZE_DIALOG_OPT',
+    'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
     'SPEAKER_OPT',
     'SPEAKER_SEX_OPT',
@@ -65,9 +65,9 @@ USER_SEX = Annotated[Sex, typer.Option(
     autocompletion=typer_enum_autocompletion(Sex),
 )]
 
-CONTENT_ARG = Annotated[Text | Dialog, typer.Argument(
+CONTENT_ARG = Annotated[Text | Dialogue, typer.Argument(
     parser=typer_func_parser(find_content),
-    help='Name of the text or dialog',
+    help='Name of the text or dialogue',
     autocompletion=find_ids_by_prefix,
 )]
 
@@ -117,7 +117,7 @@ STYLE_OPT = Annotated[Optional[str], typer.Option(
 )]
 
 SPEAKER_OPT = Annotated[Optional[str], typer.Option(
-    help='Interlocutor in the dialog, e.g., "waiter" or "friend"',
+    help='Interlocutor in the dialogue, e.g., "waiter" or "friend"',
 )]
 
 SPEAKER_SEX_OPT = Annotated[Sex | None, typer.Option(
@@ -131,9 +131,9 @@ SIZE_TEXT_OPT = Annotated[int, typer.Option(
     help='Number of sentences in the text',
 )]
 
-SIZE_DIALOG_OPT = Annotated[int, typer.Option(
+SIZE_DIALOGUE_OPT = Annotated[int, typer.Option(
     min=1,
-    help='Number of exchanges in the dialog',
+    help='Number of exchanges in the dialogue',
 )]
 
 INCLUDE_OPT = Annotated[Optional[list[str]], typer.Option(
@@ -142,7 +142,7 @@ INCLUDE_OPT = Annotated[Optional[list[str]], typer.Option(
 )]
 
 NEW_NAME_ARG = Annotated[str, typer.Argument(
-    help='New name for the text or dialog',
+    help='New name for the text or dialogue',
 )]
 
 REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(

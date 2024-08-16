@@ -13,7 +13,7 @@ __all__ = [
 
 @app.command()
 def rename(content: CONTENT_ARG, new_name: NEW_NAME_ARG) -> None:
-    """Rename a text or dialog."""
+    """Rename a text or dialogue."""
     with single_session() as session:
         try:
             id_index_item = session.query(IdIndex).filter_by(id=content.id).one()

@@ -2,16 +2,16 @@ from tqdm import tqdm
 
 from reling.app.app import app
 from reling.app.exceptions import AlgorithmException
-from reling.app.translation import get_dialog_exchanges, get_text_sentences
+from reling.app.translation import get_dialogue_exchanges, get_text_sentences
 from reling.app.types import API_KEY, CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM, MODEL
-from reling.db.models import Dialog, Language, Text
+from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
 from reling.utils.time import now
 from reling.utils.typer import typer_raise
-from .input import collect_dialog_translations, collect_text_translations
-from .presentation import present_dialog_results, present_text_results
-from .scoring import score_dialog_translations, score_text_translations
-from .storage import save_dialog_exam, save_text_exam
+from .input import collect_dialogue_translations, collect_text_translations
+from .presentation import present_dialogue_results, present_text_results
+from .scoring import score_dialogue_translations, score_text_translations
+from .storage import save_dialogue_exam, save_text_exam
 from .types import ExchangeWithTranslation, SentenceWithTranslation
 
 __all__ = [
@@ -39,7 +39,7 @@ def exam(
         typer_raise('The source and target languages are the same.')
 
     gpt = GPTClient(api_key=api_key, model=model)
-    (perform_text_exam if isinstance(content, Text) else perform_dialog_exam)(gpt, content, from_, to)
+    (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(gpt, content, from_, to)
 
 
 def perform_text_exam(
@@ -73,27 +73,27 @@ def perform_text_exam(
     present_text_results(translated, original_translations, results)
 
 
-def perform_dialog_exam(
+def perform_dialogue_exam(
         gpt: GPTClient,
-        dialog: Dialog,
+        dialogue: Dialogue,
         source_language: Language,
         target_language: Language,
 ) -> None:
-    exchanges = get_dialog_exchanges(gpt, dialog, source_language)
-    original_translations = get_dialog_exchanges(gpt, dialog, target_language)
+    exchanges = get_dialogue_exchanges(gpt, dialogue, source_language)
+    original_translations = get_dialogue_exchanges(gpt, dialogue, target_language)
     started_at = now()
-    translated = list(collect_dialog_translations(exchanges, original_translations))
+    translated = list(collect_dialogue_translations(exchanges, original_translations))
     finished_at = now()
     try:
         results = list(tqdm(
-            score_dialog_translations(gpt, translated, original_translations, source_language, target_language),
+            score_dialogue_translations(gpt, translated, original_translations, source_language, target_language),
             desc='Scoring translations',
             total=len(translated),
         ))
     except AlgorithmException as e:
         typer_raise(e.msg)
-    save_dialog_exam(
-        dialog=dialog,
+    save_dialogue_exam(
+        dialogue=dialogue,
         source_language=source_language,
         target_language=target_language,
         started_at=started_at,
@@ -101,4 +101,4 @@ def perform_dialog_exam(
         exchanges=translated,
         results=results,
     )
-    present_dialog_results(translated, original_translations, results)
+    present_dialogue_results(translated, original_translations, results)

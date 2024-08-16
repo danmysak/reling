@@ -9,16 +9,16 @@ from reling.db.enums import Level, Sex
 from .languages import Language
 
 __all__ = [
-    'Dialog',
-    'DialogExam',
-    'DialogExamResult',
-    'DialogExchange',
-    'DialogExchangeTranslation',
+    'Dialogue',
+    'DialogueExam',
+    'DialogueExamResult',
+    'DialogueExchange',
+    'DialogueExchangeTranslation',
 ]
 
 
-class Dialog(Base):
-    __tablename__ = 'dialogs'
+class Dialogue(Base):
+    __tablename__ = 'dialogues'
 
     id: Mapped[str] = mapped_column(primary_key=True)
     language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
@@ -30,27 +30,27 @@ class Dialog(Base):
     user_sex: Mapped[Sex]
     created_at: Mapped[datetime]
     archived_at: Mapped[datetime | None]
-    exchanges: Mapped[list[DialogExchange]] = relationship(
-        'DialogExchange',
-        order_by='DialogExchange.index',
+    exchanges: Mapped[list[DialogueExchange]] = relationship(
+        'DialogueExchange',
+        order_by='DialogueExchange.index',
         passive_deletes=True,
     )
-    exchange_translations: Mapped[list[DialogExchangeTranslation]] = relationship(
-        'DialogExchangeTranslation',
+    exchange_translations: Mapped[list[DialogueExchangeTranslation]] = relationship(
+        'DialogueExchangeTranslation',
         passive_deletes=True,
     )
-    exams: Mapped[list[DialogExam]] = relationship('DialogExam', passive_deletes=True)
+    exams: Mapped[list[DialogueExam]] = relationship('DialogueExam', passive_deletes=True)
 
     __table_args__ = (
-        Index('dialog_chronological', 'archived_at', 'created_at'),
+        Index('dialogue_chronological', 'archived_at', 'created_at'),
     )
 
 
-class DialogExchange(Base):
-    __tablename__ = 'dialog_exchanges'
+class DialogueExchange(Base):
+    __tablename__ = 'dialogue_exchanges'
 
-    dialog_id: Mapped[str] = mapped_column(
-        ForeignKey(Dialog.id, onupdate='CASCADE', ondelete='CASCADE'),
+    dialogue_id: Mapped[str] = mapped_column(
+        ForeignKey(Dialogue.id, onupdate='CASCADE', ondelete='CASCADE'),
         primary_key=True,
     )
     index: Mapped[int] = mapped_column(primary_key=True)
@@ -58,45 +58,45 @@ class DialogExchange(Base):
     user: Mapped[str]
 
 
-class DialogExchangeTranslation(Base):
-    __tablename__ = 'dialog_exchange_translations'
+class DialogueExchangeTranslation(Base):
+    __tablename__ = 'dialogue_exchange_translations'
 
-    dialog_id: Mapped[str] = mapped_column(
-        ForeignKey(Dialog.id, onupdate='CASCADE', ondelete='CASCADE'),
+    dialogue_id: Mapped[str] = mapped_column(
+        ForeignKey(Dialogue.id, onupdate='CASCADE', ondelete='CASCADE'),
         primary_key=True,
     )
     language_id: Mapped[str] = mapped_column(ForeignKey(Language.id), primary_key=True)
-    dialog_exchange_index: Mapped[int] = mapped_column(primary_key=True)
+    dialogue_exchange_index: Mapped[int] = mapped_column(primary_key=True)
     speaker: Mapped[str]
     user: Mapped[str]
 
 
-class DialogExam(Base):
-    __tablename__ = 'dialog_exams'
+class DialogueExam(Base):
+    __tablename__ = 'dialogue_exams'
 
     id: Mapped[str] = mapped_column(primary_key=True)
-    dialog_id: Mapped[str] = mapped_column(ForeignKey(Dialog.id, onupdate='CASCADE', ondelete='CASCADE'))
+    dialogue_id: Mapped[str] = mapped_column(ForeignKey(Dialogue.id, onupdate='CASCADE', ondelete='CASCADE'))
     source_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
     source_language: Mapped[Language] = relationship(Language, foreign_keys=source_language_id)
     target_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
     target_language: Mapped[Language] = relationship(Language, foreign_keys=target_language_id)
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
-    results: Mapped[list[DialogExamResult]] = relationship(
-        'DialogExamResult',
-        order_by='DialogExamResult.dialog_exchange_index',
+    results: Mapped[list[DialogueExamResult]] = relationship(
+        'DialogueExamResult',
+        order_by='DialogueExamResult.dialogue_exchange_index',
         passive_deletes=True,
     )
 
 
-class DialogExamResult(Base):
-    __tablename__ = 'dialog_exam_results'
+class DialogueExamResult(Base):
+    __tablename__ = 'dialogue_exam_results'
 
-    dialog_exam_id: Mapped[str] = mapped_column(
-        ForeignKey(DialogExam.id, onupdate='CASCADE', ondelete='CASCADE'),
+    dialogue_exam_id: Mapped[str] = mapped_column(
+        ForeignKey(DialogueExam.id, onupdate='CASCADE', ondelete='CASCADE'),
         primary_key=True,
     )
-    dialog_exchange_index: Mapped[int] = mapped_column(primary_key=True)
+    dialogue_exchange_index: Mapped[int] = mapped_column(primary_key=True)
     answer: Mapped[str]
     suggested_answer: Mapped[str | None]
     score: Mapped[int]

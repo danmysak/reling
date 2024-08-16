@@ -1,13 +1,13 @@
 from sqlalchemy.exc import IntegrityError
 
 from reling.db import single_session
-from reling.db.models import Dialog, DialogExchangeTranslation, Language, Text, TextSentenceTranslation
-from reling.types import DialogExchangeData
+from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
+from reling.types import DialogueExchangeData
 from .exceptions import TranslationExistsException
 
 
 __all__ = [
-    'save_dialog_translation',
+    'save_dialogue_translation',
     'save_text_translation',
 ]
 
@@ -37,22 +37,22 @@ def save_text_translation(
         raise TranslationExistsException
 
 
-def save_dialog_translation(
-        source_dialog: Dialog,
+def save_dialogue_translation(
+        source_dialogue: Dialogue,
         target_language: Language,
-        translated_exchanges: list[DialogExchangeData],
+        translated_exchanges: list[DialogueExchangeData],
 ) -> None:
     """
-    Save the translation of a dialog.
-    :raises TranslationExistsError: if the dialog has already been translated into the target language
+    Save the translation of a dialogue.
+    :raises TranslationExistsError: if the dialogue has already been translated into the target language
     """
     try:
         with single_session() as session:
             session.add_all([
-                DialogExchangeTranslation(
-                    dialog_id=source_dialog.id,
+                DialogueExchangeTranslation(
+                    dialogue_id=source_dialogue.id,
                     language_id=target_language.id,
-                    dialog_exchange_index=index,
+                    dialogue_exchange_index=index,
                     speaker=exchange.speaker,
                     user=exchange.user,
                 )

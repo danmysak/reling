@@ -5,7 +5,7 @@ from reling.app.exceptions import AlgorithmException
 from reling.db.enums import ContentCategory
 from reling.db.models import Language
 from reling.gpt import GPTClient
-from reling.types import DialogExchangeData
+from reling.types import DialogueExchangeData
 from reling.utils.english import pluralize
 from reling.utils.iterables import group_items
 from reling.utils.transformers import add_numbering, apply, omit_empty, remove_numbering, strip
@@ -13,7 +13,7 @@ from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTra
 
 __all__ = [
     'MAX_SCORE',
-    'score_dialog_translations',
+    'score_dialogue_translations',
     'score_text_translations',
 ]
 
@@ -30,7 +30,7 @@ def build_prompt(
         translations: list[str],
 ) -> str:
     """Build a prompt for scoring translations."""
-    # Speaker turns in dialogs are "graded" as well so that the model appreciates the context.
+    # Speaker turns in dialogues are "graded" as well so that the model appreciates the context.
     n = len(blocks)
     return '\n'.join([
         f'Below {'is' if n == 1 else 'are'} {n} {pluralize('sentence', n)} from a {category.value} '
@@ -101,19 +101,19 @@ def score_text_translations(
     return ask_and_parse(gpt, prompt)
 
 
-def score_dialog_translations(
+def score_dialogue_translations(
         gpt: GPTClient,
         exchanges: list[ExchangeWithTranslation],
-        original_translations: list[DialogExchangeData],
+        original_translations: list[DialogueExchangeData],
         source_language: Language,
         target_language: Language,
 ) -> Generator[ScoreWithSuggestion, None, None]:
     """
-    Score the translations of user turns in a dialog and provide suggestions for improvement.
+    Score the translations of user turns in a dialogue and provide suggestions for improvement.
     :raises AlgorithmException: If there is an issue with the scoring algorithm.
     """
     prompt = build_prompt(
-        category=ContentCategory.DIALOG,
+        category=ContentCategory.DIALOGUE,
         source_language=source_language,
         target_language=target_language,
         blocks=[turn for exchange in exchanges for turn in exchange.exchange.all()],

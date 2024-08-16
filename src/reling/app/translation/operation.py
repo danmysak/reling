@@ -5,15 +5,15 @@ from tqdm import tqdm
 
 from reling.app.exceptions import AlgorithmException
 from reling.db import single_session
-from reling.db.models import Dialog, DialogExchangeTranslation, Language, Text, TextSentenceTranslation
+from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.gpt import GPTClient
-from reling.types import DialogExchangeData
+from reling.types import DialogueExchangeData
 from .exceptions import TranslationExistsException
-from .storage import save_dialog_translation, save_text_translation
-from .translation import translate_dialog_exchanges, translate_text_sentences
+from .storage import save_dialogue_translation, save_text_translation
+from .translation import translate_dialogue_exchanges, translate_text_sentences
 
 __all__ = [
-    'translate_dialog',
+    'translate_dialogue',
     'translate_text',
 ]
 
@@ -27,12 +27,12 @@ def is_text_translated(text: Text, language: Language) -> bool:
         )).scalar()
 
 
-def is_dialog_translated(dialog: Dialog, language: Language) -> bool:
-    """Check if a dialog has already been translated into a target language."""
+def is_dialogue_translated(dialogue: Dialogue, language: Language) -> bool:
+    """Check if a dialogue has already been translated into a target language."""
     with single_session() as session:
         return session.query(exists().where(
-            cast(ColumnElement[bool], DialogExchangeTranslation.dialog_id == dialog.id),
-            cast(ColumnElement[bool], DialogExchangeTranslation.language_id == language.id),
+            cast(ColumnElement[bool], DialogueExchangeTranslation.dialogue_id == dialogue.id),
+            cast(ColumnElement[bool], DialogueExchangeTranslation.language_id == language.id),
         )).scalar()
 
 
@@ -65,38 +65,38 @@ def translate_text(gpt: GPTClient, text: Text, language: Language) -> None:
     save_text_translation(text, language, sentences)
 
 
-def translate_dialog(gpt: GPTClient, dialog: Dialog, language: Language) -> None:
+def translate_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language) -> None:
     """
-    Translate a dialog into another language.
+    Translate a dialogue into another language.
 
-    :raises ValueError: If the dialog is already in the target language.
-    :raises TranslationExistsException: If the dialog has already been translated into the target language.
+    :raises ValueError: If the dialogue is already in the target language.
+    :raises TranslationExistsException: If the dialogue has already been translated into the target language.
     :raises AlgorithmException: If there is an issue with the translation algorithm.
     """
-    if language.id == dialog.language_id:
-        raise ValueError(f'The dialog is already in {language.name}.')
-    if is_dialog_translated(dialog, language):
+    if language.id == dialogue.language_id:
+        raise ValueError(f'The dialogue is already in {language.name}.')
+    if is_dialogue_translated(dialogue, language):
         raise TranslationExistsException
     exchanges = list(tqdm(
-        translate_dialog_exchanges(
+        translate_dialogue_exchanges(
             gpt=gpt,
             exchanges=[
-                DialogExchangeData(
+                DialogueExchangeData(
                     speaker=exchange.speaker,
                     user=exchange.user,
                 )
-                for exchange in dialog.exchanges
+                for exchange in dialogue.exchanges
             ],
-            speaker_sex=dialog.speaker_sex,
-            user_sex=dialog.user_sex,
-            source_language=dialog.language,
+            speaker_sex=dialogue.speaker_sex,
+            user_sex=dialogue.user_sex,
+            source_language=dialogue.language,
             target_language=language,
         ),
         desc=f'Translating dialogue into {language.name}',
-        total=len(dialog.exchanges),
+        total=len(dialogue.exchanges),
     ))
-    if len(exchanges) != len(dialog.exchanges):
+    if len(exchanges) != len(dialogue.exchanges):
         AlgorithmException(
             'The number of translated exchanges does not match the number of original exchanges.',
         )
-    save_dialog_translation(dialog, language, exchanges)
+    save_dialogue_translation(dialogue, language, exchanges)

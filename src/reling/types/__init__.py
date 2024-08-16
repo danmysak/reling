@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from typing import Self
 
 __all__ = [
-    'DialogExchangeData',
+    'DialogueExchangeData',
     'WordWithSense',
 ]
 
 
 @dataclass
-class DialogExchangeData:
+class DialogueExchangeData:
     speaker: str
     user: str
 

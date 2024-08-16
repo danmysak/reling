@@ -11,7 +11,7 @@ __all__ = [
 
 @app.command()
 def delete(content: CONTENT_ARG, force: FORCE_OPT = False) -> None:
-    """Delete a text or dialog."""
+    """Delete a text or dialogue."""
     if not force and not input(f'Are you sure you want to delete "{content.id}"? (y/n): ').lower().startswith('y'):
         typer_raise('Operation canceled.')
     with single_session() as session:

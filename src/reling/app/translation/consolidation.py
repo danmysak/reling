@@ -1,14 +1,14 @@
 from reling.app.exceptions import AlgorithmException
 from reling.db import single_session
-from reling.db.models import Dialog, DialogExchangeTranslation, Language, Text, TextSentenceTranslation
+from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.gpt import GPTClient
-from reling.types import DialogExchangeData
+from reling.types import DialogueExchangeData
 from reling.utils.typer import typer_raise
 from .exceptions import TranslationExistsException
-from .operation import translate_dialog, translate_text
+from .operation import translate_dialogue, translate_text
 
 __all__ = [
-    'get_dialog_exchanges',
+    'get_dialogue_exchanges',
     'get_text_sentences',
 ]
 
@@ -33,30 +33,30 @@ def get_text_sentences(gpt: GPTClient, text: Text, language: Language) -> list[s
         ]
 
 
-def get_dialog_exchanges(gpt: GPTClient, dialog: Dialog, language: Language) -> list[DialogExchangeData]:
-    """Get the exchanges of a dialog in a specified language."""
-    if language.id == dialog.language_id:
+def get_dialogue_exchanges(gpt: GPTClient, dialogue: Dialogue, language: Language) -> list[DialogueExchangeData]:
+    """Get the exchanges of a dialogue in a specified language."""
+    if language.id == dialogue.language_id:
         return [
-            DialogExchangeData(
+            DialogueExchangeData(
                 speaker=exchange.speaker,
                 user=exchange.user,
             )
-            for exchange in dialog.exchanges
+            for exchange in dialogue.exchanges
         ]
     try:
-        translate_dialog(gpt, dialog, language)
+        translate_dialogue(gpt, dialogue, language)
     except TranslationExistsException:
         pass
     except AlgorithmException as e:
         typer_raise(e.msg)
     with single_session() as session:
         return [
-            DialogExchangeData(
+            DialogueExchangeData(
                 speaker=translation.speaker,
                 user=translation.user,
             )
-            for translation in session.query(DialogExchangeTranslation)
-            .where(DialogExchangeTranslation.dialog_id == dialog.id)
-            .where(DialogExchangeTranslation.language_id == language.id)
-            .order_by(DialogExchangeTranslation.dialog_exchange_index)
+            for translation in session.query(DialogueExchangeTranslation)
+            .where(DialogueExchangeTranslation.dialogue_id == dialogue.id)
+            .where(DialogueExchangeTranslation.language_id == language.id)
+            .order_by(DialogueExchangeTranslation.dialogue_exchange_index)
         ]

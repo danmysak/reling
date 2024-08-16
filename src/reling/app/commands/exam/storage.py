@@ -1,12 +1,12 @@
 from datetime import datetime
 
 from reling.db import single_session
-from reling.db.models import Dialog, DialogExam, DialogExamResult, Language, Text, TextExam, TextExamResult
+from reling.db.models import Dialogue, DialogueExam, DialogueExamResult, Language, Text, TextExam, TextExamResult
 from reling.utils.ids import generate_id
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
-    'save_dialog_exam',
+    'save_dialogue_exam',
     'save_text_exam',
 ]
 
@@ -42,8 +42,8 @@ def save_text_exam(
         session.commit()
 
 
-def save_dialog_exam(
-        dialog: Dialog,
+def save_dialogue_exam(
+        dialogue: Dialogue,
         source_language: Language,
         target_language: Language,
         started_at: datetime,
@@ -51,11 +51,11 @@ def save_dialog_exam(
         exchanges: list[ExchangeWithTranslation],
         results: list[ScoreWithSuggestion],
 ) -> None:
-    """Save the results of a dialog exam."""
+    """Save the results of a dialogue exam."""
     with single_session() as session:
-        exam = DialogExam(
+        exam = DialogueExam(
             id=generate_id(),
-            dialog_id=dialog.id,
+            dialogue_id=dialogue.id,
             source_language_id=source_language.id,
             target_language_id=target_language.id,
             started_at=started_at,
@@ -63,9 +63,9 @@ def save_dialog_exam(
         )
         session.add(exam)
         for index, (exchange, result) in enumerate(zip(exchanges, results)):
-            session.add(DialogExamResult(
-                dialog_exam_id=exam.id,
-                dialog_exchange_index=index,
+            session.add(DialogueExamResult(
+                dialogue_exam_id=exam.id,
+                dialogue_exchange_index=index,
                 answer=exchange.user_translation,
                 suggested_answer=result.suggestion,
                 score=result.score,

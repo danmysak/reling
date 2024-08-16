@@ -3,13 +3,13 @@ from itertools import count
 from reling.db import single_session
 from reling.db.enums import ContentCategory, Level, Sex
 from reling.db.helpers.ids import find_ids_by_prefix
-from reling.db.models import Dialog, DialogExchange, IdIndex, Language, Text, TextSentence
-from reling.types import DialogExchangeData
+from reling.db.models import Dialogue, DialogueExchange, IdIndex, Language, Text, TextSentence
+from reling.types import DialogueExchangeData
 from reling.utils.time import now
 
 
 __all__ = [
-    'save_dialog',
+    'save_dialogue',
     'save_text',
 ]
 
@@ -61,9 +61,9 @@ def save_text(
     return text_id
 
 
-def save_dialog(
+def save_dialogue(
         suggested_id: str,
-        exchanges: list[DialogExchangeData],
+        exchanges: list[DialogueExchangeData],
         language: Language,
         level: Level,
         speaker: str,
@@ -71,11 +71,11 @@ def save_dialog(
         speaker_sex: Sex,
         user_sex: Sex,
 ) -> str:
-    """Save a dialog with the given exchanges and return its ID."""
+    """Save a dialogue with the given exchanges and return its ID."""
     with single_session() as session:
-        dialog_id = generate_id(suggested_id)
-        dialog = Dialog(
-            id=dialog_id,
+        dialogue_id = generate_id(suggested_id)
+        dialogue = Dialogue(
+            id=dialogue_id,
             language_id=language.id,
             level=level,
             speaker=speaker,
@@ -85,10 +85,10 @@ def save_dialog(
             created_at=now(),
             archived_at=None,
         )
-        session.add(dialog)
+        session.add(dialogue)
         session.add_all([
-            DialogExchange(
-                dialog_id=dialog.id,
+            DialogueExchange(
+                dialogue_id=dialogue.id,
                 index=index,
                 speaker=exchange.speaker,
                 user=exchange.user,
@@ -96,8 +96,8 @@ def save_dialog(
             for index, exchange in enumerate(exchanges)
         ])
         session.add(IdIndex(
-            id=dialog_id,
-            category=ContentCategory.DIALOG,
+            id=dialogue_id,
+            category=ContentCategory.DIALOGUE,
         ))
         session.commit()
-    return dialog_id
+    return dialogue_id

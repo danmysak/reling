@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from reling.types import DialogExchangeData
+from reling.types import DialogueExchangeData
 
 __all__ = [
     'ExchangeWithTranslation',
@@ -17,7 +17,7 @@ class SentenceWithTranslation:
 
 @dataclass
 class ExchangeWithTranslation:
-    exchange: DialogExchangeData
+    exchange: DialogueExchangeData
     user_translation: str
 
 

@@ -1,12 +1,12 @@
 import readline  # noqa: F401 (https://stackoverflow.com/a/14796424/430083)
 from typing import Generator, Iterable
 
-from reling.types import DialogExchangeData
+from reling.types import DialogueExchangeData
 from reling.utils.transformers import add_numbering
 from .types import ExchangeWithTranslation, SentenceWithTranslation
 
 __all__ = [
-    'collect_dialog_translations',
+    'collect_dialogue_translations',
     'collect_text_translations',
 ]
 
@@ -24,11 +24,11 @@ def collect_text_translations(
         print()
 
 
-def collect_dialog_translations(
-        exchanges: Iterable[DialogExchangeData],
-        original_translations: Iterable[DialogExchangeData],
+def collect_dialogue_translations(
+        exchanges: Iterable[DialogueExchangeData],
+        original_translations: Iterable[DialogueExchangeData],
 ) -> Generator[ExchangeWithTranslation, None, None]:
-    """Collect the translations of user turns in a dialog."""
+    """Collect the translations of user turns in a dialogue."""
     for index, (exchange, original_translation) in enumerate(zip(exchanges, original_translations)):
         print(original_translation.speaker)
         print(add_numbering(exchange.user, index))

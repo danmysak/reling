@@ -11,7 +11,7 @@ __all__ = [
 
 @app.command()
 def archive(content: CONTENT_ARG) -> None:
-    """Archive a text or dialog."""
+    """Archive a text or dialogue."""
     if content.archived_at is not None:
         typer_raise('The content is already archived.')
 

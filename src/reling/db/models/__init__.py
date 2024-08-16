@@ -1,15 +1,15 @@
-from .dialogs import Dialog, DialogExam, DialogExamResult, DialogExchange, DialogExchangeTranslation
+from .dialogues import Dialogue, DialogueExam, DialogueExamResult, DialogueExchange, DialogueExchangeTranslation
 from .languages import Language
 from .misc import IdIndex
 from .modifiers import Speaker, Style, Topic
 from .texts import Text, TextExam, TextExamResult, TextSentence, TextSentenceTranslation
 
 __all__ = [
-    'Dialog',
-    'DialogExam',
-    'DialogExamResult',
-    'DialogExchange',
-    'DialogExchangeTranslation',
+    'Dialogue',
+    'DialogueExam',
+    'DialogueExamResult',
+    'DialogueExchange',
+    'DialogueExchangeTranslation',
     'IdIndex',
     'Language',
     'Speaker',

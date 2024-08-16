@@ -12,7 +12,7 @@ from reling.app.types import (
 )
 from reling.db import Session, single_session
 from reling.db.enums import ContentCategory, Level
-from reling.db.models import Dialog, Language, Text
+from reling.db.models import Dialogue, Language, Text
 from reling.utils.time import format_time
 from reling.utils.tables import build_table, print_table
 
@@ -33,8 +33,8 @@ ARCHIVED_AT = 'Archived at'
 NO_TOPIC = 'N/A'
 
 
-def get_text(item: Text | Dialog) -> list[str]:
-    """Return the text content of a text or dialog, including the speaker, topic, style, and sentences."""
+def get_text(item: Text | Dialogue) -> list[str]:
+    """Return the text content of a text or dialogue, including the speaker, topic, style, and sentences."""
     if isinstance(item, Text):
         return [
             item.topic,
@@ -49,7 +49,7 @@ def get_text(item: Text | Dialog) -> list[str]:
         ]
 
 
-def match(item: Text | Dialog, level: Level | None, language: Language | None, search: re.Pattern | None) -> bool:
+def match(item: Text | Dialogue, level: Level | None, language: Language | None, search: re.Pattern | None) -> bool:
     return (
         (level is None or item.level == level)
         and (language is None or item.language.id == language.id)
@@ -59,7 +59,7 @@ def match(item: Text | Dialog, level: Level | None, language: Language | None, s
     )
 
 
-def find_items[T: type[Text | Dialog]](
+def find_items[T: type[Text | Dialogue]](
         session: Session,
         model: type[T],
         archive: bool,
@@ -85,11 +85,11 @@ def list_(
         search: REGEX_CONTENT_OPT = None,
         ids_only: IDS_ONLY_OPT = False,
 ) -> None:
-    """List texts and/or dialogs, optionally filtered by name or other criteria."""
+    """List texts and/or dialogues, optionally filtered by name or other criteria."""
     with single_session() as session:
         for model in [
-            *([Text] if category != ContentCategory.DIALOG else []),
-            *([Dialog] if category != ContentCategory.TEXT else []),
+            *([Text] if category != ContentCategory.DIALOGUE else []),
+            *([Dialogue] if category != ContentCategory.TEXT else []),
         ]:
             items = find_items(session, model, archive, level, language, search)
             if ids_only:
@@ -97,12 +97,12 @@ def list_(
                     print(item.id)
             else:
                 table = build_table(
-                    title=('Texts' if model is Text else 'Dialogs') + (' (archived)' if archive else ''),
+                    title=('Texts' if model is Text else 'Dialogues') + (' (archived)' if archive else ''),
                     headers=[
                         ID,
                         LANGUAGE,
                         LEVEL,
-                        *([SPEAKER] if model is Dialog else []),
+                        *([SPEAKER] if model is Dialogue else []),
                         TOPIC,
                         *([STYLE] if model is Text else []),
                         SIZE,
@@ -116,7 +116,7 @@ def list_(
                         ID: item.id,
                         LANGUAGE: item.language.name,
                         LEVEL: item.level.value,
-                        **({SPEAKER: item.speaker} if model is Dialog else {}),
+                        **({SPEAKER: item.speaker} if model is Dialogue else {}),
                         TOPIC: item.topic or NO_TOPIC,
                         **({STYLE: item.style} if model is Text else {}),
                         SIZE: str(len(item.sentences if model is Text else item.exchanges)),

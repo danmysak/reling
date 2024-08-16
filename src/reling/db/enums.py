@@ -9,7 +9,7 @@ __all__ = [
 
 class ContentCategory(StrEnum):
     TEXT = 'text'
-    DIALOG = 'dialog'
+    DIALOGUE = 'dialogue'
 
 
 class Level(StrEnum):

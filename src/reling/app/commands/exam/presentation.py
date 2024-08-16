@@ -1,13 +1,13 @@
 from typing import Iterable
 
-from reling.types import DialogExchangeData
+from reling.types import DialogueExchangeData
 from reling.utils.scores import format_average_score
 from reling.utils.transformers import add_numbering, apply
 from .scoring import MAX_SCORE
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
-    'present_dialog_results',
+    'present_dialogue_results',
     'present_text_results',
 ]
 
@@ -55,12 +55,12 @@ def present_text_results(
     )
 
 
-def present_dialog_results(
+def present_dialogue_results(
         exchanges: Iterable[ExchangeWithTranslation],
-        original_translations: Iterable[DialogExchangeData],
+        original_translations: Iterable[DialogueExchangeData],
         results: Iterable[ScoreWithSuggestion],
 ) -> None:
-    """Present the results of scoring dialog translations."""
+    """Present the results of scoring dialogue translations."""
     present_results(
         titles=('\n'.join(lines) for lines in zip(
             (exchange.speaker for exchange in original_translations),
