@@ -69,7 +69,7 @@ def text(
             style=style,
             include=list(map(WordWithSense.parse, include or [])),
         ),
-        desc=f'Generating sentences in {language.name}',
+        desc=f'Generating text in {language.name}',
         total=size,
     ))
     if len(sentences) < round(size * MIN_SIZE_THRESHOLD):
@@ -116,7 +116,7 @@ def dialog(
             topic=topic,
             include=list(map(WordWithSense.parse, include or [])),
         ),
-        desc=f'Generating exchanges in {language.name}',
+        desc=f'Generating dialogue in {language.name}',
         total=size,
     ))
     if len(exchanges) < round(size * MIN_SIZE_THRESHOLD):
