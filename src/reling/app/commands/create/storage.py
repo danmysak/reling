@@ -1,7 +1,7 @@
 from itertools import count
 
 from reling.db import single_session
-from reling.db.enums import ContentCategory, Level
+from reling.db.enums import ContentCategory, Level, Sex
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.models import Dialog, DialogExchange, IdIndex, Language, Text, TextSentence
 from reling.types import DialogExchangeData
@@ -68,6 +68,8 @@ def save_dialog(
         level: Level,
         speaker: str,
         topic: str | None,
+        speaker_sex: Sex,
+        user_sex: Sex,
 ) -> str:
     """Save a dialog with the given exchanges and return its ID."""
     with single_session() as session:
@@ -76,8 +78,10 @@ def save_dialog(
             id=dialog_id,
             language_id=language.id,
             level=level,
-            topic=topic,
             speaker=speaker,
+            topic=topic,
+            speaker_sex=speaker_sex,
+            user_sex=user_sex,
             created_at=now(),
             archived_at=None,
         )

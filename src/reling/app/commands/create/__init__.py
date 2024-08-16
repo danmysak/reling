@@ -1,3 +1,4 @@
+from random import choice
 from tqdm import tqdm
 import typer
 
@@ -11,10 +12,12 @@ from reling.app.types import (
     SIZE_DIALOG_OPT,
     SIZE_TEXT_OPT,
     SPEAKER_OPT,
+    SPEAKER_SEX_OPT,
     STYLE_OPT,
     TOPIC_OPT,
+    USER_SEX,
 )
-from reling.db.enums import Level
+from reling.db.enums import Level, Sex
 from reling.db.helpers.modifiers import get_random_modifier
 from reling.db.models import Speaker, Style, Topic
 from reling.gpt import GPTClient
@@ -87,9 +90,11 @@ def text(
 def dialog(
         api_key: API_KEY,
         model: MODEL,
+        user_sex: USER_SEX,
         language: LANGUAGE_ARG,
         level: LEVEL_OPT = Level.INTERMEDIATE,
         speaker: SPEAKER_OPT = None,
+        speaker_sex: SPEAKER_SEX_OPT = None,
         topic: TOPIC_OPT = None,
         size: SIZE_DIALOG_OPT = DEFAULT_SIZE_DIALOG,
         include: INCLUDE_OPT = None,
@@ -97,6 +102,7 @@ def dialog(
     """Create a dialog and save it to the database."""
     gpt = GPTClient(api_key=api_key, model=model)
     speaker = speaker or get_random_modifier(Speaker).name
+    speaker_sex = speaker_sex or choice([Sex.MALE, Sex.FEMALE])
 
     exchanges = list(tqdm(
         generate_dialog_exchanges(
@@ -104,7 +110,9 @@ def dialog(
             num_exchanges=size,
             language=language,
             level=level,
+            user_sex=user_sex,
             speaker=speaker,
+            speaker_sex=speaker_sex,
             topic=topic,
             include=list(map(WordWithSense.parse, include or [])),
         ),
@@ -121,5 +129,7 @@ def dialog(
         level=level,
         speaker=speaker,
         topic=topic,
+        speaker_sex=speaker_sex,
+        user_sex=user_sex,
     )
     print(f'Generated dialog with the following ID:\n{dialog_id}')

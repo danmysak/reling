@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from reling.db.enums import ContentCategory, Level
+from reling.db.enums import ContentCategory, Level, Sex
 from reling.db.helpers.content import find_content
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
@@ -37,20 +37,32 @@ __all__ = [
     'SIZE_DIALOG_OPT',
     'SIZE_TEXT_OPT',
     'SPEAKER_OPT',
+    'SPEAKER_SEX_OPT',
     'STYLE_OPT',
     'TOPIC_OPT',
+    'USER_SEX',
 ]
 
+ENV_PREFIX = 'RELING_'
+
 API_KEY = Annotated[str, typer.Option(
-    envvar='RELING_API_KEY',
+    envvar=f'{ENV_PREFIX}API_KEY',
     help='Your OpenAI API key',
     prompt='Enter your OpenAI API key',
 )]
 
 MODEL = Annotated[str, typer.Option(
-    envvar='RELING_MODEL',
+    envvar=f'{ENV_PREFIX}MODEL',
     help='Identifier for the GPT model to be used',
     prompt='Enter the GPT model identifier',
+)]
+
+USER_SEX = Annotated[Sex, typer.Option(
+    envvar=f'{ENV_PREFIX}USER_SEX',
+    parser=typer_enum_parser(Sex),
+    help=f'Sex of the user, one of: {typer_enum_options(Sex)} (to customize the generated content)',
+    prompt=f'Enter your sex ({typer_enum_options(Sex)})',
+    autocompletion=typer_enum_autocompletion(Sex),
 )]
 
 CONTENT_ARG = Annotated[Text | Dialog, typer.Argument(
@@ -106,6 +118,12 @@ STYLE_OPT = Annotated[Optional[str], typer.Option(
 
 SPEAKER_OPT = Annotated[Optional[str], typer.Option(
     help='Interlocutor in the dialog, e.g., "waiter" or "friend"',
+)]
+
+SPEAKER_SEX_OPT = Annotated[Sex | None, typer.Option(
+    parser=typer_enum_parser(Sex),
+    help=f'Sex of the interlocutor, one of: {typer_enum_options(Sex)}',
+    autocompletion=typer_enum_autocompletion(Sex),
 )]
 
 SIZE_TEXT_OPT = Annotated[int, typer.Option(

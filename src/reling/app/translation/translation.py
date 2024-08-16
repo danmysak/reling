@@ -1,6 +1,6 @@
 from typing import Generator
 
-from reling.db.enums import ContentCategory
+from reling.db.enums import Sex
 from reling.db.models import Language
 from reling.gpt import GPTClient
 from reling.types import DialogExchangeData
@@ -13,20 +13,17 @@ __all__ = [
 ]
 
 
-def translate_sentences(
+def translate_text_sentences(
         gpt: GPTClient,
         sentences: list[str],
-        category: ContentCategory,
         source_language: Language,
         target_language: Language,
 ) -> Generator[str, None, None]:
     return gpt.ask(
         '\n'.join([
-            f'Translate the following {'sentences of a text' if category == ContentCategory.TEXT else 'dialog turns'}',
-            f'from {source_language.name} into {target_language.name}.',
-
+            f'Translate the following text from {source_language.name} into {target_language.name}.',
             f'Generate only the specified translations without any additional text.',
-            f'Number each translated sentence and place each on a new line.'
+            f'Number each translated sentence and place each on a new line.',
             f'---',
             *apply(add_numbering, sentences),
         ]),
@@ -34,33 +31,29 @@ def translate_sentences(
     )
 
 
-def translate_text_sentences(
-        gpt: GPTClient,
-        sentences: list[str],
-        source_language: Language,
-        target_language: Language,
-) -> Generator[str, None, None]:
-    return translate_sentences(
-        gpt=gpt,
-        sentences=sentences,
-        category=ContentCategory.TEXT,
-        source_language=source_language,
-        target_language=target_language,
-    )
-
-
 def translate_dialog_exchanges(
         gpt: GPTClient,
         exchanges: list[DialogExchangeData],
+        speaker_sex: Sex,
+        user_sex: Sex,
         source_language: Language,
         target_language: Language,
 ) -> Generator[DialogExchangeData, None, None]:
-    return map_asterisk(DialogExchangeData, pair_items(
-        translate_sentences(
-            gpt=gpt,
-            sentences=[turn for exchange in exchanges for turn in exchange.all()],
-            category=ContentCategory.DIALOG,
-            source_language=source_language,
-            target_language=target_language,
-        )
-    ))
+    DialogExchangeData.assert_speaker_comes_first()
+    return map_asterisk(DialogExchangeData, pair_items(gpt.ask(
+        '\n'.join([
+            f'Translate the following dialogue between {speaker_sex.describe()} and {user_sex.describe()} '
+            f'from {source_language.name} into {target_language.name}'
+            f'{f' ({speaker_sex.describe()} speaks in the odd-numbered sentences,'
+               f' and {user_sex.describe()} responds in the even-numbered sentences)'
+               if speaker_sex != user_sex
+               else ''}'
+            f'.',
+
+            f'Generate only the specified translations without any additional text.',
+            f'Number each translated sentence and place each on a new line.',
+            f'---',
+            *apply(add_numbering, [turn for exchange in exchanges for turn in exchange.all()]),
+        ]),
+        transformers=[strip, omit_empty, remove_numbering],
+    )))

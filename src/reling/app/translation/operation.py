@@ -55,7 +55,7 @@ def translate_text(gpt: GPTClient, text: Text, language: Language) -> None:
             source_language=text.language,
             target_language=language,
         ),
-        desc=f'Translating sentences into {language.name}',
+        desc=f'Translating text into {language.name}',
         total=len(text.sentences),
     ))
     if len(sentences) != len(text.sentences):
@@ -87,10 +87,12 @@ def translate_dialog(gpt: GPTClient, dialog: Dialog, language: Language) -> None
                 )
                 for exchange in dialog.exchanges
             ],
+            speaker_sex=dialog.speaker_sex,
+            user_sex=dialog.user_sex,
             source_language=dialog.language,
             target_language=language,
         ),
-        desc=f'Translating exchanges into {language.name}',
+        desc=f'Translating dialogue into {language.name}',
         total=len(dialog.exchanges),
     ))
     if len(exchanges) != len(dialog.exchanges):
