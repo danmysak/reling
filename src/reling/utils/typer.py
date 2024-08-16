@@ -4,6 +4,7 @@ from typing import Callable, Never
 
 import typer
 
+from .functions import named_function
 from .strings import replace_prefix_casing
 
 __all__ = [
@@ -24,6 +25,7 @@ def typer_raise(message: str) -> Never:
 def typer_func_parser[R](func: Callable[[str], R | None]) -> Callable[[str], R]:
     """Create a Typer argument parser from a function that returns a value or None."""
 
+    @named_function('')
     def wrapper(arg: str) -> R:
         result = func(arg)
         if result is None:
@@ -41,6 +43,7 @@ def typer_enum_options(enum: type[Enum]) -> str:
 def typer_enum_parser(enum: type[Enum]) -> Callable[[str | Enum], Enum]:
     """Create a Typer argument parser from an Enum type."""
 
+    @named_function('enum')
     def wrapper(arg: str | Enum) -> Enum:
         if isinstance(arg, Enum):  # Due to https://github.com/tiangolo/typer/discussions/720
             return arg
@@ -54,6 +57,7 @@ def typer_enum_parser(enum: type[Enum]) -> Callable[[str | Enum], Enum]:
     return wrapper
 
 
+@named_function('regex')
 def typer_regex_parser(arg: str) -> re.Pattern:
     """Parse a regular expression string and return a compiled pattern or raise a Typer error."""
     try:
