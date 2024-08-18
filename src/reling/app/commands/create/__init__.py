@@ -11,13 +11,13 @@ from reling.app.types import (
     MODEL,
     SIZE_DIALOGUE_OPT,
     SIZE_TEXT_OPT,
+    SPEAKER_GENDER_OPT,
     SPEAKER_OPT,
-    SPEAKER_SEX_OPT,
     STYLE_OPT,
     TOPIC_OPT,
-    USER_SEX,
+    USER_GENDER,
 )
-from reling.db.enums import Level, Sex
+from reling.db.enums import Gender, Level
 from reling.db.helpers.modifiers import get_random_modifier
 from reling.db.models import Speaker, Style, Topic
 from reling.gpt import GPTClient
@@ -90,11 +90,11 @@ def text(
 def dialogue(
         api_key: API_KEY,
         model: MODEL,
-        user_sex: USER_SEX,
+        user_gender: USER_GENDER,
         language: LANGUAGE_ARG,
         level: LEVEL_OPT = Level.INTERMEDIATE,
         speaker: SPEAKER_OPT = None,
-        speaker_sex: SPEAKER_SEX_OPT = None,
+        speaker_gender: SPEAKER_GENDER_OPT = None,
         topic: TOPIC_OPT = None,
         size: SIZE_DIALOGUE_OPT = DEFAULT_SIZE_DIALOGUE,
         include: INCLUDE_OPT = None,
@@ -102,7 +102,7 @@ def dialogue(
     """Create a dialogue and save it to the database."""
     gpt = GPTClient(api_key=api_key, model=model)
     speaker = speaker or get_random_modifier(Speaker).name
-    speaker_sex = speaker_sex or choice([Sex.MALE, Sex.FEMALE])
+    speaker_gender = speaker_gender or choice([Gender.MALE, Gender.FEMALE])
 
     exchanges = list(tqdm(
         generate_dialogue_exchanges(
@@ -110,9 +110,9 @@ def dialogue(
             num_exchanges=size,
             language=language,
             level=level,
-            user_sex=user_sex,
+            user_gender=user_gender,
             speaker=speaker,
-            speaker_sex=speaker_sex,
+            speaker_gender=speaker_gender,
             topic=topic,
             include=list(map(WordWithSense.parse, include or [])),
         ),
@@ -129,7 +129,7 @@ def dialogue(
         level=level,
         speaker=speaker,
         topic=topic,
-        speaker_sex=speaker_sex,
-        user_sex=user_sex,
+        speaker_gender=speaker_gender,
+        user_gender=user_gender,
     )
     print(f'Generated dialogue with the following ID:\n{dialogue_id}')

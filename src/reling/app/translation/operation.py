@@ -87,8 +87,8 @@ def translate_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language) -
                 )
                 for exchange in dialogue.exchanges
             ],
-            speaker_sex=dialogue.speaker_sex,
-            user_sex=dialogue.user_sex,
+            speaker_gender=dialogue.speaker_gender,
+            user_gender=dialogue.user_gender,
             source_language=dialogue.language,
             target_language=language,
         ),

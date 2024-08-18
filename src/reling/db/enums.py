@@ -2,8 +2,8 @@ from enum import StrEnum
 
 __all__ = [
     'ContentCategory',
+    'Gender',
     'Level',
-    'Sex',
 ]
 
 
@@ -18,16 +18,16 @@ class Level(StrEnum):
     ADVANCED = 'advanced'
 
 
-class Sex(StrEnum):
+class Gender(StrEnum):
     MALE = 'male'
     FEMALE = 'female'
     NONBINARY = 'nonbinary'
 
     def describe(self) -> str:
         match self:
-            case Sex.MALE:
+            case Gender.MALE:
                 return 'a male'
-            case Sex.FEMALE:
+            case Gender.FEMALE:
                 return 'a female'
-            case Sex.NONBINARY:
+            case Gender.NONBINARY:
                 return 'a nonbinary person'

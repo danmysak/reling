@@ -4,7 +4,7 @@ from typing import Annotated, Optional
 
 import typer
 
-from reling.db.enums import ContentCategory, Level, Sex
+from reling.db.enums import ContentCategory, Gender, Level
 from reling.db.helpers.content import find_content
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
@@ -36,11 +36,11 @@ __all__ = [
     'REGEX_CONTENT_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
+    'SPEAKER_GENDER_OPT',
     'SPEAKER_OPT',
-    'SPEAKER_SEX_OPT',
     'STYLE_OPT',
     'TOPIC_OPT',
-    'USER_SEX',
+    'USER_GENDER',
 ]
 
 ENV_PREFIX = 'RELING_'
@@ -57,12 +57,12 @@ MODEL = Annotated[str, typer.Option(
     prompt='Enter the GPT model identifier',
 )]
 
-USER_SEX = Annotated[Sex, typer.Option(
-    envvar=f'{ENV_PREFIX}USER_SEX',
-    parser=typer_enum_parser(Sex),
-    help=f'sex of the user, one of: {typer_enum_options(Sex)} (to customize the generated content)',
-    prompt=f'Enter your sex ({typer_enum_options(Sex)})',
-    autocompletion=typer_enum_autocompletion(Sex),
+USER_GENDER = Annotated[Gender, typer.Option(
+    envvar=f'{ENV_PREFIX}USER_GENDER',
+    parser=typer_enum_parser(Gender),
+    help=f'user\'s gender, one of: {typer_enum_options(Gender)} (to customize the generated content)',
+    prompt=f'Enter your gender ({typer_enum_options(Gender)})',
+    autocompletion=typer_enum_autocompletion(Gender),
 )]
 
 CONTENT_ARG = Annotated[Text | Dialogue, typer.Argument(
@@ -120,10 +120,10 @@ SPEAKER_OPT = Annotated[Optional[str], typer.Option(
     help='interlocutor in the dialogue, e.g., "waiter" or "friend"',
 )]
 
-SPEAKER_SEX_OPT = Annotated[Sex | None, typer.Option(
-    parser=typer_enum_parser(Sex),
-    help=f'sex of the interlocutor, one of: {typer_enum_options(Sex)}',
-    autocompletion=typer_enum_autocompletion(Sex),
+SPEAKER_GENDER_OPT = Annotated[Gender | None, typer.Option(
+    parser=typer_enum_parser(Gender),
+    help=f'interlocutor\'s gender, one of: {typer_enum_options(Gender)}',
+    autocompletion=typer_enum_autocompletion(Gender),
 )]
 
 SIZE_TEXT_OPT = Annotated[int, typer.Option(

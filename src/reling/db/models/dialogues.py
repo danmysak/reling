@@ -5,7 +5,7 @@ from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from reling.db.base import Base
-from reling.db.enums import Level, Sex
+from reling.db.enums import Gender, Level
 from .languages import Language
 
 __all__ = [
@@ -26,8 +26,8 @@ class Dialogue(Base):
     level: Mapped[Level]
     speaker: Mapped[str]
     topic: Mapped[str | None]
-    speaker_sex: Mapped[Sex]
-    user_sex: Mapped[Sex]
+    speaker_gender: Mapped[Gender]
+    user_gender: Mapped[Gender]
     created_at: Mapped[datetime]
     archived_at: Mapped[datetime | None]
     exchanges: Mapped[list[DialogueExchange]] = relationship(

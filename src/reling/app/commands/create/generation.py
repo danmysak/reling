@@ -1,6 +1,6 @@
 from typing import Generator
 
-from reling.db.enums import ContentCategory, Level, Sex
+from reling.db.enums import ContentCategory, Gender, Level
 from reling.db.models import Language
 from reling.gpt import GPTClient
 from reling.types import DialogueExchangeData, WordWithSense
@@ -78,9 +78,9 @@ def generate_dialogue_exchanges(
         num_exchanges: int,
         language: Language,
         level: Level,
-        user_sex: Sex,
+        user_gender: Gender,
         speaker: str,
-        speaker_sex: Sex,
+        speaker_gender: Gender,
         topic: str | None,
         include: list[WordWithSense],
 ) -> Generator[DialogueExchangeData, None, None]:
@@ -91,9 +91,9 @@ def generate_dialogue_exchanges(
             *([f'The dialogue should be about {topic}.'] if topic else []),
             f'Do not include any additional text; only generate the text as specified.',
             f'Number each sentence and put each sentence on a new line.',
-            f'The first, third, etc. sentences should be spoken by {speaker} ({speaker_sex.describe()}).'
-            f'The second, fourth, etc. sentences should be spoken by me ({user_sex.describe()}).'
-            f'Do not prefix the sentences with the speakers’ names.',
+            f'The first, third, etc. sentences should be spoken by {speaker} ({speaker_gender.describe()}).'
+            f'The second, fourth, etc. sentences should be spoken by me ({user_gender.describe()}).'
+            f'Do not prefix the sentences with the speakers\' names.',
             build_level_prompt(level, ContentCategory.DIALOGUE),
             *build_include_prompt(include),
         ]),

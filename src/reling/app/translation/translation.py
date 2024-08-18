@@ -1,6 +1,6 @@
 from typing import Generator
 
-from reling.db.enums import Sex
+from reling.db.enums import Gender
 from reling.db.models import Language
 from reling.gpt import GPTClient
 from reling.types import DialogueExchangeData
@@ -34,19 +34,19 @@ def translate_text_sentences(
 def translate_dialogue_exchanges(
         gpt: GPTClient,
         exchanges: list[DialogueExchangeData],
-        speaker_sex: Sex,
-        user_sex: Sex,
+        speaker_gender: Gender,
+        user_gender: Gender,
         source_language: Language,
         target_language: Language,
 ) -> Generator[DialogueExchangeData, None, None]:
     DialogueExchangeData.assert_speaker_comes_first()
     return map_asterisk(DialogueExchangeData, pair_items(gpt.ask(
         '\n'.join([
-            f'Translate the following dialogue between {speaker_sex.describe()} and {user_sex.describe()} '
+            f'Translate the following dialogue between {speaker_gender.describe()} and {user_gender.describe()} '
             f'from {source_language.name} into {target_language.name}'
-            f'{f' ({speaker_sex.describe()} speaks in the odd-numbered sentences,'
-               f' and {user_sex.describe()} responds in the even-numbered sentences)'
-               if speaker_sex != user_sex
+            f'{f' ({speaker_gender.describe()} speaks in the odd-numbered sentences,'
+               f' and {user_gender.describe()} responds in the even-numbered sentences)'
+               if speaker_gender != user_gender
                else ''}'
             f'.',
 
