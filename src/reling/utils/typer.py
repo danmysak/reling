@@ -1,3 +1,4 @@
+from __future__ import annotations
 from enum import Enum
 import re
 from typing import Callable, Never
@@ -8,6 +9,7 @@ from .functions import named_function
 from .strings import replace_prefix_casing
 
 __all__ = [
+    'TyperExtraOption',
     'typer_enum_autocompletion',
     'typer_enum_options',
     'typer_enum_parser',
@@ -77,3 +79,25 @@ def typer_enum_autocompletion(enum: type[Enum]) -> Callable[[str], list[str]]:
         ]
 
     return wrapper
+
+
+class TyperExtraOption:
+    _prompt: str | None
+    _data: str | None
+
+    def __init__(self, *, prompt: str | None = None, data: str | None = None) -> None:
+        self._prompt = prompt
+        self._data = data
+
+    @staticmethod
+    @named_function('text')
+    def parser(arg: str | TyperExtraOption) -> TyperExtraOption:
+        # See https://github.com/tiangolo/typer/discussions/720
+        return arg if isinstance(arg, TyperExtraOption) else TyperExtraOption(data=arg)
+
+    @staticmethod
+    def default_factory(prompt: str) -> Callable[[], TyperExtraOption]:
+        return lambda: TyperExtraOption(prompt=prompt)
+
+    def get(self) -> str:
+        return self._data if self._data is not None else typer.prompt(self._prompt)

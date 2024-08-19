@@ -11,6 +11,7 @@ from reling.db.helpers.languages import find_language, find_languages_by_prefix
 from reling.db.models import Dialogue, Language, Text
 from reling.types import WordWithSense
 from reling.utils.typer import (
+    TyperExtraOption,
     typer_enum_autocompletion,
     typer_enum_options,
     typer_enum_parser,
@@ -33,6 +34,7 @@ __all__ = [
     'LEVEL_OPT',
     'MODEL',
     'NEW_NAME_ARG',
+    'READ_OPT',
     'REGEX_CONTENT_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
@@ -40,6 +42,7 @@ __all__ = [
     'SPEAKER_OPT',
     'STYLE_OPT',
     'TOPIC_OPT',
+    'TTS_MODEL',
     'USER_GENDER',
 ]
 
@@ -55,6 +58,15 @@ MODEL = Annotated[str, typer.Option(
     envvar=f'{ENV_PREFIX}MODEL',
     help='identifier for the GPT model to be used',
     prompt='Enter the GPT model identifier',
+)]
+
+TTS_MODEL = Annotated[TyperExtraOption, typer.Option(
+    envvar=f'{ENV_PREFIX}TTS_MODEL',
+    parser=TyperExtraOption.parser,
+    help='identifier for the TTS model to be used',
+    default_factory=TyperExtraOption.default_factory(
+        prompt='Enter the TTS model identifier',
+    ),
 )]
 
 USER_GENDER = Annotated[Gender, typer.Option(
@@ -148,6 +160,10 @@ NEW_NAME_ARG = Annotated[str, typer.Argument(
 REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
     parser=typer_regex_parser,
     help='regular expression to filter results by content, topic, style, or speaker',
+)]
+
+READ_OPT = Annotated[Optional[bool], typer.Option(
+    help='Read the content out loud.',
 )]
 
 ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(

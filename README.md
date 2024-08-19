@@ -4,9 +4,33 @@
 
 Install [Python](https://www.python.org/downloads/) 3.12 or higher, then run:
 
+### Without audio support
+
 ```bash
 pip install reling
 ```
+
+### With read-aloud support
+
+On macOS, first install [Homebrew](https://brew.sh/), then run:
+
+```bash
+brew install portaudio
+```
+
+On Linux, run:
+
+```bash
+sudo apt install python3-pyaudio
+```
+
+Install the package with the `read` extra:
+
+```bash
+pip install reling[read]
+```
+
+### Auto-completion
 
 To enable completions, run:
 
@@ -15,8 +39,6 @@ reling --install-completion
 ```
 
 On a Mac, you may also need to add `compinit -D` at the end of your `~/.zshrc`.
-
-```bash
 
 ## Data Sources
 

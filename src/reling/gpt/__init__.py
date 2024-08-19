@@ -1,10 +1,10 @@
 from typing import Generator
 
-from openai import APIError, OpenAI
+from openai import OpenAI
 
 from reling.utils.feeders import Feeder, LineFeeder
+from reling.utils.openai import openai_handler
 from reling.utils.transformers import Transformer
-from reling.utils.typer import typer_raise
 
 __all__ = [
     'GPTClient',
@@ -33,15 +33,13 @@ class GPTClient:
         """
         feeder = feeder_type()
 
-        try:
+        with openai_handler():
             stream = self._client.chat.completions.create(
                 model=self._model,
                 stream=True,
                 messages=[{'role': 'user', 'content': prompt}],
                 temperature=CREATIVE_TEMPERATURE if creative else 0.0,
             )
-        except APIError as e:
-            typer_raise(f'OpenAI API error:\n{e}')
 
         section_index = 0
 
