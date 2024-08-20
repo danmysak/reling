@@ -34,13 +34,11 @@ def show(
 
 
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
+    voice = choice(list(Voice))
     for sentence in get_text_sentences(gpt, text, language):
         print(sentence)
-    if tts:
-        tts.read(
-            ' '.join(get_text_sentences(gpt, text, language)),
-            choice(list(Voice)),  # type: ignore
-        )
+        if tts:
+            tts.read(sentence, voice)  # type: ignore
 
 
 def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
