@@ -32,10 +32,10 @@ class TTSClient:
         player_stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=CHANNELS, rate=RATE, output=True)
 
         with openai_handler(), self._client.audio.speech.with_streaming_response.create(
-                model=self._model,
-                voice=voice.value,
-                response_format=RESPONSE_FORMAT,
-                input=text,
+            model=self._model,
+            voice=voice.value,
+            response_format=RESPONSE_FORMAT,
+            input=text,
         ) as response:
             for chunk in response.iter_bytes(chunk_size=CHUNK_SIZE):
                 player_stream.write(chunk)
