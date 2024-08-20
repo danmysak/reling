@@ -28,7 +28,8 @@ class TTSClient:
         self._model = model
 
     def read(self, text: str, voice: Voice) -> None:
-        import pyaudio
+        """Read the text in real time using the specified voice."""
+        import pyaudio  # Only import this module if TTS is used
         player_stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=CHANNELS, rate=RATE, output=True)
 
         with openai_handler(), self._client.audio.speech.with_streaming_response.create(

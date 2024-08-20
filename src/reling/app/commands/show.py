@@ -34,6 +34,7 @@ def show(
 
 
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
+    """Display the text in the specified language, optionally reading it out loud."""
     voice = choice(list(Voice))
     for sentence in get_text_sentences(gpt, text, language):
         print(sentence)
@@ -42,6 +43,7 @@ def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | N
 
 
 def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
+    """Display the dialogue in the specified language, optionally reading it out loud."""
     exchanges = get_dialogue_exchanges(gpt, dialogue, language)
     speaker_voice, user_voice = None, None
     if tts:

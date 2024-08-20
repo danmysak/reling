@@ -48,6 +48,9 @@ def perform_text_exam(
         source_language: Language,
         target_language: Language,
 ) -> None:
+    """
+    Translate the text as needed, collect user translations, score them, save and present the results to the user.
+    """
     sentences = get_text_sentences(gpt, text, source_language)
     original_translations = get_text_sentences(gpt, text, target_language)
     started_at = now()
@@ -79,6 +82,9 @@ def perform_dialogue_exam(
         source_language: Language,
         target_language: Language,
 ) -> None:
+    """
+    Translate the dialogue as needed, collect user translations, score them, save and present the results to the user.
+    """
     exchanges = get_dialogue_exchanges(gpt, dialogue, source_language)
     original_translations = get_dialogue_exchanges(gpt, dialogue, target_language)
     started_at = now()

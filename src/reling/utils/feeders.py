@@ -9,8 +9,7 @@ __all__ = [
 
 class Feeder(ABC):
     """
-    Feeder can be fed chunks of text data.
-    It then processes the data and provides it in a different form
+    Feeder can be fed chunks of text data. It then processes the data and provides it in a different form
     (say, line-by-line).
     """
 

@@ -82,6 +82,7 @@ def typer_enum_autocompletion(enum: type[Enum]) -> Callable[[str], list[str]]:
 
 
 class TyperExtraOption:
+    """A class for defining Typer options which are required in some cases but optional in others."""
     _prompt: str | None
     _data: str | None
 

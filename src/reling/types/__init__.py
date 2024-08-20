@@ -29,6 +29,11 @@ class WordWithSense:
 
     @classmethod
     def parse(cls, text: str) -> Self:
+        """
+        Parse the word and sense from the given string:
+        "word: sense" -> WordWithSense("word", "sense")
+        "word" -> WordWithSense("word", None)
+        """
         divider = cls.DIVIDER_WITH_WHITE_SPACE.strip()
         if divider in text:
             word, sense = text.split(divider, 1)
