@@ -34,7 +34,9 @@ __all__ = [
     'LEVEL_OPT',
     'MODEL',
     'NEW_NAME_ARG',
+    'READ_FAST_OPT',
     'READ_OPT',
+    'READ_SLOWLY_OPT',
     'REGEX_CONTENT_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
@@ -164,6 +166,14 @@ REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
 
 READ_OPT = Annotated[Optional[bool], typer.Option(
     help='Read the content out loud.',
+)]
+
+READ_SLOWLY_OPT = Annotated[Optional[bool], typer.Option(
+    help='Read the content out loud slowly.',
+)]
+
+READ_FAST_OPT = Annotated[Optional[bool], typer.Option(
+    help='Read the content out loud quickly.',
 )]
 
 ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(

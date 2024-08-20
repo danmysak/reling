@@ -2,10 +2,19 @@ from random import choice
 
 from reling.app.app import app
 from reling.app.translation import get_dialogue_exchanges, get_text_sentences
-from reling.app.types import API_KEY, CONTENT_ARG, LANGUAGE_OPT_ARG, MODEL, READ_OPT, TTS_MODEL
+from reling.app.types import (
+    API_KEY,
+    CONTENT_ARG,
+    LANGUAGE_OPT_ARG,
+    MODEL,
+    READ_FAST_OPT,
+    READ_OPT,
+    READ_SLOWLY_OPT,
+    TTS_MODEL,
+)
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
-from reling.tts import TTSClient, Voice
+from reling.tts import TTSClient, TTSSpeed, Voice
 
 __all__ = [
     'show',
@@ -23,13 +32,16 @@ def show(
         content: CONTENT_ARG,
         language: LANGUAGE_OPT_ARG = None,
         read: READ_OPT = False,
+        read_slowly: READ_SLOWLY_OPT = False,
+        read_fast: READ_FAST_OPT = False,
 ) -> None:
     """Display a text or dialogue, or its translation if a language is specified."""
+    tts_speed = TTSSpeed.from_flags(read_slowly, read, read_fast)
     (show_text if isinstance(content, Text) else show_dialogue)(
         GPTClient(api_key=api_key, model=model),
         content,
         language or content.language,
-        TTSClient(api_key=api_key, model=tts_model.get()) if read else None,
+        TTSClient(api_key=api_key, model=tts_model.get(), speed=tts_speed) if tts_speed else None,
     )
 
 

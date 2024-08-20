@@ -3,10 +3,12 @@ from time import sleep
 from openai import OpenAI
 
 from reling.utils.openai import openai_handler
+from .speeds import TTSSpeed
 from .voices import Voice
 
 __all__ = [
     'TTSClient',
+    'TTSSpeed',
     'Voice',
 ]
 
@@ -22,10 +24,12 @@ SLEEP_BEFORE_CLOSE_SEC = 0.5  # This allows the last chunk to be played properly
 class TTSClient:
     _client: OpenAI
     _model: str
+    _speed: TTSSpeed
 
-    def __init__(self, *, api_key: str, model: str) -> None:
+    def __init__(self, *, api_key: str, model: str, speed: TTSSpeed = TTSSpeed.NORMAL) -> None:
         self._client = OpenAI(api_key=api_key)
         self._model = model
+        self._speed = speed
 
     def read(self, text: str, voice: Voice) -> None:
         """Read the text in real time using the specified voice."""
@@ -37,6 +41,7 @@ class TTSClient:
             voice=voice.value,
             response_format=RESPONSE_FORMAT,
             input=text,
+            speed=self._speed.value,
         ) as response:
             for chunk in response.iter_bytes(chunk_size=CHUNK_SIZE):
                 player_stream.write(chunk)
