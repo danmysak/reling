@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from openai import APIError
 
-from reling.utils.typer import typer_raise
+from .typer import typer_raise
 
 __all__ = [
     'openai_handler',
