@@ -39,7 +39,7 @@ class Voice(StrEnum):
     @staticmethod
     def pick_voices(*positions: Gender | None) -> tuple[Voice, ...]:
         """
-        Pick random non-repeating voices with the specified genders
+        Pick random non-repeating voices of the specified genders
         (`None` denoting no gender preference for the given position).
 
         :raises ValueError: If there are not enough voices to satisfy the requirements.
@@ -65,5 +65,5 @@ class Voice(StrEnum):
 
     @staticmethod
     def pick_voice(gender: Gender | None = None) -> Voice:
-        """Pick a random voice with the specified gender (`None` denoting no gender preference)."""
+        """Pick a random voice of the specified gender (`None` denoting no gender preference)."""
         return Voice.pick_voices(gender)[0]
