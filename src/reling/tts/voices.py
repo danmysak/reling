@@ -62,3 +62,8 @@ class Voice(StrEnum):
 
         shuffle(pools[None])
         return tuple(pools[position].pop() for position in positions)
+
+    @staticmethod
+    def pick_voice(gender: Gender | None = None) -> Voice:
+        """Pick a random voice with the specified gender (`None` denoting no gender preference)."""
+        return Voice.pick_voices(gender)[0]

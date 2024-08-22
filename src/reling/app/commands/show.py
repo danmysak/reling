@@ -49,7 +49,7 @@ def show(
 
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
-    voice, = Voice.pick_voices(None)
+    voice = Voice.pick_voice()
     for sentence in get_text_sentences(gpt, text, language):
         print(sentence)
         if tts:
