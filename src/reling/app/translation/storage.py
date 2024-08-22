@@ -19,7 +19,7 @@ def save_text_translation(
 ) -> None:
     """
     Save the translation of a text.
-    :raises TranslationExistsError: if the text has already been translated into the target language
+    :raises TranslationExistsError: If the text has already been translated into the target language.
     """
     try:
         with single_session() as session:
@@ -44,7 +44,7 @@ def save_dialogue_translation(
 ) -> None:
     """
     Save the translation of a dialogue.
-    :raises TranslationExistsError: if the dialogue has already been translated into the target language
+    :raises TranslationExistsError: If the dialogue has already been translated into the target language.
     """
     try:
         with single_session() as session:

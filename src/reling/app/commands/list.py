@@ -1,5 +1,8 @@
+from datetime import datetime
 import re
-from typing import Generator
+from typing import cast, Generator
+
+from sqlalchemy import ColumnElement
 
 from reling.app.app import app
 from reling.app.types import (
@@ -67,10 +70,13 @@ def find_items[T: type[Text | Dialogue]](
         language: Language | None,
         search: re.Pattern | None,
 ) -> Generator[T, None, None]:
+    archived_at = cast(ColumnElement[datetime | None], model.archived_at)
+    created_at = cast(ColumnElement[datetime], model.created_at)
+
     for item in session.query(model).filter(
-        (model.archived_at.is_not if archive else model.archived_at.is_)(None),
+        archived_at.is_not(None) if archive else archived_at.is_(None),
     ).order_by(
-        model.archived_at.desc(), model.created_at.desc(),
+        archived_at.desc(), created_at.desc(),
     ):
         if match(item, level, language, search):
             yield item
