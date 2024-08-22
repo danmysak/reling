@@ -12,7 +12,9 @@ from reling.app.types import (
 )
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
-from reling.tts import InvalidTTSFlagCombination, TTSClient, TTSSpeed, Voice
+from reling.helpers.output import output_text
+from reling.helpers.voices import pick_voice, pick_voices
+from reling.tts import InvalidTTSFlagCombination, TTSClient, TTSSpeed
 from reling.utils.typer import typer_raise
 
 __all__ = [
@@ -47,24 +49,17 @@ def show(
     )
 
 
-def show_piece(piece: str, tts: TTSClient | None, voice: Voice, *, print_prefix: str = '') -> None:
-    """Display a piece of text, optionally reading it out loud."""
-    print(print_prefix + piece)
-    if tts:
-        tts.read(piece, voice)
-
-
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
-    voice = Voice.pick_voice()
+    voice = pick_voice()
     for sentence in get_text_sentences(gpt, text, language):
-        show_piece(sentence, tts, voice)
+        output_text(sentence, tts, voice)
 
 
 def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
     """Display the dialogue in the specified language, optionally reading it out loud."""
     exchanges = get_dialogue_exchanges(gpt, dialogue, language)
-    speaker_voice, user_voice = Voice.pick_voices(dialogue.speaker_gender, dialogue.user_gender)
+    speaker_voice, user_voice = pick_voices(dialogue.speaker_gender, dialogue.user_gender)
     for exchange in exchanges:
-        show_piece(exchange.speaker, tts, speaker_voice, print_prefix=SPEAKER_PREFIX)
-        show_piece(exchange.user, tts, user_voice, print_prefix=USER_PREFIX)
+        output_text(exchange.speaker, tts, speaker_voice, print_prefix=SPEAKER_PREFIX)
+        output_text(exchange.user, tts, user_voice, print_prefix=USER_PREFIX)

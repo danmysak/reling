@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+
 from openai import APIError
 
 from .typer import typer_raise
