@@ -47,24 +47,24 @@ def show(
     )
 
 
+def show_piece(piece: str, tts: TTSClient | None, voice: Voice, *, print_prefix: str = '') -> None:
+    """Display a piece of text, optionally reading it out loud."""
+    print(print_prefix + piece)
+    if tts:
+        tts.read(piece, voice)
+
+
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
     voice = Voice.pick_voice()
     for sentence in get_text_sentences(gpt, text, language):
-        print(sentence)
-        if tts:
-            tts.read(sentence, voice)
+        show_piece(sentence, tts, voice)
 
 
 def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
     """Display the dialogue in the specified language, optionally reading it out loud."""
     exchanges = get_dialogue_exchanges(gpt, dialogue, language)
-    speaker_voice, user_voice = (Voice.pick_voices(dialogue.speaker_gender, dialogue.user_gender)
-                                 if tts else (None, None))
+    speaker_voice, user_voice = Voice.pick_voices(dialogue.speaker_gender, dialogue.user_gender)
     for exchange in exchanges:
-        print(SPEAKER_PREFIX + exchange.speaker)
-        if tts:
-            tts.read(exchange.speaker, speaker_voice)
-        print(USER_PREFIX + exchange.user)
-        if tts:
-            tts.read(exchange.user, user_voice)
+        show_piece(exchange.speaker, tts, speaker_voice, print_prefix=SPEAKER_PREFIX)
+        show_piece(exchange.user, tts, user_voice, print_prefix=USER_PREFIX)
