@@ -101,4 +101,6 @@ class TyperExtraOption:
         return lambda: TyperExtraOption(prompt=prompt)
 
     def get(self) -> str:
-        return self._data if self._data is not None else typer.prompt(self._prompt)
+        if self._data is None:
+            self._data = typer.prompt(self._prompt)
+        return self._data

@@ -3,10 +3,11 @@ from time import sleep
 from openai import OpenAI
 
 from reling.utils.openai import openai_handler
-from .speeds import TTSSpeed
+from .speeds import InvalidTTSFlagCombination, TTSSpeed
 from .voices import Voice
 
 __all__ = [
+    'InvalidTTSFlagCombination',
     'TTSClient',
     'TTSSpeed',
     'Voice',

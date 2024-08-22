@@ -1,5 +1,7 @@
 from __future__ import annotations
 from enum import StrEnum
+from random import shuffle
+from typing import cast
 
 from reling.db.enums import Gender
 
@@ -35,9 +37,28 @@ class Voice(StrEnum):
                 raise ValueError(f'Unknown voice: {self}')
 
     @staticmethod
-    def get_voices(gender: Gender) -> list[Voice]:
-        return [  # type: ignore
-            voice
-            for voice in Voice
-            if voice.gender == gender  # type: ignore
-        ]
+    def pick_voices(*positions: Gender | None) -> tuple[Voice, ...]:
+        """
+        Pick random non-repeating voices with the specified genders
+        (`None` denoting no gender preference for the given position).
+
+        :raises ValueError: If there are not enough voices to satisfy the requirements.
+        """
+        pools = cast(dict[Gender | None, list[Voice]], {None: []})
+
+        for gender in Gender:
+            gender_voices = cast(list[Voice], [voice for voice in Voice if cast(Voice, voice).gender == gender])
+
+            required_count = positions.count(gender)
+            if len(gender_voices) < required_count:
+                raise ValueError(f'Not enough voices of {gender}')
+
+            shuffle(gender_voices)
+            pools[cast(Gender, gender)] = gender_voices[:required_count]
+            pools[None].extend(gender_voices[required_count:])
+
+        if len(pools[None]) < positions.count(None):
+            raise ValueError('Not enough voices')
+
+        shuffle(pools[None])
+        return tuple(pools[position].pop() for position in positions)

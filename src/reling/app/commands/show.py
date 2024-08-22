@@ -1,5 +1,3 @@
-from random import choice
-
 from reling.app.app import app
 from reling.app.translation import get_dialogue_exchanges, get_text_sentences
 from reling.app.types import (
@@ -14,7 +12,8 @@ from reling.app.types import (
 )
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
-from reling.tts import TTSClient, TTSSpeed, Voice
+from reling.tts import InvalidTTSFlagCombination, TTSClient, TTSSpeed, Voice
+from reling.utils.typer import typer_raise
 
 __all__ = [
     'show',
@@ -36,7 +35,10 @@ def show(
         read_fast: READ_FAST_OPT = False,
 ) -> None:
     """Display a text or dialogue, or its translation if a language is specified."""
-    tts_speed = TTSSpeed.from_flags(read_slowly, read, read_fast)
+    try:
+        tts_speed = TTSSpeed.from_flags(read_slowly, read, read_fast)
+    except InvalidTTSFlagCombination:
+        typer_raise('Only one reading speed can be specified at a time.')
     (show_text if isinstance(content, Text) else show_dialogue)(
         GPTClient(api_key=api_key, model=model),
         content,
@@ -47,20 +49,18 @@ def show(
 
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
-    voice = choice(list(Voice))
+    voice, = Voice.pick_voices(None)
     for sentence in get_text_sentences(gpt, text, language):
         print(sentence)
         if tts:
-            tts.read(sentence, voice)  # type: ignore
+            tts.read(sentence, voice)
 
 
 def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
     """Display the dialogue in the specified language, optionally reading it out loud."""
     exchanges = get_dialogue_exchanges(gpt, dialogue, language)
-    speaker_voice, user_voice = None, None
-    if tts:
-        speaker_voice = choice(list(Voice.get_voices(dialogue.speaker_gender)))
-        user_voice = choice(sorted(set(Voice.get_voices(dialogue.user_gender)) - {speaker_voice}))
+    speaker_voice, user_voice = (Voice.pick_voices(dialogue.speaker_gender, dialogue.user_gender)
+                                 if tts else (None, None))
     for exchange in exchanges:
         print(SPEAKER_PREFIX + exchange.speaker)
         if tts:
