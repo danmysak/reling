@@ -51,15 +51,18 @@ def show(
 
 def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
-    voice = pick_voice()
+    voice_tts = tts.with_voice(pick_voice()) if tts else None
     for sentence in get_text_sentences(gpt, text, language):
-        output_text(sentence, tts, voice)
+        output_text(sentence, voice_tts)
 
 
 def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
     """Display the dialogue in the specified language, optionally reading it out loud."""
     exchanges = get_dialogue_exchanges(gpt, dialogue, language)
-    speaker_voice, user_voice = pick_voices(dialogue.speaker_gender, dialogue.user_gender)
+    speaker_tts, user_tts = map(tts.with_voice, pick_voices(
+        dialogue.speaker_gender,
+        dialogue.user_gender,
+    )) if tts else (None, None)
     for exchange in exchanges:
-        output_text(exchange.speaker, tts, speaker_voice, print_prefix=SPEAKER_PREFIX)
-        output_text(exchange.user, tts, user_voice, print_prefix=USER_PREFIX)
+        output_text(exchange.speaker, speaker_tts, print_prefix=SPEAKER_PREFIX)
+        output_text(exchange.user, user_tts, print_prefix=USER_PREFIX)

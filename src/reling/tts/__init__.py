@@ -1,3 +1,4 @@
+from __future__ import annotations
 from time import sleep
 
 from openai import OpenAI
@@ -10,6 +11,7 @@ __all__ = [
     'InvalidTTSFlagCombination',
     'TTSClient',
     'TTSSpeed',
+    'TTSVoiceClient',
     'Voice',
 ]
 
@@ -50,3 +52,19 @@ class TTSClient:
         sleep(SLEEP_BEFORE_CLOSE_SEC)
         player_stream.stop_stream()
         player_stream.close()
+
+    def with_voice(self, voice: Voice) -> TTSVoiceClient:
+        return TTSVoiceClient(self, voice)
+
+
+class TTSVoiceClient:
+    """A wrapper around TTSClient with a specific voice."""
+    _tts: TTSClient
+    _voice: Voice
+
+    def __init__(self, tts: TTSClient, voice: Voice) -> None:
+        self._tts = tts
+        self._voice = voice
+
+    def read(self, text: str) -> None:
+        self._tts.read(text, self._voice)
