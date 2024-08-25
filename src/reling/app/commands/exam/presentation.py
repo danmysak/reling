@@ -50,6 +50,7 @@ def present_results(
         if result.suggestion is not None:
             output_text(print_prefix='Improved: ', text=result.suggestion, tts=target_tts)
         output_text(print_prefix='Original: ', text=original_translation, tts=target_tts)
+        print()
         wait_for_key_press()
     print('Your average score:', format_average_score(scores))
 

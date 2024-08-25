@@ -1,6 +1,7 @@
 __all__ = [
     'clear_current_line',
     'clear_previous_line',
+    'input_and_erase',
     'wait_for_key_press',
 ]
 
@@ -15,7 +16,11 @@ def clear_previous_line() -> None:
     print('\033[F\033[K', end='\r')
 
 
-def wait_for_key_press() -> None:
-    print('')
-    input(KEY_PRESS_PROMPT)
+def input_and_erase(prompt: str) -> str:
+    data = input(prompt)
     clear_previous_line()
+    return data
+
+
+def wait_for_key_press() -> None:
+    input_and_erase(KEY_PRESS_PROMPT)
