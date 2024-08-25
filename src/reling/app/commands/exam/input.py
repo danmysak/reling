@@ -1,4 +1,3 @@
-import readline  # noqa: F401 (https://stackoverflow.com/a/14796424/430083)
 from typing import Generator, Iterable
 
 from reling.helpers.output import output_text
