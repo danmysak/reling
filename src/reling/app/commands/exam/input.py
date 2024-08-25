@@ -21,7 +21,7 @@ def collect_text_translations(
         output_text(sentence, source_tts, print_prefix=get_numbering_prefix(index))
         yield SentenceWithTranslation(
             sentence=sentence,
-            translation=input(),
+            translation=input('Translation: '),
         )
         print()
 
@@ -38,6 +38,6 @@ def collect_dialogue_translations(
         output_text(exchange.user, source_user_tts, print_prefix=get_numbering_prefix(index))
         yield ExchangeWithTranslation(
             exchange=exchange,
-            user_translation=input(),
+            user_translation=input('Translation: '),
         )
         print()
