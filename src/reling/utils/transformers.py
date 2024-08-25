@@ -4,6 +4,7 @@ from typing import Callable, Iterable, Generator
 __all__ = [
     'add_numbering',
     'apply',
+    'get_numbering_prefix',
     'omit_empty',
     'remove_numbering',
     'slugify',
@@ -20,8 +21,12 @@ def apply(transformer: Transformer, items: Iterable[str]) -> Generator[str, None
         yield transformer(item, index)
 
 
+def get_numbering_prefix(index: int) -> str:
+    return f'{index + 1}. '
+
+
 def add_numbering(text: str, index: int) -> str:
-    return f'{index + 1}. {text}'
+    return f'{get_numbering_prefix(index)}{text}'
 
 
 def remove_numbering(text: str, _: int) -> str:

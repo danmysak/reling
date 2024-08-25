@@ -35,6 +35,9 @@ __all__ = [
     'MODEL',
     'NEW_NAME_ARG',
     'READ_FAST_OPT',
+    'READ_LANGUAGE_FAST_OPT',
+    'READ_LANGUAGE_OPT',
+    'READ_LANGUAGE_SLOWLY_OPT',
     'READ_OPT',
     'READ_SLOWLY_OPT',
     'REGEX_CONTENT_OPT',
@@ -151,7 +154,7 @@ SIZE_DIALOGUE_OPT = Annotated[int, typer.Option(
 )]
 
 INCLUDE_OPT = Annotated[Optional[list[str]], typer.Option(
-    help=f'word or phrase to be included in the content '
+    help=f'word(s) or phrase(s) to be included in the content '
          f'(e.g., "bank" or "bank{WordWithSense.DIVIDER_WITH_WHITE_SPACE}financial institution" for disambiguation)',
 )]
 
@@ -162,6 +165,24 @@ NEW_NAME_ARG = Annotated[str, typer.Argument(
 REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
     parser=typer_regex_parser,
     help='regular expression to filter results by content, topic, style, or speaker',
+)]
+
+READ_LANGUAGE_OPT = Annotated[Optional[list[Language]], typer.Option(
+    parser=typer_func_parser(find_language),
+    help='language(s) to read the content out loud in',
+    autocompletion=find_languages_by_prefix,
+)]
+
+READ_LANGUAGE_SLOWLY_OPT = Annotated[Optional[list[Language]], typer.Option(
+    parser=typer_func_parser(find_language),
+    help='language(s) to read the content out loud in slowly',
+    autocompletion=find_languages_by_prefix,
+)]
+
+READ_LANGUAGE_FAST_OPT = Annotated[Optional[list[Language]], typer.Option(
+    parser=typer_func_parser(find_language),
+    help='language(s) to read the content out loud in quickly',
+    autocompletion=find_languages_by_prefix,
 )]
 
 READ_OPT = Annotated[Optional[bool], typer.Option(
