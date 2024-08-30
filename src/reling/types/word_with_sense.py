@@ -11,7 +11,7 @@ class WordWithSense:
     word: str
     sense: str | None
 
-    DIVIDER_WITH_WHITE_SPACE = ': '
+    DELIMITER_WITH_WHITE_SPACE = ': '
 
     @classmethod
     def parse(cls, text: str) -> Self:
@@ -20,9 +20,9 @@ class WordWithSense:
         "word: sense" -> WordWithSense("word", "sense")
         "word" -> WordWithSense("word", None)
         """
-        divider = cls.DIVIDER_WITH_WHITE_SPACE.strip()
-        if divider in text:
-            word, sense = text.split(divider, 1)
+        delimiter = cls.DELIMITER_WITH_WHITE_SPACE.strip()
+        if delimiter in text:
+            word, sense = text.split(delimiter, 1)
             return cls(word.strip(), sense.strip())
         else:
             return cls(text.strip(), None)

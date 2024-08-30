@@ -13,7 +13,7 @@ PROMPT_SEPARATOR = '-' * 3
 ENTER = 'Enter'
 ENTER_TO_CONTINUE = f'{ENTER} to continue'
 
-PREFIX_DELIMITER = ': '
+TITLE_DELIMITER = ': '
 MODIFIER_DELIMITER = ' + '
 OPTION_DELIMITER = ' | '
 PROMPT_SUFFIX = ': '
@@ -35,6 +35,10 @@ def normalize(text: str) -> str:
 
 @dataclass
 class PromptOption[T]:
+    """
+    A prompt option with an action and optional modifiers.
+    The first letters of the description and modifiers will be used as "shortcuts" for the action.
+    """
     description: str
     action: T
     modifiers: dict[str, T] | None = None
@@ -62,11 +66,12 @@ class PromptOption[T]:
 
 
 class Prompt[T]:
-    _prefix: str
+    """A prompt that allows the user to choose from multiple options."""
+    _title: str
     _options: list[PromptOption[T]]
 
-    def __init__(self, prefix: str) -> None:
-        self._prefix = prefix
+    def __init__(self, title: str) -> None:
+        self._title = title
         self._options = []
 
     def add_option(self, option: PromptOption) -> None:
@@ -96,7 +101,7 @@ class Prompt[T]:
             response = input_and_erase(
                 '\n'.join([
                     PROMPT_SEPARATOR,
-                    self._prefix + PREFIX_DELIMITER + OPTION_DELIMITER.join(
+                    self._title + TITLE_DELIMITER + OPTION_DELIMITER.join(
                         [option.format_description() for option in self._options] + [ENTER_TO_CONTINUE],
                     ),
                     OPTION_DELIMITER.join(

@@ -12,7 +12,7 @@ __all__ = [
     'SentenceData',
 ]
 
-PROMPT_PREFIX = 'Play'
+PROMPT_TITLE = 'Play'
 NORMAL_SPEED = 'normal speed'
 SLOWLY = 'slowly'
 REPLAY = 'replay'
@@ -86,7 +86,7 @@ def construct_prompt(
     Construct a prompt for the user to choose the next sentence to read and the speed of the reading.
     :raises ValueError: If reader_id is not provided for a sentence with a reader in a multi-sentence output.
     """
-    prompt = Prompt(PROMPT_PREFIX)
+    prompt = Prompt(PROMPT_TITLE)
     if multi_sentence:
         add_multi_sentence_options(prompt, [
             ReaderWithId(

@@ -151,7 +151,7 @@ SIZE_DIALOGUE_OPT = Annotated[int, typer.Option(
 
 INCLUDE_OPT = Annotated[Optional[list[str]], typer.Option(
     help=f'word(s) or phrase(s) to be included in the content '
-         f'(e.g., "bank" or "bank{WordWithSense.DIVIDER_WITH_WHITE_SPACE}financial institution" for disambiguation)',
+         f'(e.g., "bank" or "bank{WordWithSense.DELIMITER_WITH_WHITE_SPACE}financial institution" for disambiguation)',
 )]
 
 NEW_NAME_ARG = Annotated[str, typer.Argument(
