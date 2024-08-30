@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from typing import Iterable
 
-from reling.helpers.output import output_text
+from reling.helpers.output import output, SentenceData
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData
-from reling.utils.console import wait_for_key_press
 from reling.utils.scores import format_average_score
 from reling.utils.transformers import get_numbering_prefix
 from .scoring import MAX_SCORE
@@ -14,6 +13,8 @@ __all__ = [
     'present_dialogue_results',
     'present_text_results',
 ]
+
+NA = 'N/A'
 
 
 @dataclass
@@ -40,18 +41,31 @@ def present_results(
     )):
         scores.append(result.score)
         for title in title_items:
-            output_text(
+            output(SentenceData.from_tts(
+                title.text,
+                title.tts,
                 print_prefix=get_numbering_prefix(index) if title.should_number else '',
-                text=title.text,
-                tts=title.tts,
-            )
+            ))
         print(f'Your score: {result.score}/{MAX_SCORE}')
-        print(f'Provided: {provided_translation}')
-        if result.suggestion is not None:
-            output_text(print_prefix='Improved: ', text=result.suggestion, tts=target_tts)
-        output_text(print_prefix='Original: ', text=original_translation, tts=target_tts)
+        output(
+            SentenceData(
+                provided_translation.strip() or NA,
+                print_prefix='Provided: ',
+            ),
+            SentenceData.from_tts(
+                result.suggestion or NA,
+                target_tts if result.suggestion else None,
+                print_prefix='Improved: ',
+                reader_id='improved',
+            ),
+            SentenceData.from_tts(
+                original_translation,
+                target_tts,
+                print_prefix='Original: ',
+                reader_id='original',
+            ),
+        )
         print()
-        wait_for_key_press()
     print('Your average score:', format_average_score(scores))
 
 

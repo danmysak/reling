@@ -1,5 +1,3 @@
-from typing import cast
-
 from tqdm import tqdm
 
 from reling.app.app import app
@@ -11,15 +9,13 @@ from reling.app.types import (
     LANGUAGE_OPT,
     LANGUAGE_OPT_FROM,
     MODEL,
-    READ_LANGUAGE_FAST_OPT,
     READ_LANGUAGE_OPT,
-    READ_LANGUAGE_SLOWLY_OPT,
     TTS_MODEL,
 )
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
 from reling.helpers.voices import pick_voices
-from reling.tts import InvalidTTSFlagCombination, TTSClient, TTSSpeed
+from reling.tts import TTSClient
 from reling.utils.time import now
 from reling.utils.typer import typer_raise
 from .input import collect_dialogue_translations, collect_text_translations
@@ -33,31 +29,6 @@ __all__ = [
 ]
 
 
-def get_reading_speeds(
-        read: list[Language] | None,
-        read_slowly: list[Language] | None,
-        read_fast: list[Language] | None,
-        from_: Language,
-        to: Language,
-) -> tuple[TTSSpeed | None, TTSSpeed | None]:
-    """Get the reading speeds for the source and target languages; exit if flags are specified incorrectly."""
-    read = read or []
-    read_slowly = read_slowly or []
-    read_fast = read_fast or []
-
-    for language in read + read_slowly + read_fast:
-        if language not in [from_, to]:
-            typer_raise(f'Cannot read in {language.name} as it is not the source or target language.')
-
-    try:
-        return cast(tuple[TTSSpeed | None, TTSSpeed | None], tuple(
-            TTSSpeed.from_flags(l in read_slowly, l in read, l in read_fast)
-            for l in [from_, to]
-        ))
-    except InvalidTTSFlagCombination:
-        typer_raise('Only one reading speed can be specified for each language.')
-
-
 @app.command()
 def exam(
         api_key: API_KEY,
@@ -67,8 +38,6 @@ def exam(
         from_: LANGUAGE_OPT_FROM = None,
         to: LANGUAGE_OPT = None,
         read: READ_LANGUAGE_OPT = None,
-        read_slowly: READ_LANGUAGE_SLOWLY_OPT = None,
-        read_fast: READ_LANGUAGE_FAST_OPT = None,
 ) -> None:
     """
     Test the user's ability to translate content from one language to another.
@@ -81,21 +50,18 @@ def exam(
     if from_ == to:
         typer_raise('The source and target languages are the same.')
 
-    from_tts_speed, to_tts_speed = get_reading_speeds(
-        read=read,
-        read_slowly=read_slowly,
-        read_fast=read_fast,
-        from_=from_,
-        to=to,
-    )
+    read = read or []
+    for language in read:
+        if language not in [from_, to]:
+            typer_raise(f'Cannot read in {language.name} as it is not the source or target language.')
 
     (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(
         GPTClient(api_key=api_key, model=model),
         content,
         from_,
         to,
-        source_tts=TTSClient(api_key=api_key, model=tts_model.get(), speed=from_tts_speed) if from_tts_speed else None,
-        target_tts=TTSClient(api_key=api_key, model=tts_model.get(), speed=to_tts_speed) if to_tts_speed else None,
+        source_tts=TTSClient(api_key=api_key, model=tts_model.get()) if from_ in read else None,
+        target_tts=TTSClient(api_key=api_key, model=tts_model.get()) if to in read else None,
     )
 
 

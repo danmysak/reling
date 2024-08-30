@@ -34,12 +34,8 @@ __all__ = [
     'LEVEL_OPT',
     'MODEL',
     'NEW_NAME_ARG',
-    'READ_FAST_OPT',
-    'READ_LANGUAGE_FAST_OPT',
     'READ_LANGUAGE_OPT',
-    'READ_LANGUAGE_SLOWLY_OPT',
     'READ_OPT',
-    'READ_SLOWLY_OPT',
     'REGEX_CONTENT_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
@@ -173,28 +169,8 @@ READ_LANGUAGE_OPT = Annotated[Optional[list[Language]], typer.Option(
     autocompletion=find_languages_by_prefix,
 )]
 
-READ_LANGUAGE_SLOWLY_OPT = Annotated[Optional[list[Language]], typer.Option(
-    parser=typer_func_parser(find_language),
-    help='language(s) to read the content out loud in slowly',
-    autocompletion=find_languages_by_prefix,
-)]
-
-READ_LANGUAGE_FAST_OPT = Annotated[Optional[list[Language]], typer.Option(
-    parser=typer_func_parser(find_language),
-    help='language(s) to read the content out loud in quickly',
-    autocompletion=find_languages_by_prefix,
-)]
-
 READ_OPT = Annotated[Optional[bool], typer.Option(
     help='Read the content out loud.',
-)]
-
-READ_SLOWLY_OPT = Annotated[Optional[bool], typer.Option(
-    help='Read the content out loud slowly.',
-)]
-
-READ_FAST_OPT = Annotated[Optional[bool], typer.Option(
-    help='Read the content out loud quickly.',
 )]
 
 ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(

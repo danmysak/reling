@@ -1,26 +1,19 @@
 __all__ = [
     'clear_current_line',
-    'clear_previous_line',
+    'clear_previous',
     'input_and_erase',
-    'wait_for_key_press',
 ]
-
-KEY_PRESS_PROMPT = '... Press Enter to continue ...'
 
 
 def clear_current_line() -> None:
-    print('\033[K', end='\r')
+    print('\033[2K', end='\r')
 
 
-def clear_previous_line() -> None:
-    print('\033[F\033[K', end='\r')
+def clear_previous(lines: int = 1) -> None:
+    print('\033[F\033[K' * lines, end='\r')
 
 
 def input_and_erase(prompt: str) -> str:
     data = input(prompt)
-    clear_previous_line()
+    clear_previous(prompt.count('\n') + 1)
     return data
-
-
-def wait_for_key_press() -> None:
-    input_and_erase(KEY_PRESS_PROMPT)

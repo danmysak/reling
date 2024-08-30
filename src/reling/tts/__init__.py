@@ -3,14 +3,12 @@ from time import sleep
 
 from openai import OpenAI
 
+from reling.types import Reader, Speed
 from reling.utils.openai import openai_handler
-from .speeds import InvalidTTSFlagCombination, TTSSpeed
 from .voices import Voice
 
 __all__ = [
-    'InvalidTTSFlagCombination',
     'TTSClient',
-    'TTSSpeed',
     'TTSVoiceClient',
     'Voice',
 ]
@@ -27,14 +25,12 @@ SLEEP_BEFORE_CLOSE_SEC = 0.5  # This allows the last chunk to be played properly
 class TTSClient:
     _client: OpenAI
     _model: str
-    _speed: TTSSpeed
 
-    def __init__(self, *, api_key: str, model: str, speed: TTSSpeed = TTSSpeed.NORMAL) -> None:
+    def __init__(self, *, api_key: str, model: str) -> None:
         self._client = OpenAI(api_key=api_key)
         self._model = model
-        self._speed = speed
 
-    def read(self, text: str, voice: Voice) -> None:
+    def read(self, text: str, voice: Voice, speed: Speed) -> None:
         """Read the text in real time using the specified voice."""
         import pyaudio  # Only import this module if TTS is used
         player_stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=CHANNELS, rate=RATE, output=True)
@@ -44,7 +40,7 @@ class TTSClient:
             voice=voice.value,
             response_format=RESPONSE_FORMAT,
             input=text,
-            speed=self._speed.value,
+            speed=speed.value,
         ) as response:
             for chunk in response.iter_bytes(chunk_size=CHUNK_SIZE):
                 player_stream.write(chunk)
@@ -66,5 +62,7 @@ class TTSVoiceClient:
         self._tts = tts
         self._voice = voice
 
-    def read(self, text: str) -> None:
-        self._tts.read(text, self._voice)
+    def get_reader(self, text: str) -> Reader:
+        def read(speed: Speed) -> None:
+            self._tts.read(text, self._voice, speed)
+        return read

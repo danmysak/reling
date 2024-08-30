@@ -1,45 +1,11 @@
-from dataclasses import dataclass
-from typing import Self
+from .dialogue_exchange_data import DialogueExchangeData
+from .reader import Reader
+from .speed import Speed
+from .word_with_sense import WordWithSense
 
 __all__ = [
     'DialogueExchangeData',
+    'Reader',
+    'Speed',
     'WordWithSense',
 ]
-
-
-@dataclass
-class DialogueExchangeData:
-    speaker: str
-    user: str
-
-    @staticmethod
-    def assert_speaker_comes_first() -> None:
-        pass
-
-    def all(self) -> tuple[str, str]:
-        return self.speaker, self.user
-
-
-@dataclass
-class WordWithSense:
-    word: str
-    sense: str | None
-
-    DIVIDER_WITH_WHITE_SPACE = ': '
-
-    @classmethod
-    def parse(cls, text: str) -> Self:
-        """
-        Parse the word and sense from the given string:
-        "word: sense" -> WordWithSense("word", "sense")
-        "word" -> WordWithSense("word", None)
-        """
-        divider = cls.DIVIDER_WITH_WHITE_SPACE.strip()
-        if divider in text:
-            word, sense = text.split(divider, 1)
-            return cls(word.strip(), sense.strip())
-        else:
-            return cls(text.strip(), None)
-
-    def format(self) -> str:
-        return f'"{self.word}"' + (f' ({self.sense})' if self.sense else '')
