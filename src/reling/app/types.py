@@ -22,6 +22,7 @@ from reling.utils.typer import (
 __all__ = [
     'API_KEY',
     'ARCHIVE_OPT',
+    'ASR_MODEL',
     'CONTENT_ARG',
     'CONTENT_CATEGORY_OPT',
     'FORCE_OPT',
@@ -32,6 +33,7 @@ __all__ = [
     'LANGUAGE_OPT_ARG',
     'LANGUAGE_OPT_FROM',
     'LEVEL_OPT',
+    'LISTEN_OPT',
     'MODEL',
     'NEW_NAME_ARG',
     'READ_LANGUAGE_OPT',
@@ -67,6 +69,15 @@ TTS_MODEL = Annotated[TyperExtraOption, typer.Option(
     help='identifier for the TTS model to be used',
     default_factory=TyperExtraOption.default_factory(
         prompt='Enter the TTS model identifier',
+    ),
+)]
+
+ASR_MODEL = Annotated[TyperExtraOption, typer.Option(
+    envvar=f'{ENV_PREFIX}ASR_MODEL',
+    parser=TyperExtraOption.parser,
+    help='identifier for the ASR model to be used',
+    default_factory=TyperExtraOption.default_factory(
+        prompt='Enter the ASR model identifier',
     ),
 )]
 
@@ -171,6 +182,10 @@ READ_LANGUAGE_OPT = Annotated[Optional[list[Language]], typer.Option(
 
 READ_OPT = Annotated[Optional[bool], typer.Option(
     help='Read the content out loud.',
+)]
+
+LISTEN_OPT = Annotated[Optional[bool], typer.Option(
+    help='Record the response as audio and transcribe it into text.',
 )]
 
 ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(

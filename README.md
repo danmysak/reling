@@ -10,7 +10,7 @@ Install [Python](https://www.python.org/downloads/) 3.12 or higher, then run:
 pip install reling
 ```
 
-### With read-aloud support
+### With audio support
 
 On macOS, first install [Homebrew](https://brew.sh/), then run:
 
@@ -24,10 +24,10 @@ On Linux, run:
 sudo apt install python3-pyaudio
 ```
 
-Install the package with the `read` extra:
+Install the package with the `audio` extra:
 
 ```bash
-pip install reling[read]
+pip install reling[audio]
 ```
 
 ### Auto-completion

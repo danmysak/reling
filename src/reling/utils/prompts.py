@@ -1,9 +1,13 @@
+from __future__ import annotations
 from dataclasses import dataclass
+from enum import StrEnum
 
 from .console import input_and_erase
 
 __all__ = [
+    'ENTER',
     'enter_to_continue',
+    'input_and_erase',
     'Prompt',
     'PromptOption',
 ]
@@ -67,15 +71,31 @@ class PromptOption[T]:
 
 class Prompt[T]:
     """A prompt that allows the user to choose from multiple options."""
-    _title: str
+    _title: str | None
     _options: list[PromptOption[T]]
 
-    def __init__(self, title: str) -> None:
+    def __init__(self, title: str | None = None) -> None:
         self._title = title
         self._options = []
 
-    def add_option(self, option: PromptOption) -> None:
+    @staticmethod
+    def from_enum[T: StrEnum](enum: T, title: str | None = None) -> Prompt[T]:
+        prompt = Prompt(title)
+        for option in enum:
+            prompt.add_option(PromptOption(
+                description=option.value,
+                action=option,
+            ))
+        return prompt
+
+    def add_option(self, option: PromptOption) -> Prompt[T]:
         self._options.append(option)
+        return self
+
+    def add_options(self, *option: PromptOption) -> Prompt[T]:
+        for opt in option:
+            self.add_option(opt)
+        return self
 
     def _match(self, response: str) -> T | None:
         """
@@ -101,7 +121,7 @@ class Prompt[T]:
             response = input_and_erase(
                 '\n'.join([
                     PROMPT_SEPARATOR,
-                    self._title + TITLE_DELIMITER + OPTION_DELIMITER.join(
+                    (self._title + TITLE_DELIMITER if self._title else '') + OPTION_DELIMITER.join(
                         [option.format_description() for option in self._options] + [ENTER_TO_CONTINUE],
                     ),
                     OPTION_DELIMITER.join(

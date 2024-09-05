@@ -1,9 +1,11 @@
 from dataclasses import dataclass
+from functools import partial
 from typing import Iterable
 
 from reling.helpers.output import output, SentenceData
+from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
-from reling.types import DialogueExchangeData
+from reling.types import DialogueExchangeData, Input
 from reling.utils.scores import format_average_score
 from reling.utils.transformers import get_numbering_prefix
 from .scoring import MAX_SCORE
@@ -26,7 +28,7 @@ class TitleData:
 
 def present_results(
         titles: Iterable[list[TitleData]],
-        provided_translations: Iterable[str],
+        provided_translations: Iterable[Input],
         original_translations: Iterable[str],
         results: Iterable[ScoreWithSuggestion],
         target_tts: TTSVoiceClient | None,
@@ -49,18 +51,20 @@ def present_results(
         print(f'Your score: {result.score}/{MAX_SCORE}')
         output(
             SentenceData(
-                provided_translation.strip() or NA,
+                text=provided_translation.text.strip() or NA,
                 print_prefix='Provided: ',
+                reader=partial(play, provided_translation.audio) if provided_translation.audio and target_tts else None,
+                reader_id='provided',
             ),
             SentenceData.from_tts(
-                result.suggestion or NA,
-                target_tts if result.suggestion else None,
+                text=result.suggestion or NA,
+                client=target_tts if result.suggestion else None,
                 print_prefix='Improved: ',
                 reader_id='improved',
             ),
             SentenceData.from_tts(
-                original_translation,
-                target_tts,
+                text=original_translation,
+                client=target_tts,
                 print_prefix='Original: ',
                 reader_id='original',
             ),

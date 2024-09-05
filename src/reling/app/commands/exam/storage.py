@@ -35,7 +35,7 @@ def save_text_exam(
             session.add(TextExamResult(
                 text_exam_id=exam.id,
                 text_sentence_index=index,
-                answer=sentence.translation,
+                answer=sentence.translation.text,
                 suggested_answer=result.suggestion,
                 score=result.score,
             ))
@@ -66,7 +66,7 @@ def save_dialogue_exam(
             session.add(DialogueExamResult(
                 dialogue_exam_id=exam.id,
                 dialogue_exchange_index=index,
-                answer=exchange.user_translation,
+                answer=exchange.user_translation.text,
                 suggested_answer=result.suggestion,
                 score=result.score,
             ))

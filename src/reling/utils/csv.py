@@ -15,7 +15,7 @@ def read_csv(
         empty_as_none: bool = False,
 ) -> Generator[dict[str, str | None], None, None]:
     """Read a CSV file and yield dictionaries with column names as keys."""
-    with open(path, 'r') as file:
+    with path.open('r') as file:
         for line in file:
             yield {
                 column: value if value != '' or not empty_as_none else None

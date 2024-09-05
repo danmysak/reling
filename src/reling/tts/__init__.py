@@ -1,8 +1,8 @@
 from __future__ import annotations
-from time import sleep
 
 from openai import OpenAI
 
+from reling.helpers.pyaudio import get_audio, get_stream
 from reling.types import Reader, Speed
 from reling.utils.openai import openai_handler
 from .voices import Voice
@@ -15,11 +15,8 @@ __all__ = [
 
 CHANNELS = 1
 RATE = 24000
-
-RESPONSE_FORMAT = 'pcm'
 CHUNK_SIZE = 1024
-
-SLEEP_BEFORE_CLOSE_SEC = 0.5  # This allows the last chunk to be played properly
+RESPONSE_FORMAT = 'pcm'
 
 
 class TTSClient:
@@ -32,22 +29,26 @@ class TTSClient:
 
     def read(self, text: str, voice: Voice, speed: Speed) -> None:
         """Read the text in real time using the specified voice."""
-        import pyaudio  # Only import this module if TTS is used
-        player_stream = pyaudio.PyAudio().open(format=pyaudio.paInt16, channels=CHANNELS, rate=RATE, output=True)
-
-        with openai_handler(), self._client.audio.speech.with_streaming_response.create(
-            model=self._model,
-            voice=voice.value,
-            response_format=RESPONSE_FORMAT,
-            input=text,
-            speed=speed.value,
-        ) as response:
+        with (
+            get_audio() as pyaudio,
+            get_stream(
+                pyaudio=pyaudio,
+                format=pyaudio.paInt16,
+                channels=CHANNELS,
+                rate=RATE,
+                output=True,
+            ) as stream,
+            openai_handler(),
+            self._client.audio.speech.with_streaming_response.create(
+                model=self._model,
+                voice=voice.value,
+                response_format=RESPONSE_FORMAT,
+                input=text,
+                speed=speed.value,
+            ) as response,
+        ):
             for chunk in response.iter_bytes(chunk_size=CHUNK_SIZE):
-                player_stream.write(chunk)
-
-        sleep(SLEEP_BEFORE_CLOSE_SEC)
-        player_stream.stop_stream()
-        player_stream.close()
+                stream.write(chunk)
 
     def with_voice(self, voice: Voice) -> TTSVoiceClient:
         return TTSVoiceClient(self, voice)

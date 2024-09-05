@@ -96,7 +96,7 @@ def score_text_translations(
         source_language=source_language,
         target_language=target_language,
         blocks=[sentence.sentence for sentence in sentences],
-        translations=[sentence.translation for sentence in sentences],
+        translations=[sentence.translation.text for sentence in sentences],
     )
     return ask_and_parse(gpt, prompt)
 
@@ -119,6 +119,6 @@ def score_dialogue_translations(
         blocks=[turn for exchange in exchanges for turn in exchange.exchange.all()],
         translations=[turn
                       for exchange, original_translation in zip(exchanges, original_translations)
-                      for turn in [original_translation.speaker, exchange.user_translation]],
+                      for turn in [original_translation.speaker, exchange.user_translation.text]],
     )
     yield from islice(ask_and_parse(gpt, prompt), 1, None, 2)

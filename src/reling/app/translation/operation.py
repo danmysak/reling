@@ -60,7 +60,7 @@ def translate_text(gpt: GPTClient, text: Text, language: Language) -> None:
     ))
     if len(sentences) != len(text.sentences):
         raise AlgorithmException(
-            'The number of translated sentences does not match the number of original sentences.',
+            'The number of translated sentences does not match the number of original sentences. You can try again.',
         )
     save_text_translation(text, language, sentences)
 
@@ -97,6 +97,6 @@ def translate_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language) -
     ))
     if len(exchanges) != len(dialogue.exchanges):
         AlgorithmException(
-            'The number of translated exchanges does not match the number of original exchanges.',
+            'The number of translated exchanges does not match the number of original exchanges. You can try again.',
         )
     save_dialogue_translation(dialogue, language, exchanges)

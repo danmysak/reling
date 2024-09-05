@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+from typing import Generator
 
 from openai import APIError
 
@@ -10,7 +11,7 @@ __all__ = [
 
 
 @contextmanager
-def openai_handler() -> None:
+def openai_handler() -> Generator[None, None, None]:
     try:
         yield
     except APIError as e:

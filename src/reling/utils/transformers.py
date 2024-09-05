@@ -12,7 +12,7 @@ __all__ = [
     'Transformer',
 ]
 
-Transformer = Callable[[str, int], str | None]
+type Transformer = Callable[[str, int], str | None]
 # The second argument is the index of the item in the list.
 
 
