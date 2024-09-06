@@ -1,6 +1,5 @@
 import re
-from typing import Annotated, Optional
-# The `Optional` type is used instead of the union with `None` due to https://github.com/tiangolo/typer/issues/533
+from typing import Annotated
 
 import typer
 
@@ -89,7 +88,9 @@ USER_GENDER = Annotated[Gender, typer.Option(
     autocompletion=typer_enum_autocompletion(Gender),
 )]
 
-CONTENT_ARG = Annotated[Text | Dialogue, typer.Argument(
+type TextOrDialogue = Text | Dialogue  # Typer does not yet support union types (except for Optional)
+
+CONTENT_ARG = Annotated[TextOrDialogue, typer.Argument(
     parser=typer_func_parser(find_content),
     help='name of the text or dialogue',
     autocompletion=find_ids_by_prefix,
@@ -132,15 +133,15 @@ LEVEL_OPT = Annotated[Level | None, typer.Option(
     autocompletion=typer_enum_autocompletion(Level),
 )]
 
-TOPIC_OPT = Annotated[Optional[str], typer.Option(
+TOPIC_OPT = Annotated[str | None, typer.Option(
     help='topic of the content, e.g., "food" or "zoology"',
 )]
 
-STYLE_OPT = Annotated[Optional[str], typer.Option(
+STYLE_OPT = Annotated[str | None, typer.Option(
     help='style of the text, e.g., "mystery" or "news article"',
 )]
 
-SPEAKER_OPT = Annotated[Optional[str], typer.Option(
+SPEAKER_OPT = Annotated[str | None, typer.Option(
     help='interlocutor in the dialogue, e.g., "waiter" or "friend"',
 )]
 
@@ -160,7 +161,7 @@ SIZE_DIALOGUE_OPT = Annotated[int, typer.Option(
     help='number of exchanges in the dialogue',
 )]
 
-INCLUDE_OPT = Annotated[Optional[list[str]], typer.Option(
+INCLUDE_OPT = Annotated[list[str] | None, typer.Option(
     help=f'word(s) or phrase(s) to be included in the content '
          f'(e.g., "bank" or "bank{WordWithSense.DELIMITER_WITH_WHITE_SPACE}financial institution" for disambiguation)',
 )]
@@ -174,28 +175,28 @@ REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
     help='regular expression to filter results by content, topic, style, or speaker',
 )]
 
-READ_LANGUAGE_OPT = Annotated[Optional[list[Language]], typer.Option(
+READ_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
     parser=typer_func_parser(find_language),
     help='language(s) to read the content out loud in',
     autocompletion=find_languages_by_prefix,
 )]
 
-READ_OPT = Annotated[Optional[bool], typer.Option(
+READ_OPT = Annotated[bool | None, typer.Option(
     help='Read the content out loud.',
 )]
 
-LISTEN_OPT = Annotated[Optional[bool], typer.Option(
+LISTEN_OPT = Annotated[bool | None, typer.Option(
     help='Record the response as audio and transcribe it into text.',
 )]
 
-ARCHIVE_OPT = Annotated[Optional[bool], typer.Option(
+ARCHIVE_OPT = Annotated[bool | None, typer.Option(
     help='Search within archived items.',
 )]
 
-IDS_ONLY_OPT = Annotated[Optional[bool], typer.Option(
+IDS_ONLY_OPT = Annotated[bool | None, typer.Option(
     help='Display only the IDs of the items.',
 )]
 
-FORCE_OPT = Annotated[Optional[bool], typer.Option(
+FORCE_OPT = Annotated[bool | None, typer.Option(
     help='Force execution of the operation.',
 )]
