@@ -50,8 +50,8 @@ def do_transcribe(prompt: str, transcribe: Transcriber, file: Path) -> str:
 
 def get_audio_input(prompt: str, params: TranscriberParams) -> Input:
     """Get input from the user via audio recording, with optional re-recording, listening, and manual input."""
-    file = get_temp_file(params.storage)
     input_and_erase(prompt + ENTER_TO_START_RECORDING)
+    file = get_temp_file(params.storage)
     while True:
         do_record(prompt, file)
         transcription = do_transcribe(prompt, params.transcribe, file)
