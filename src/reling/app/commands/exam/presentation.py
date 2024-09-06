@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import timedelta
 from functools import partial
 from typing import Iterable
 
@@ -7,6 +8,7 @@ from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
 from reling.utils.scores import format_average_score
+from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
 from .scoring import MAX_SCORE
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
@@ -31,6 +33,7 @@ def present_results(
         provided_translations: Iterable[Input],
         original_translations: Iterable[str],
         results: Iterable[ScoreWithSuggestion],
+        duration: timedelta,
         target_tts: TTSVoiceClient | None,
 ) -> None:
     """Present the results of scoring translations."""
@@ -70,13 +73,15 @@ def present_results(
             ),
         )
         print()
-    print('Your average score:', format_average_score(scores))
+    print(f'Average score: {format_average_score(scores)}')
+    print(f'Exam duration: {format_time_delta(duration)}')
 
 
 def present_text_results(
         sentences: Iterable[SentenceWithTranslation],
         original_translations: Iterable[str],
         results: Iterable[ScoreWithSuggestion],
+        duration: timedelta,
         source_tts: TTSVoiceClient | None,
         target_tts: TTSVoiceClient | None,
 ) -> None:
@@ -92,6 +97,7 @@ def present_text_results(
         provided_translations=(sentence.translation for sentence in sentences),
         original_translations=original_translations,
         results=results,
+        duration=duration,
         target_tts=target_tts,
     )
 
@@ -100,6 +106,7 @@ def present_dialogue_results(
         exchanges: Iterable[ExchangeWithTranslation],
         original_translations: Iterable[DialogueExchangeData],
         results: Iterable[ScoreWithSuggestion],
+        duration: timedelta,
         source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
         target_user_tts: TTSVoiceClient | None,
@@ -124,5 +131,6 @@ def present_dialogue_results(
         provided_translations=(exchange.user_translation for exchange in exchanges),
         original_translations=(exchange.user for exchange in original_translations),
         results=results,
+        duration=duration,
         target_tts=target_user_tts,
     )

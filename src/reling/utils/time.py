@@ -16,8 +16,8 @@ def format_time(time: datetime) -> str:
 
 
 def format_time_delta(delta: timedelta) -> str:
-    """Format timedelta as follows: '[X days, ]H:MM:SS'."""
-    return str(delta).split('.')[0]
+    """Format timedelta as follows: '[X days, ][H:][M]M:SS'."""
+    return str(delta).split('.')[0].removeprefix('0:').removeprefix('0')
 
 
 def now() -> datetime:

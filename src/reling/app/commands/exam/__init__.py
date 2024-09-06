@@ -133,6 +133,7 @@ def perform_text_exam(
             sentences=translated,
             original_translations=original_translations,
             results=results,
+            duration=finished_at - started_at,
             source_tts=voice_source_tts,
             target_tts=voice_target_tts,
         )
@@ -201,6 +202,7 @@ def perform_dialogue_exam(
             exchanges=translated,
             original_translations=original_translations,
             results=results,
+            duration=finished_at - started_at,
             source_user_tts=source_user_tts,
             target_speaker_tts=target_speaker_tts,
             target_user_tts=target_user_tts,
