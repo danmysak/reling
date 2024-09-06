@@ -7,7 +7,6 @@ from .console import input_and_erase
 __all__ = [
     'ENTER',
     'enter_to_continue',
-    'input_and_erase',
     'Prompt',
     'PromptOption',
 ]
@@ -90,11 +89,6 @@ class Prompt[T]:
 
     def add_option(self, option: PromptOption) -> Prompt[T]:
         self._options.append(option)
-        return self
-
-    def add_options(self, *option: PromptOption) -> Prompt[T]:
-        for opt in option:
-            self.add_option(opt)
         return self
 
     def _match(self, response: str) -> T | None:
