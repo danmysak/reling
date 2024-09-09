@@ -172,7 +172,7 @@ NEW_NAME_ARG = Annotated[str, typer.Argument(
 
 REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
     parser=typer_regex_parser,
-    help='regular expression to filter results by content, topic, style, or speaker',
+    help='regular expression to filter results by ID, content, topic, style, or speaker',
 )]
 
 READ_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
