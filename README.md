@@ -19,6 +19,7 @@ ReLing also enables you to view a [list](#listing-content) of all generated text
 
 Optionally, the system can vocalize sentences in both the source and target languages and accept your responses via voice.
 
+
 ## Installation
 
 Install [Python](https://www.python.org/downloads/) 3.12 or higher, then proceed based on your audio preference:
@@ -58,6 +59,7 @@ reling --install-completion
 ```
 
 On a Mac, you may also need to add `compinit -D` at the end of your `~/.zshrc`.
+
 
 ## Generating Texts
 `reling create text`
@@ -99,6 +101,7 @@ This parameter allows you to ensure the inclusion of specific vocabulary in the 
 ### `model` & `api-key`
 
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
+
 
 ## Generating Dialogues
 `reling create dialogue`
@@ -147,6 +150,7 @@ If the interlocutor’s gender is not specified, it will be randomly chosen as e
 
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
+
 ## Displaying Content
 `reling show`
 
@@ -171,6 +175,7 @@ If enabled, the content will be read aloud.
 ### `model`, `tts-model` & `api-key`
 
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
+
 
 ## Taking Exams
 `reling exam`
@@ -201,6 +206,7 @@ When this flag is enabled, ReLing will accept your responses via voice. You also
 
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
+
 ## Exam History
 `reling stats`
 
@@ -217,6 +223,7 @@ Specify the identifier of the text or dialogue whose exam history you wish to re
 ### `from` & `to`
 
 Limit the display of exam results to translations between specified source and target languages.
+
 
 ## Listing Content
 `reling list`
@@ -251,6 +258,7 @@ Toggle to view content from the [archive](#archiving-content).
 
 Display only the identifiers of texts and dialogues without full details.
 
+
 ## Archiving Content
 `reling archive`
 
@@ -264,6 +272,7 @@ reling archive <CONTENT-ID>
 
 Provide the identifier of the content you wish to archive.
 
+
 ## Unarchiving Content
 `reling unarchive`
 
@@ -276,6 +285,7 @@ reling unarchive <CONTENT-ID>
 ### Content ID
 
 Specify the identifier of the content to be restored from the archive.
+
 
 ## Renaming Content
 `reling rename`
@@ -294,6 +304,7 @@ Enter the identifier of the content you want to rename.
 
 Provide the new name for the content.
 
+
 ## Deleting Content
 `reling delete`
 
@@ -311,6 +322,7 @@ Specify the identifier of the content you intend to delete.
 
 Enable immediate deletion without confirmation.
 
+
 ## Exporting Data
 `reling db`
 
@@ -320,11 +332,13 @@ To access the data storage file for transferring or backing up content and exam 
 reling db
 ```
 
+
 ## Languages
 
 ReLing supports over **180 major languages** [sourced from Wikipedia](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) under the [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
 
 To specify a language in a command argument, you can either write its full name (e.g., `English` or `english`) or use the 2-character or 3-character code for that language (e.g., `en` or `eng` for English).
+
 
 ## Setting Models and API Key
 
@@ -338,6 +352,7 @@ To avoid specifying [model names](https://platform.openai.com/docs/models) and e
 Parameter values specified in individual commands will take precedence over these environment variables.
 
 If a model or key is not specified in either the command or the environment variable, the program will prompt you to enter it directly.
+
 
 ## Specifying Genders
 
