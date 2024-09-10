@@ -18,7 +18,7 @@ ReLing also enables you to view a [list](#listing-content) of all generated text
 Optionally, the system can vocalize sentences in both the source and target languages and accept your responses via voice.
 
 
-## Table of Contents<a name="table-of-contents"></a>
+## Table of Contents<a id="table-of-contents"></a>
 
 - [Installation](#installation)
 - [Generating Texts](#generating-texts)
@@ -37,7 +37,7 @@ Optionally, the system can vocalize sentences in both the source and target lang
 - [Specifying Genders](#specifying-genders)
 
 
-## Installation<a name="installation"></a>
+## Installation<a id="installation"></a>
 
 Install [Python](https://www.python.org/downloads/) 3.12 or higher and [pipx](https://pipx.pypa.io/stable/installation/), then proceed based on your audio preference:
 
@@ -78,7 +78,7 @@ reling --install-completion
 On a Mac, you may also need to add `compinit -D` at the end of your `~/.zshrc`.
 
 
-## Generating Texts<a name="generating-texts"></a>
+## Generating Texts<a id="generating-texts"></a>
 `reling create text`
 
 The command format is:
@@ -120,7 +120,7 @@ This parameter allows you to ensure the inclusion of specific vocabulary in the 
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
 
-## Generating Dialogues<a name="generating-dialogues"></a>
+## Generating Dialogues<a id="generating-dialogues"></a>
 `reling create dialogue`
 
 The command format is:
@@ -168,7 +168,7 @@ If the interlocutor’s gender is not specified, it will be randomly chosen as e
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
 
-## Displaying Content<a name="displaying-content"></a>
+## Displaying Content<a id="displaying-content"></a>
 `reling show`
 
 View or listen to a text or dialogue with:
@@ -194,7 +194,7 @@ If enabled, the content will be read aloud.
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
 
-## Taking Exams<a name="taking-exams"></a>
+## Taking Exams<a id="taking-exams"></a>
 `reling exam`
 
 To translate a text or dialogue and receive feedback, run:
@@ -224,7 +224,7 @@ When this flag is enabled, ReLing will accept your responses via voice. You also
 Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
 
-## Exam History<a name="exam-history"></a>
+## Exam History<a id="exam-history"></a>
 `reling stats`
 
 To view your exam history and statistics, use the command:
@@ -242,7 +242,7 @@ Specify the identifier of the text or dialogue whose exam history you wish to re
 Limit the display of exam results to translations between specified source and target languages.
 
 
-## Listing Content<a name="listing-content"></a>
+## Listing Content<a id="listing-content"></a>
 `reling list`
 
 To view a list of all generated texts and dialogues, execute:
@@ -276,7 +276,7 @@ Toggle to view content from the [archive](#archiving-content).
 Display only the identifiers of texts and dialogues without full details.
 
 
-## Archiving Content<a name="archiving-content"></a>
+## Archiving Content<a id="archiving-content"></a>
 `reling archive`
 
 To archive texts and dialogues:
@@ -290,7 +290,7 @@ reling archive <CONTENT-ID>
 Provide the identifier of the content you wish to archive.
 
 
-## Unarchiving Content<a name="unarchiving-content"></a>
+## Unarchiving Content<a id="unarchiving-content"></a>
 `reling unarchive`
 
 To restore archived content to the main list:
@@ -304,7 +304,7 @@ reling unarchive <CONTENT-ID>
 Specify the identifier of the content to be restored from the archive.
 
 
-## Renaming Content<a name="renaming-content"></a>
+## Renaming Content<a id="renaming-content"></a>
 `reling rename`
 
 To rename a specific text or dialogue:
@@ -322,7 +322,7 @@ Enter the identifier of the content you want to rename.
 Provide the new name for the content.
 
 
-## Deleting Content<a name="deleting-content"></a>
+## Deleting Content<a id="deleting-content"></a>
 `reling delete`
 
 To remove texts or dialogues permanently:
@@ -340,7 +340,7 @@ Specify the identifier of the content you intend to delete.
 Enable immediate deletion without confirmation.
 
 
-## Exporting Data<a name="exporting-data"></a>
+## Exporting Data<a id="exporting-data"></a>
 `reling db`
 
 To access the data storage file for transferring or backing up content and exam results:
@@ -350,14 +350,14 @@ reling db
 ```
 
 
-## Languages<a name="languages"></a>
+## Languages<a id="languages"></a>
 
 ReLing supports over **180 major languages** [sourced from Wikipedia](https://en.wikipedia.org/wiki/List_of_ISO_639_language_codes) under the [CC BY-SA 4.0 license](https://creativecommons.org/licenses/by-sa/4.0/deed.en).
 
 To specify a language in a command argument, you can either write its full name (e.g., `English` or `english`) or use the 2-character or 3-character code for that language (e.g., `en` or `eng` for English).
 
 
-## Setting Models and API Key<a name="setting-models-and-api-key"></a>
+## Setting Models and API Key<a id="setting-models-and-api-key"></a>
 
 To avoid specifying [model names](https://platform.openai.com/docs/models) and entering the [API key](https://platform.openai.com/api-keys) separately for each command, you can set the following environment variables:
 
@@ -371,7 +371,7 @@ Parameter values specified in individual commands will take precedence over thes
 If a model or key is not specified in either the command or the environment variable, the program will prompt you to enter it directly.
 
 
-## Specifying Genders<a name="specifying-genders"></a>
+## Specifying Genders<a id="specifying-genders"></a>
 
 The system requires knowledge of your gender and the gender of your interlocutor to accurately generate dialogues in languages with grammatical gender and to provide voice outputs with appropriate voices.
 
