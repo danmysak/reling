@@ -39,12 +39,12 @@ Optionally, the system can vocalize sentences in both the source and target lang
 
 ## Installation
 
-Install [Python](https://www.python.org/downloads/) 3.12 or higher, then proceed based on your audio preference:
+Install [Python](https://www.python.org/downloads/) 3.12 or higher and [pipx](https://pipx.pypa.io/stable/installation/), then proceed based on your audio preference:
 
 ### Without Audio Support
 
 ```bash
-pip install reling
+pipx install reling
 ```
 
 ### With Audio Support
@@ -55,7 +55,7 @@ On macOS, first install [Homebrew](https://brew.sh/), then:
 brew install portaudio
 ```
 
-On Linux:
+On Ubuntu, run:
 
 ```bash
 sudo apt install python3-pyaudio
@@ -64,7 +64,7 @@ sudo apt install python3-pyaudio
 Install the package with the `audio` extra:
 
 ```bash
-pip install reling[audio]
+pipx install 'reling[audio]'
 ```
 
 ### Auto-completion
