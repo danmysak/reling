@@ -1,7 +1,5 @@
 # ReLing: Command-line Tool for Learning Foreign Languages
 
-## Description
-
 ReLing allows you to learn or enhance your knowledge of any [major world language](#languages) supported by [GPT models](https://platform.openai.com/docs/models). To use this tool, you must have a paid [OpenAI account](https://platform.openai.com/) with an [API key created](https://platform.openai.com/api-keys).
 
 The program operates as follows:
@@ -18,6 +16,25 @@ You can retake exams at your preferred frequency until you achieve perfect score
 ReLing also enables you to view a [list](#listing-content) of all generated texts and dialogues and their associated [exam histories](#exam-history).
 
 Optionally, the system can vocalize sentences in both the source and target languages and accept your responses via voice.
+
+
+## Table of Contents
+
+- [Installation](#installation)
+- [Generating Texts](#generating-texts)
+- [Generating Dialogues](#generating-dialogues)
+- [Displaying Content](#displaying-content)
+- [Taking Exams](#taking-exams)
+- [Exam History](#exam-history)
+- [Listing Content](#listing-content)
+- [Archiving Content](#archiving-content)
+- [Unarchiving Content](#unarchiving-content)
+- [Renaming Content](#renaming-content)
+- [Deleting Content](#deleting-content)
+- [Exporting Data](#exporting-data)
+- [Languages](#languages)
+- [Setting Models and API Key](#setting-models-and-api-key)
+- [Specifying Genders](#specifying-genders)
 
 
 ## Installation
