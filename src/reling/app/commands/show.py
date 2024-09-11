@@ -11,6 +11,7 @@ from reling.app.types import (
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
 from reling.helpers.output import output, SentenceData
+from reling.helpers.pyaudio import ensure_pyaudio
 from reling.helpers.voices import pick_voice, pick_voices
 from reling.tts import TTSClient
 
@@ -32,6 +33,8 @@ def show(
         read: READ_OPT = False,
 ) -> None:
     """Display a text or dialogue, or its translation if a language is specified."""
+    if read:
+        ensure_pyaudio()
     (show_text if isinstance(content, Text) else show_dialogue)(
         GPTClient(api_key=api_key, model=model),
         content,

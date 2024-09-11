@@ -10,6 +10,7 @@ if TYPE_CHECKING:
 from reling.utils.typer import typer_raise
 
 __all__ = [
+    'ensure_pyaudio',
     'get_audio',
     'get_stream',
     'PyAudioData'
@@ -26,13 +27,18 @@ class PyAudioData:
     paFramesPerBufferUnspecified: int
 
 
+def ensure_pyaudio() -> None:
+    """Ensure PyAudio is installed."""
+    try:
+        import pyaudio
+    except ImportError:
+        typer_raise('PyAudio could not be imported. See Readme for installation instructions.')
+
+
 @contextmanager
 def get_audio() -> Generator[PyAudioData, None, None]:
     """Dynamically import PyAudio and yield it, closing it afterward."""
-    try:
-        import pyaudio  # Only import this module if audio is used
-    except ImportError:
-        typer_raise('PyAudio could not be imported. See Readme for installation instructions.')
+    import pyaudio  # Only import this module if audio is used
     audio = pyaudio.PyAudio()
     try:
         yield PyAudioData(

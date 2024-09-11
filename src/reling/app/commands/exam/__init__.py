@@ -20,6 +20,7 @@ from reling.app.types import (
 from reling.asr import ASRClient
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
+from reling.helpers.pyaudio import ensure_pyaudio
 from reling.helpers.voices import pick_voices
 from reling.tts import TTSClient
 from reling.utils.time import now
@@ -51,6 +52,8 @@ def exam(
     Test the user's ability to translate content from one language to another.
     If only one language is specified, the content's original language is assumed for the unspecified direction.
     """
+    if read or listen:
+        ensure_pyaudio()
     if from_ is None and to is None:
         typer_raise('You must specify at least one language.')
     from_ = from_ or content.language
