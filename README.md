@@ -64,7 +64,7 @@ sudo apt install python3-pyaudio
 Install the package with the `audio` extra:
 
 ```bash
-pipx install 'reling[audio]'
+pipx install "reling[audio]"
 ```
 
 ### Finalizing Setup
