@@ -67,15 +67,17 @@ Install the package with the `audio` extra:
 pipx install 'reling[audio]'
 ```
 
-### Auto-completion
+### Finalizing Setup
 
-To enable completions, run:
+You may need to restart your terminal for the `reling` command to be recognized.
+
+Additionally, to enable command-line completions, execute:
 
 ```bash
 reling --install-completion
 ```
 
-On a Mac, you may also need to add `compinit -D` at the end of your `~/.zshrc`.
+For Mac users, you may also need to append `compinit -D` to the end of your `~/.zshrc` file.
 
 
 ## Generating Texts<a id="generating-texts"></a>
