@@ -17,6 +17,9 @@ TAKEN_AT = 'Taken at'
 DURATION = 'Duration'
 SCORE = 'Score'
 
+AUDIO_OUTPUT = '🔈'
+AUDIO_INPUT = '🎤'
+
 
 def match(exam: TextExam | DialogueExam, from_: Language | None, to: Language | None) -> bool:
     return ((from_ is None or exam.source_language.id == from_.id)
@@ -55,8 +58,15 @@ def stats(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_OP
                 SCORE: 'right',
             },
             data=[{
-                FROM: exam.source_language.name,
-                TO: exam.target_language.name,
+                FROM: ' '.join([
+                    exam.source_language.name,
+                    *([AUDIO_OUTPUT] if exam.read_source else []),
+                ]),
+                TO: ' '.join([
+                    exam.target_language.name,
+                    *([AUDIO_OUTPUT] if exam.read_target else []),
+                    *([AUDIO_INPUT] if exam.listened else []),
+                ]),
                 TAKEN_AT: format_time(exam.started_at),
                 DURATION: format_time_delta(exam.finished_at - exam.started_at),
                 SCORE: format_average_score([result.score for result in exam.results]),

@@ -70,6 +70,9 @@ class TextExam(Base):
     source_language: Mapped[Language] = relationship(Language, foreign_keys=source_language_id)
     target_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
     target_language: Mapped[Language] = relationship(Language, foreign_keys=target_language_id)
+    read_source: Mapped[bool]
+    read_target: Mapped[bool]
+    listened: Mapped[bool]
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
     results: Mapped[list[TextExamResult]] = relationship(

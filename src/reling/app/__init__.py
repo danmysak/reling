@@ -12,7 +12,8 @@ __all__ = [
 ]
 
 APP_NAME = 'ReLing'
-DB_NAME = 'reling.db'
+DB_VERSION = '1.1'
+DB_NAME = f'reling-{DB_VERSION}.db'
 
 # This code must run both during app execution and on auto-completion.
 # Therefore, it should be placed at the top level of the module.
