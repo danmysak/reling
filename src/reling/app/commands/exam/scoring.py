@@ -1,4 +1,4 @@
-from itertools import islice
+from itertools import islice, starmap
 from typing import Generator
 
 from reling.app.exceptions import AlgorithmException
@@ -81,9 +81,25 @@ def ask_and_parse(gpt: GPTClient, prompt: str) -> Generator[ScoreWithSuggestion,
         )
 
 
+def consider_original_translation(
+        provided_translation: str,
+        original_translation: str,
+        score: ScoreWithSuggestion,
+) -> ScoreWithSuggestion:
+    """
+    Return the original score if the provided translation is different from the original one,
+    otherwise return the maximum score with no suggestion.
+    """
+    if provided_translation.strip() == original_translation.strip():
+        return ScoreWithSuggestion(score=MAX_SCORE, suggestion=None)
+    else:
+        return score
+
+
 def score_text_translations(
         gpt: GPTClient,
         sentences: list[SentenceWithTranslation],
+        original_translations: list[str],
         source_language: Language,
         target_language: Language,
 ) -> Generator[ScoreWithSuggestion, None, None]:
@@ -98,7 +114,11 @@ def score_text_translations(
         blocks=[sentence.sentence for sentence in sentences],
         translations=[sentence.translation.text for sentence in sentences],
     )
-    return ask_and_parse(gpt, prompt)
+    yield from starmap(consider_original_translation, zip(
+        (sentence.translation.text for sentence in sentences),
+        original_translations,
+        ask_and_parse(gpt, prompt),
+    ))
 
 
 def score_dialogue_translations(
@@ -121,4 +141,8 @@ def score_dialogue_translations(
                       for exchange, original_translation in zip(exchanges, original_translations)
                       for turn in [original_translation.speaker, exchange.user_translation.text]],
     )
-    yield from islice(ask_and_parse(gpt, prompt), 1, None, 2)
+    yield from starmap(consider_original_translation, zip(
+        (exchange.user_translation.text for exchange in exchanges),
+        (original_translation.user for original_translation in original_translations),
+        islice(ask_and_parse(gpt, prompt), 1, None, 2),
+    ))

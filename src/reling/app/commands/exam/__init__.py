@@ -113,6 +113,7 @@ def perform_text_exam(
                 score_text_translations(
                     gpt=gpt,
                     sentences=translated,
+                    original_translations=original_translations,
                     source_language=source_language,
                     target_language=target_language,
                 ),
