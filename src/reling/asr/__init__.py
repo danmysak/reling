@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 from openai import OpenAI
 
@@ -19,15 +20,23 @@ class ASRClient:
         self._client = OpenAI(api_key=api_key)
         self._model = model
 
+    @staticmethod
+    def _normalize_transcription(text: str) -> str:
+        return re.sub(
+            r'^([a-z]+|[A-Z]+)(?=[A-Z][a-z]+\s)',  # Whisper sometimes prepends text with weird prefixes
+            '',
+            text.strip(),
+        )
+
     def transcribe(self, file: Path, language: Language | None = None, context: str | None = None) -> str:
         """Transcribe an audio file."""
         with openai_handler():
-            return self._client.audio.transcriptions.create(
+            return self._normalize_transcription(self._client.audio.transcriptions.create(
                 file=file.open('rb'),
                 model=self._model,
                 language=language.short_code if language else None,
                 prompt=context,
-            ).text
+            ).text)
 
     def get_transcriber(self, language: Language | None = None, context: str | None = None) -> Transcriber:
         def transcribe(file: Path) -> str:
