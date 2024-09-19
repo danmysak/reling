@@ -1,3 +1,4 @@
+from itertools import starmap
 from typing import Generator
 
 from reling.db.enums import ContentCategory, Gender, Level
@@ -5,7 +6,7 @@ from reling.db.models import Language
 from reling.gpt import GPTClient
 from reling.types import DialogueExchangeData, WordWithSense
 from reling.utils.english import pluralize
-from reling.utils.iterables import map_asterisk, pair_items
+from reling.utils.iterables import pair_items
 from reling.utils.transformers import omit_empty, remove_numbering, slugify, strip
 
 __all__ = [
@@ -84,7 +85,7 @@ def generate_dialogue_exchanges(
         topic: str | None,
         include: list[WordWithSense],
 ) -> Generator[DialogueExchangeData, None, None]:
-    return map_asterisk(DialogueExchangeData, pair_items(gpt.ask(
+    return iter(starmap(DialogueExchangeData, pair_items(gpt.ask(
         '\n'.join([
             f'Generate a dialogue in {language.name} consisting of {num_exchanges * 2} sentences.',
             f'The dialogue should be between two speakers, {speaker} and me.',
@@ -98,7 +99,7 @@ def generate_dialogue_exchanges(
             *build_include_prompt(include),
         ]),
         transformers=[strip, omit_empty, remove_numbering],
-    )))
+    ))))
 
 
 def generate_id(

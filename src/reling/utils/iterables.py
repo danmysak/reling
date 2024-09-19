@@ -1,8 +1,7 @@
-from typing import Callable, cast, Generator, Iterable
+from typing import cast, Generator, Iterable
 
 __all__ = [
     'group_items',
-    'map_asterisk',
     'pair_items',
 ]
 
@@ -19,8 +18,3 @@ def group_items[T](iterable: Iterable[T], group_size: int) -> Generator[tuple[T,
 def pair_items[T](iterable: Iterable[T]) -> Generator[tuple[T, T], None, None]:
     """Pair items from the iterable into tuples. The last item is discarded if there is an odd number of items."""
     return cast(Generator[tuple[T, T], None, None], group_items(iterable, 2))
-
-
-def map_asterisk[T](f: Callable[..., T], items: Iterable[tuple]) -> Generator[T, None, None]:
-    """Apply the function to each tuple in the iterable as positional arguments."""
-    return (f(*args) for args in items)

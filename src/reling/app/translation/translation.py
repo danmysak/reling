@@ -1,10 +1,11 @@
+from itertools import starmap
 from typing import Generator
 
 from reling.db.enums import Gender
 from reling.db.models import Language
 from reling.gpt import GPTClient
 from reling.types import DialogueExchangeData
-from reling.utils.iterables import map_asterisk, pair_items
+from reling.utils.iterables import pair_items
 from reling.utils.transformers import add_numbering, apply, omit_empty, remove_numbering, strip
 
 __all__ = [
@@ -40,7 +41,7 @@ def translate_dialogue_exchanges(
         target_language: Language,
 ) -> Generator[DialogueExchangeData, None, None]:
     DialogueExchangeData.assert_speaker_comes_first()
-    return map_asterisk(DialogueExchangeData, pair_items(gpt.ask(
+    return iter(starmap(DialogueExchangeData, pair_items(gpt.ask(
         '\n'.join([
             f'Translate the following dialogue between {speaker_gender.describe()} and {user_gender.describe()} '
             f'from {source_language.name} into {target_language.name}'
@@ -56,4 +57,4 @@ def translate_dialogue_exchanges(
             *apply(add_numbering, [turn for exchange in exchanges for turn in exchange.all()]),
         ]),
         transformers=[strip, omit_empty, remove_numbering],
-    )))
+    ))))
