@@ -12,7 +12,7 @@ __all__ = [
 ]
 
 APP_NAME = 'ReLing'
-DB_VERSION = '1.1'
+DB_VERSION = 'a'
 DB_NAME = f'reling-{DB_VERSION}.db'
 
 # This code must run both during app execution and on auto-completion.
