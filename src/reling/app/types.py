@@ -50,16 +50,22 @@ __all__ = [
 
 ENV_PREFIX = 'RELING_'
 
-API_KEY = Annotated[str, typer.Option(
+API_KEY = Annotated[TyperExtraOption, typer.Option(
     envvar=f'{ENV_PREFIX}API_KEY',
+    parser=TyperExtraOption.parser,
     help='your OpenAI API key',
-    prompt='Enter your OpenAI API key',
+    default_factory=TyperExtraOption.default_factory(
+        prompt='Enter your OpenAI API key',
+    ),
 )]
 
-MODEL = Annotated[str, typer.Option(
+MODEL = Annotated[TyperExtraOption, typer.Option(
     envvar=f'{ENV_PREFIX}MODEL',
+    parser=TyperExtraOption.parser,
     help='identifier for the GPT model to be used',
-    prompt='Enter the GPT model identifier',
+    default_factory=TyperExtraOption.default_factory(
+        prompt='Enter the GPT model identifier',
+    ),
 )]
 
 TTS_MODEL = Annotated[TyperExtraOption, typer.Option(

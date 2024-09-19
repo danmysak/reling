@@ -2,7 +2,7 @@ from reling.app.exceptions import AlgorithmException
 from reling.db import single_session
 from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.gpt import GPTClient
-from reling.types import DialogueExchangeData
+from reling.types import DialogueExchangeData, Promise
 from reling.utils.typer import typer_raise
 from .exceptions import TranslationExistsException
 from .operation import translate_dialogue, translate_text
@@ -13,7 +13,7 @@ __all__ = [
 ]
 
 
-def get_text_sentences(gpt: GPTClient, text: Text, language: Language) -> list[str]:
+def get_text_sentences(gpt: Promise[GPTClient], text: Text, language: Language) -> list[str]:
     """Get the sentences of a text in a specified language."""
     if language.id == text.language_id:
         return [sentence.sentence for sentence in text.sentences]
@@ -33,7 +33,11 @@ def get_text_sentences(gpt: GPTClient, text: Text, language: Language) -> list[s
         ]
 
 
-def get_dialogue_exchanges(gpt: GPTClient, dialogue: Dialogue, language: Language) -> list[DialogueExchangeData]:
+def get_dialogue_exchanges(
+        gpt: Promise[GPTClient],
+        dialogue: Dialogue,
+        language: Language,
+) -> list[DialogueExchangeData]:
     """Get the exchanges of a dialogue in a specified language."""
     if language.id == dialogue.language_id:
         return [

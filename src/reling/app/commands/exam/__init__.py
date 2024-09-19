@@ -23,6 +23,7 @@ from reling.gpt import GPTClient
 from reling.helpers.pyaudio import ensure_pyaudio
 from reling.helpers.voices import pick_voices
 from reling.tts import TTSClient
+from reling.utils.functions import promisify
 from reling.utils.time import now
 from reling.utils.typer import typer_raise
 from .input import collect_dialogue_translations, collect_text_translations
@@ -67,13 +68,13 @@ def exam(
             typer_raise(f'Cannot read in {language.name} as it is not the source or target language.')
 
     (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(
-        GPTClient(api_key=api_key, model=model),
+        GPTClient(api_key=api_key.get(), model=model.get()),
         content,
         from_,
         to,
-        source_tts=TTSClient(api_key=api_key, model=tts_model.get()) if from_ in read else None,
-        target_tts=TTSClient(api_key=api_key, model=tts_model.get()) if to in read else None,
-        asr=ASRClient(api_key=api_key, model=asr_model.get()) if listen else None,
+        source_tts=TTSClient(api_key=api_key.get(), model=tts_model.get()) if from_ in read else None,
+        target_tts=TTSClient(api_key=api_key.get(), model=tts_model.get()) if to in read else None,
+        asr=ASRClient(api_key=api_key.get(), model=asr_model.get()) if listen else None,
     )
 
 
@@ -95,8 +96,8 @@ def perform_text_exam(
         voice_source_tts = source_tts.with_voice(source_voice) if source_tts else None
         voice_target_tts = target_tts.with_voice(target_voice) if target_tts else None
 
-        sentences = get_text_sentences(gpt, text, source_language)
-        original_translations = get_text_sentences(gpt, text, target_language)
+        sentences = get_text_sentences(promisify(gpt), text, source_language)
+        original_translations = get_text_sentences(promisify(gpt), text, target_language)
 
         started_at = now()
         translated = list(collect_text_translations(
@@ -165,8 +166,8 @@ def perform_dialogue_exam(
         target_user_tts = target_tts.with_voice(user_voice) if target_tts else None
         target_speaker_tts = target_tts.with_voice(speaker_voice) if target_tts else None
 
-        exchanges = get_dialogue_exchanges(gpt, dialogue, source_language)
-        original_translations = get_dialogue_exchanges(gpt, dialogue, target_language)
+        exchanges = get_dialogue_exchanges(promisify(gpt), dialogue, source_language)
+        original_translations = get_dialogue_exchanges(promisify(gpt), dialogue, target_language)
 
         started_at = now()
         translated = list(collect_dialogue_translations(

@@ -55,7 +55,7 @@ def text(
         include: INCLUDE_OPT = None,
 ) -> None:
     """Create a text and save it to the database."""
-    gpt = GPTClient(api_key=api_key, model=model)
+    gpt = GPTClient(api_key=api_key.get(), model=model.get())
     topic = topic or get_random_modifier(Topic).name
     style = style or get_random_modifier(Style).name
 
@@ -100,7 +100,7 @@ def dialogue(
         include: INCLUDE_OPT = None,
 ) -> None:
     """Create a dialogue and save it to the database."""
-    gpt = GPTClient(api_key=api_key, model=model)
+    gpt = GPTClient(api_key=api_key.get(), model=model.get())
     speaker = speaker or get_random_modifier(Speaker).name
     speaker_gender = speaker_gender or choice([Gender.MALE, Gender.FEMALE])
 

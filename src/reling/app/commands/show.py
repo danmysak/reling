@@ -14,6 +14,7 @@ from reling.helpers.output import output, SentenceData
 from reling.helpers.pyaudio import ensure_pyaudio
 from reling.helpers.voices import pick_voice, pick_voices
 from reling.tts import TTSClient
+from reling.types import Promise
 
 __all__ = [
     'show',
@@ -36,21 +37,21 @@ def show(
     if read:
         ensure_pyaudio()
     (show_text if isinstance(content, Text) else show_dialogue)(
-        GPTClient(api_key=api_key, model=model),
+        lambda: GPTClient(api_key=api_key.get(), model=model.get()),
         content,
         language or content.language,
-        TTSClient(api_key=api_key, model=tts_model.get()) if read else None,
+        TTSClient(api_key=api_key.get(), model=tts_model.get()) if read else None,
     )
 
 
-def show_text(gpt: GPTClient, text: Text, language: Language, tts: TTSClient | None) -> None:
+def show_text(gpt: Promise[GPTClient], text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
     voice_tts = tts.with_voice(pick_voice()) if tts else None
     for sentence in get_text_sentences(gpt, text, language):
         output(SentenceData.from_tts(sentence, voice_tts))
 
 
-def show_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
+def show_dialogue(gpt: Promise[GPTClient], dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
     """Display the dialogue in the specified language, optionally reading it out loud."""
     exchanges = get_dialogue_exchanges(gpt, dialogue, language)
     speaker_tts, user_tts = map(tts.with_voice, pick_voices(

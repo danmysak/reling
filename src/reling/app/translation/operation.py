@@ -7,7 +7,7 @@ from reling.app.exceptions import AlgorithmException
 from reling.db import single_session
 from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.gpt import GPTClient
-from reling.types import DialogueExchangeData
+from reling.types import DialogueExchangeData, Promise
 from .exceptions import TranslationExistsException
 from .storage import save_dialogue_translation, save_text_translation
 from .translation import translate_dialogue_exchanges, translate_text_sentences
@@ -36,7 +36,7 @@ def is_dialogue_translated(dialogue: Dialogue, language: Language) -> bool:
         )).scalar()
 
 
-def translate_text(gpt: GPTClient, text: Text, language: Language) -> None:
+def translate_text(gpt: Promise[GPTClient], text: Text, language: Language) -> None:
     """
     Translate a text into another language.
 
@@ -50,7 +50,7 @@ def translate_text(gpt: GPTClient, text: Text, language: Language) -> None:
         raise TranslationExistsException
     sentences = list(tqdm(
         translate_text_sentences(
-            gpt=gpt,
+            gpt=gpt(),
             sentences=[sentence.sentence for sentence in text.sentences],
             source_language=text.language,
             target_language=language,
@@ -65,7 +65,7 @@ def translate_text(gpt: GPTClient, text: Text, language: Language) -> None:
     save_text_translation(text, language, sentences)
 
 
-def translate_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language) -> None:
+def translate_dialogue(gpt: Promise[GPTClient], dialogue: Dialogue, language: Language) -> None:
     """
     Translate a dialogue into another language.
 
@@ -79,7 +79,7 @@ def translate_dialogue(gpt: GPTClient, dialogue: Dialogue, language: Language) -
         raise TranslationExistsException
     exchanges = list(tqdm(
         translate_dialogue_exchanges(
-            gpt=gpt,
+            gpt=gpt(),
             exchanges=[
                 DialogueExchangeData(
                     speaker=exchange.speaker,
