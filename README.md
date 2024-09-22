@@ -365,7 +365,7 @@ To avoid specifying [model names](https://platform.openai.com/docs/models) and e
 
 - `RELING_API_KEY`: a pre-generated API key for OpenAI’s web API.
 - `RELING_MODEL`: the name of the GPT model used for generating text and taking exams (e.g., `gpt-4o`).
-- `RELING_TTS_MODEL`: the name of the text-to-speech (TTS) model (e.g., `tts-1`).
+- `RELING_TTS_MODEL`: the name of the text-to-speech (TTS) model (e.g., `tts-1`). Since current OpenAI TTS models primarily focus on English and may not perform well in other languages, you can use the additional model `_gtts` (Google Text-to-Speech) for better voice output in other languages (note the leading underscore).
 - `RELING_ASR_MODEL`: the name of the automatic speech recognition (ASR) model for voice response recognition (e.g., `whisper-1`).
 
 Parameter values specified in individual commands will take precedence over these environment variables.

@@ -5,6 +5,7 @@ from typing import Callable, Never
 
 import typer
 
+from reling.types import Promise
 from .functions import named_function
 from .strings import replace_prefix_casing
 
@@ -104,3 +105,6 @@ class TyperExtraOption:
         if self._data is None:
             self._data = typer.prompt(self._prompt)
         return self._data
+
+    def promise(self) -> Promise[str]:
+        return lambda: self.get()

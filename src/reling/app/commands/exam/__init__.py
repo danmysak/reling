@@ -22,7 +22,7 @@ from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
 from reling.helpers.pyaudio import ensure_pyaudio
 from reling.helpers.voices import pick_voices
-from reling.tts import TTSClient
+from reling.tts import get_tts_client, TTSClient
 from reling.utils.functions import promisify
 from reling.utils.time import now
 from reling.utils.typer import typer_raise
@@ -72,8 +72,10 @@ def exam(
         content,
         from_,
         to,
-        source_tts=TTSClient(api_key=api_key.get(), model=tts_model.get()) if from_ in read else None,
-        target_tts=TTSClient(api_key=api_key.get(), model=tts_model.get()) if to in read else None,
+        source_tts=(get_tts_client(model=tts_model.get(), api_key=api_key.promise(), language=from_)
+                    if from_ in read else None),
+        target_tts=(get_tts_client(model=tts_model.get(), api_key=api_key.promise(), language=to)
+                    if to in read else None),
         asr=ASRClient(api_key=api_key.get(), model=asr_model.get()) if listen else None,
     )
 
