@@ -23,9 +23,10 @@ class ASRClient:
     @staticmethod
     def _normalize_transcription(text: str) -> str:
         return re.sub(
-            r'^([a-z]+|[A-Z]+)(?=[A-Z][a-z]+\s)',  # Whisper sometimes prepends text with weird prefixes
+            r'^([a-z]+|[A-Z]+)[\'’]?(?=[A-Z][a-z]+([.?!,;:]|\s))',  # Remove extra prefixes that Whisper sometimes adds
             '',
-            text.strip(),
+            ''.join(char for char in text.strip()
+                    if not (0xE000 <= ord(char) <= 0xF8FF))  # Strip private use area characters from the Whisper output
         )
 
     def transcribe(self, file: Path, language: Language | None = None, context: str | None = None) -> str:
