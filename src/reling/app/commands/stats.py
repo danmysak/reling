@@ -1,6 +1,7 @@
 import sys
 
 from reling.app.app import app
+from reling.app.default_content import set_default_content
 from reling.app.types import CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM
 from reling.db.models import DialogueExam, Language, TextExam
 from reling.utils.scores import format_average_score
@@ -37,6 +38,7 @@ def get_sort_key(exam: TextExam | DialogueExam) -> tuple:
 @app.command()
 def stats(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_OPT = None) -> None:
     """Display statistics about the translation exams, optionally filtered by source or target language."""
+    set_default_content(content)
     exams = sorted(
         filter(lambda e: match(e, from_, to), content.exams),
         key=get_sort_key,

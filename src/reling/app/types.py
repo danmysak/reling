@@ -34,7 +34,7 @@ __all__ = [
     'LEVEL_OPT',
     'LISTEN_OPT',
     'MODEL',
-    'NEW_NAME_ARG',
+    'NEW_ID_ARG',
     'READ_LANGUAGE_OPT',
     'READ_OPT',
     'REGEX_CONTENT_OPT',
@@ -49,6 +49,8 @@ __all__ = [
 ]
 
 ENV_PREFIX = 'RELING_'
+
+LAST_CONTENT_MARKER = '.'
 
 API_KEY = Annotated[TyperExtraOption, typer.Option(
     envvar=f'{ENV_PREFIX}API_KEY',
@@ -97,8 +99,8 @@ USER_GENDER = Annotated[Gender, typer.Option(
 type TextOrDialogue = Text | Dialogue  # Typer does not yet support union types (except for Optional)
 
 CONTENT_ARG = Annotated[TextOrDialogue, typer.Argument(
-    parser=typer_func_parser(find_content),
-    help='name of the text or dialogue',
+    parser=typer_func_parser(lambda content_id: find_content(content_id, LAST_CONTENT_MARKER)),
+    help=f'ID of the text or dialogue ("{LAST_CONTENT_MARKER}" for the last used content)',
     autocompletion=find_ids_by_prefix,
 )]
 
@@ -172,8 +174,8 @@ INCLUDE_OPT = Annotated[list[str] | None, typer.Option(
          f'(e.g., "bank" or "bank{WordWithSense.DELIMITER_WITH_WHITE_SPACE}financial institution" for disambiguation)',
 )]
 
-NEW_NAME_ARG = Annotated[str, typer.Argument(
-    help='new name for the text or dialogue',
+NEW_ID_ARG = Annotated[str, typer.Argument(
+    help='new ID for the text or dialogue',
 )]
 
 REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(

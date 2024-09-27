@@ -32,6 +32,7 @@ Optionally, the system can vocalize sentences in both the source and target lang
 - [Renaming Content](#renaming-content)
 - [Deleting Content](#deleting-content)
 - [Exporting Data](#exporting-data)
+- [Automatic Content ID](#automatic-content-id)
 - [Languages](#languages)
 - [Setting Models and API Key](#setting-models-and-api-key)
 - [Specifying Genders](#specifying-genders)
@@ -312,16 +313,16 @@ Specify the identifier of the content to be restored from the archive.
 To rename a specific text or dialogue:
 
 ```bash
-reling rename <CONTENT-ID> <NEW-NAME>
+reling rename <CONTENT-ID> <NEW-ID>
 ```
 
 ### Content ID
 
 Enter the identifier of the content you want to rename.
 
-### New Name
+### New ID
 
-Provide the new name for the content.
+Provide the new identifier for the content.
 
 
 ## Deleting Content<a id="deleting-content"></a>
@@ -350,6 +351,11 @@ To access the data storage file for transferring or backing up content and exam 
 ```bash
 reling db
 ```
+
+
+## Automatic Content ID<a id="automatic-content-id"></a>
+
+If a dot (`.`) is provided in place of a content ID in any command, the system will assume that you are referring to the last text or dialogue you interacted with.
 
 
 ## Languages<a id="languages"></a>

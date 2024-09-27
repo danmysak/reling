@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from tqdm import tqdm
 
 from reling.app.app import app
+from reling.app.default_content import set_default_content
 from reling.app.exceptions import AlgorithmException
 from reling.app.translation import get_dialogue_exchanges, get_text_sentences
 from reling.app.types import (
@@ -53,6 +54,7 @@ def exam(
     Test the user's ability to translate content from one language to another.
     If only one language is specified, the content's original language is assumed for the unspecified direction.
     """
+    set_default_content(content)
     if read or listen:
         ensure_pyaudio()
     if from_ is None and to is None:

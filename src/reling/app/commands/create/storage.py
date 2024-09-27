@@ -31,7 +31,7 @@ def save_text(
         level: Level,
         topic: str,
         style: str,
-) -> str:
+) -> Text:
     """Save a text with the given sentences and return its ID."""
     with single_session() as session:
         text_id = generate_id(suggested_id)
@@ -58,7 +58,7 @@ def save_text(
             category=ContentCategory.TEXT,
         ))
         session.commit()
-    return text_id
+    return text
 
 
 def save_dialogue(
@@ -70,7 +70,7 @@ def save_dialogue(
         topic: str | None,
         speaker_gender: Gender,
         user_gender: Gender,
-) -> str:
+) -> Dialogue:
     """Save a dialogue with the given exchanges and return its ID."""
     with single_session() as session:
         dialogue_id = generate_id(suggested_id)
@@ -100,4 +100,4 @@ def save_dialogue(
             category=ContentCategory.DIALOGUE,
         ))
         session.commit()
-    return dialogue_id
+    return dialogue

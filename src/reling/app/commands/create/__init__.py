@@ -3,6 +3,7 @@ from tqdm import tqdm
 import typer
 
 from reling.app.app import app
+from reling.app.default_content import set_default_content
 from reling.app.types import (
     API_KEY,
     INCLUDE_OPT,
@@ -75,7 +76,7 @@ def text(
     if len(sentences) < round(size * MIN_SIZE_THRESHOLD):
         typer_raise('Failed to generate the text.')
 
-    text_id = save_text(
+    content = save_text(
         suggested_id=generate_id(gpt, sentences),
         sentences=sentences,
         language=language,
@@ -83,7 +84,8 @@ def text(
         topic=topic,
         style=style,
     )
-    print(f'Generated text with the following ID:\n{text_id}')
+    set_default_content(content)
+    print(f'Generated text with the following ID:\n{content.id}')
 
 
 @create.command()
@@ -122,7 +124,7 @@ def dialogue(
     if len(exchanges) < round(size * MIN_SIZE_THRESHOLD):
         typer_raise('Failed to generate the dialogue.')
 
-    dialogue_id = save_dialogue(
+    content = save_dialogue(
         suggested_id=generate_id(gpt, [turn for exchange in exchanges for turn in exchange.all()]),
         exchanges=exchanges,
         language=language,
@@ -132,4 +134,5 @@ def dialogue(
         speaker_gender=speaker_gender,
         user_gender=user_gender,
     )
-    print(f'Generated dialogue with the following ID:\n{dialogue_id}')
+    set_default_content(content)
+    print(f'Generated dialogue with the following ID:\n{content.id}')

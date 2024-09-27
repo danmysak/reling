@@ -91,7 +91,7 @@ def list_(
         archive: ARCHIVE_OPT = False,
         ids_only: IDS_ONLY_OPT = False,
 ) -> None:
-    """List texts and/or dialogues, optionally filtered by name or other criteria."""
+    """List texts and/or dialogues, optionally filtered by ID or other criteria."""
     with single_session() as session:
         for model in [
             *([Text] if category != ContentCategory.DIALOGUE else []),

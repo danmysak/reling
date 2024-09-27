@@ -1,4 +1,5 @@
 from reling.app.app import app
+from reling.app.default_content import set_default_content
 from reling.app.translation import get_dialogue_exchanges, get_text_sentences
 from reling.app.types import (
     API_KEY,
@@ -34,6 +35,7 @@ def show(
         read: READ_OPT = False,
 ) -> None:
     """Display a text or dialogue, or its translation if a language is specified."""
+    set_default_content(content)
     if read:
         ensure_pyaudio()
     language = language or content.language

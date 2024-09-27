@@ -2,6 +2,7 @@ from reling.data import LANGUAGES_PATH, SPEAKERS_PATH, STYLES_PATH, TOPICS_PATH
 from reling.db.helpers.languages import populate_languages
 from reling.db.helpers.modifiers import populate_modifiers
 from reling.db.models import Speaker, Style, Topic
+from reling.shelf import init_shelf
 from reling.utils.paths import get_app_data_parent
 from . import commands  # Register commands with Typer
 from .app import app
@@ -12,13 +13,17 @@ __all__ = [
 ]
 
 APP_NAME = 'ReLing'
+
 DB_VERSION = 'a'
 DB_NAME = f'reling-{DB_VERSION}.db'
+
+SHELF_NAME = 'shelf'
 
 # This code must run both during app execution and on auto-completion.
 # Therefore, it should be placed at the top level of the module.
 DATA_PATH = get_app_data_parent() / APP_NAME
 DATA_PATH.mkdir(parents=True, exist_ok=True)
+init_shelf(DATA_PATH / SHELF_NAME)
 init_db(DATA_PATH / DB_NAME)
 populate_languages(LANGUAGES_PATH)
 populate_modifiers(Topic, TOPICS_PATH)
