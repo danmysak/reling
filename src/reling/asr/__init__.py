@@ -6,6 +6,7 @@ from openai import OpenAI
 from reling.db.models import Language
 from reling.types import Transcriber
 from reling.utils.openai import openai_handler
+from reling.utils.strings import capitalize_first_char
 
 __all__ = [
     'ASRClient',
@@ -22,12 +23,12 @@ class ASRClient:
 
     @staticmethod
     def _normalize_transcription(text: str) -> str:
-        return re.sub(
+        return capitalize_first_char(re.sub(
             r'^([a-z]+|[A-Z]+)[\'’]?(?=[A-Z][a-z]+([.?!,;:]|\s))',  # Remove extra prefixes that Whisper sometimes adds
             '',
             ''.join(char for char in text.strip()
                     if not (0xE000 <= ord(char) <= 0xF8FF))  # Strip private use area characters from the Whisper output
-        ).capitalize()
+        ))
 
     def transcribe(self, file: Path, language: Language | None = None, context: str | None = None) -> str:
         """Transcribe an audio file."""
