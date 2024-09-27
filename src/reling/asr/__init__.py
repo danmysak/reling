@@ -27,7 +27,7 @@ class ASRClient:
             '',
             ''.join(char for char in text.strip()
                     if not (0xE000 <= ord(char) <= 0xF8FF))  # Strip private use area characters from the Whisper output
-        )
+        ).capitalize()
 
     def transcribe(self, file: Path, language: Language | None = None, context: str | None = None) -> str:
         """Transcribe an audio file."""
