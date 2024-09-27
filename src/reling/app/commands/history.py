@@ -9,7 +9,7 @@ from reling.utils.tables import build_table, print_table
 from reling.utils.time import format_time, format_time_delta
 
 __all__ = [
-    'stats',
+    'history',
 ]
 
 FROM = 'From'
@@ -36,8 +36,8 @@ def get_sort_key(exam: TextExam | DialogueExam) -> tuple:
 
 
 @app.command()
-def stats(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_OPT = None) -> None:
-    """Display statistics about the translation exams, optionally filtered by source or target language."""
+def history(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_OPT = None) -> None:
+    """Display exam history, optionally filtered by source or target language."""
     set_default_content(content)
     exams = sorted(
         filter(lambda e: match(e, from_, to), content.exams),

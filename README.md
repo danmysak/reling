@@ -228,12 +228,12 @@ Refer to [Setting Models and API Key](#setting-models-and-api-key).
 
 
 ## Exam History<a id="exam-history"></a>
-`reling stats`
+`reling history`
 
-To view your exam history and statistics, use the command:
+To view your exam history, use the command:
 
 ```bash
-reling stats <CONTENT-ID> [--from en] [--to fr]
+reling history <CONTENT-ID> [--from en] [--to fr]
 ```
 
 ### Content ID
