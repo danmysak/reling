@@ -1,5 +1,8 @@
 from itertools import islice, starmap
+from math import floor
 from typing import Generator
+
+from lcs2 import lcs_length
 
 from reling.app.exceptions import AlgorithmException
 from reling.db.enums import ContentCategory
@@ -81,7 +84,12 @@ def ask_and_parse(gpt: GPTClient, prompt: str) -> Generator[ScoreWithSuggestion,
         )
 
 
-def consider_original_translation(
+def lcs_score(a: str, b: str) -> int:
+    """Return the score based on the longest common subsequence of two strings."""
+    return floor(lcs_length(a, b) / max(len(a), len(b)) * MAX_SCORE)
+
+
+def compare_strings(
         provided_translation: str,
         original_translation: str,
         score: ScoreWithSuggestion,
@@ -90,10 +98,14 @@ def consider_original_translation(
     Return the original score if the provided translation is different from the original one,
     otherwise return the maximum score with no suggestion.
     """
-    if provided_translation.strip() == original_translation.strip():
-        return ScoreWithSuggestion(score=MAX_SCORE, suggestion=None)
-    else:
-        return score
+    fixed_score = max([score.score] + [lcs_score(provided_translation, corrected) for corrected in filter(None, [
+        original_translation,
+        score.suggestion,
+    ])])
+    return ScoreWithSuggestion(
+        score=fixed_score,
+        suggestion=score.suggestion if fixed_score < MAX_SCORE else None,
+    )
 
 
 def score_text_translations(
@@ -114,7 +126,7 @@ def score_text_translations(
         blocks=[sentence.sentence for sentence in sentences],
         translations=[sentence.translation.text for sentence in sentences],
     )
-    yield from starmap(consider_original_translation, zip(
+    yield from starmap(compare_strings, zip(
         (sentence.translation.text for sentence in sentences),
         original_translations,
         ask_and_parse(gpt, prompt),
@@ -141,7 +153,7 @@ def score_dialogue_translations(
                       for exchange, original_translation in zip(exchanges, original_translations)
                       for turn in [original_translation.speaker, exchange.user_translation.text]],
     )
-    yield from starmap(consider_original_translation, zip(
+    yield from starmap(compare_strings, zip(
         (exchange.user_translation.text for exchange in exchanges),
         (original_translation.user for original_translation in original_translations),
         islice(ask_and_parse(gpt, prompt), 1, None, 2),
