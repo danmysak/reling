@@ -7,6 +7,7 @@ from .console import input_and_erase
 __all__ = [
     'ENTER',
     'enter_to_continue',
+    'format_shortcut',
     'Prompt',
     'PromptOption',
 ]
