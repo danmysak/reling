@@ -51,7 +51,7 @@ def translate_text(gpt: Promise[GPTClient], text: Text, language: Language) -> N
     sentences = list(tqdm(
         translate_text_sentences(
             gpt=gpt(),
-            sentences=[sentence.sentence for sentence in text.sentences],
+            sentences=[cast(str, sentence.sentence) for sentence in text.sentences],
             source_language=text.language,
             target_language=language,
         ),

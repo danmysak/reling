@@ -3,6 +3,7 @@ from datetime import timedelta
 from functools import partial
 from typing import Iterable
 
+from reling.app.config import MAX_SCORE
 from reling.helpers.output import output, SentenceData
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
@@ -10,7 +11,6 @@ from reling.types import DialogueExchangeData, Input
 from reling.utils.scores import format_average_score
 from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
-from .scoring import MAX_SCORE
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [

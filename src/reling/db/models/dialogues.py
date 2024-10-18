@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -76,6 +76,7 @@ class DialogueExam(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
     dialogue_id: Mapped[str] = mapped_column(ForeignKey(Dialogue.id, onupdate='CASCADE', ondelete='CASCADE'))
+    dialogue: Mapped[Dialogue] = relationship(Dialogue, viewonly=True)
     source_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
     source_language: Mapped[Language] = relationship(Language, foreign_keys=source_language_id)
     target_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
@@ -90,6 +91,19 @@ class DialogueExam(Base):
         order_by='DialogueExamResult.dialogue_exchange_index',
         passive_deletes=True,
     )
+
+    __table_args__ = (
+        Index('dialogue_exam_source_language', 'source_language_id', 'started_at'),
+        Index('dialogue_exam_target_language', 'target_language_id', 'started_at'),
+    )
+
+    @property
+    def item_id(self) -> str:
+        return self.dialogue_id
+
+    @property
+    def duration(self) -> timedelta:
+        return self.finished_at - self.started_at
 
 
 class DialogueExamResult(Base):

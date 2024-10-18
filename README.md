@@ -26,6 +26,7 @@ Optionally, the system can vocalize sentences in both the source and target lang
 - [Displaying Content](#displaying-content)
 - [Taking Exams](#taking-exams)
 - [Exam History](#exam-history)
+- [Learning Statistics](#learning-statistics)
 - [Listing Content](#listing-content)
 - [Archiving Content](#archiving-content)
 - [Unarchiving Content](#unarchiving-content)
@@ -40,9 +41,9 @@ Optionally, the system can vocalize sentences in both the source and target lang
 
 ## Installation<a id="installation"></a>
 
-Install [Python](https://www.python.org/downloads/) 3.12 or higher and [pipx](https://pipx.pypa.io/stable/installation/), then proceed based on your audio preference:
+Install [Python](https://www.python.org/downloads/) 3.12 or higher and [pipx](https://pipx.pypa.io/stable/installation/), then proceed based on your audio and grammar preferences:
 
-### Without Audio Support
+### Without Audio or Grammar Support
 
 ```bash
 pipx install reling
@@ -62,10 +63,26 @@ On Ubuntu, run:
 sudo apt install python3-pyaudio
 ```
 
-Install the package with the `audio` extra:
+Install the tool with the `audio` extra:
 
 ```bash
 pipx install "reling[audio]"
+```
+
+### With Grammar Support
+
+If you want to track grammar-related [learning statistics](#learning-statistics), install the tool with the `grammar` extra:
+
+```bash
+pipx install "reling[grammar]"
+```
+
+### With Both Audio and Grammar Support
+
+Follow the instructions above to install the necessary dependencies, then run the following command:
+
+```bash
+pipx install "reling[audio,grammar]"
 ```
 
 ### Finalizing Setup
@@ -243,6 +260,32 @@ Specify the identifier of the text or dialogue whose exam history you wish to re
 ### `from` & `to`
 
 Limit the display of exam results to translations between specified source and target languages.
+
+
+## Learning Statistics<a id="learning-statistics"></a>
+`reling stats`
+
+The `stats` command provides detailed statistics about your learning progress in specific languages. The command format is:
+
+```bash
+reling stats en [--grammar] [--comprehension] [--production] [--checkpoint 2024-12-01] [--checkpoint "2025-01-01, 15:00"]
+```
+
+### Language
+
+Specify a [supported language](#languages) as the only positional argument. The statistics will be shown for this language.
+
+### `grammar`
+
+Use this flag to view statistics on learned word forms and lemmas, classified by part of speech. If this flag is not used, general statistics, such as total time spent in exams, will be displayed. Note that to use this flag, you must [install](#installation) the tool with the `grammar` extra.
+
+### `comprehension` & `production`
+
+You can request statistics related to either comprehension or production, or both. By default, both are displayed unless one is specifically requested.
+
+### `checkpoint`
+
+Optionally, provide one or more date checkpoints (in `YYYY-MM-DD` or `YYYY-MM-DD, HH:MM` format) to see progress since those points in time.
 
 
 ## Listing Content<a id="listing-content"></a>

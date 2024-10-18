@@ -1,3 +1,5 @@
+from typing import cast
+
 from reling.app.exceptions import AlgorithmException
 from reling.db import single_session
 from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
@@ -12,17 +14,20 @@ __all__ = [
     'get_text_sentences',
 ]
 
+NO_TRANSLATIONS = 'No translations found.'
 
-def get_text_sentences(gpt: Promise[GPTClient], text: Text, language: Language) -> list[str]:
+
+def get_text_sentences(text: Text, language: Language, gpt: Promise[GPTClient] | None = None) -> list[str]:
     """Get the sentences of a text in a specified language."""
     if language.id == text.language_id:
-        return [sentence.sentence for sentence in text.sentences]
-    try:
-        translate_text(gpt, text, language)
-    except TranslationExistsException:
-        pass
-    except AlgorithmException as e:
-        typer_raise(e.msg)
+        return [cast(str, sentence.sentence) for sentence in text.sentences]
+    if gpt is not None:
+        try:
+            translate_text(gpt, text, language)
+        except TranslationExistsException:
+            pass
+        except AlgorithmException as e:
+            typer_raise(e.msg)
     with single_session() as session:
         return [
             translation.sentence
@@ -30,13 +35,13 @@ def get_text_sentences(gpt: Promise[GPTClient], text: Text, language: Language) 
             .where(TextSentenceTranslation.text_id == text.id)
             .where(TextSentenceTranslation.language_id == language.id)
             .order_by(TextSentenceTranslation.text_sentence_index)
-        ]
+        ] or typer_raise(NO_TRANSLATIONS)
 
 
 def get_dialogue_exchanges(
-        gpt: Promise[GPTClient],
         dialogue: Dialogue,
         language: Language,
+        gpt: Promise[GPTClient] | None = None,
 ) -> list[DialogueExchangeData]:
     """Get the exchanges of a dialogue in a specified language."""
     if language.id == dialogue.language_id:
@@ -47,12 +52,13 @@ def get_dialogue_exchanges(
             )
             for exchange in dialogue.exchanges
         ]
-    try:
-        translate_dialogue(gpt, dialogue, language)
-    except TranslationExistsException:
-        pass
-    except AlgorithmException as e:
-        typer_raise(e.msg)
+    if gpt is not None:
+        try:
+            translate_dialogue(gpt, dialogue, language)
+        except TranslationExistsException:
+            pass
+        except AlgorithmException as e:
+            typer_raise(e.msg)
     with single_session() as session:
         return [
             DialogueExchangeData(
@@ -63,4 +69,4 @@ def get_dialogue_exchanges(
             .where(DialogueExchangeTranslation.dialogue_id == dialogue.id)
             .where(DialogueExchangeTranslation.language_id == language.id)
             .order_by(DialogueExchangeTranslation.dialogue_exchange_index)
-        ]
+        ] or typer_raise(NO_TRANSLATIONS)

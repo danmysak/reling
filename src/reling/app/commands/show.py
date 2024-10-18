@@ -50,13 +50,13 @@ def show(
 def show_text(gpt: Promise[GPTClient], text: Text, language: Language, tts: TTSClient | None) -> None:
     """Display the text in the specified language, optionally reading it out loud."""
     voice_tts = tts.with_voice(pick_voice()) if tts else None
-    for sentence in get_text_sentences(gpt, text, language):
+    for sentence in get_text_sentences(text, language, gpt):
         output(SentenceData.from_tts(sentence, voice_tts))
 
 
 def show_dialogue(gpt: Promise[GPTClient], dialogue: Dialogue, language: Language, tts: TTSClient | None) -> None:
     """Display the dialogue in the specified language, optionally reading it out loud."""
-    exchanges = get_dialogue_exchanges(gpt, dialogue, language)
+    exchanges = get_dialogue_exchanges(dialogue, language, gpt)
     speaker_tts, user_tts = map(tts.with_voice, pick_voices(
         dialogue.speaker_gender,
         dialogue.user_gender,

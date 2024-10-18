@@ -1,4 +1,5 @@
 from .dialogues import Dialogue, DialogueExam, DialogueExamResult, DialogueExchange, DialogueExchangeTranslation
+from .grammar import GrammarCacheSentence, GrammarCacheWord
 from .languages import Language
 from .misc import IdIndex
 from .modifiers import Speaker, Style, Topic
@@ -10,6 +11,8 @@ __all__ = [
     'DialogueExamResult',
     'DialogueExchange',
     'DialogueExchangeTranslation',
+    'GrammarCacheSentence',
+    'GrammarCacheWord',
     'IdIndex',
     'Language',
     'Speaker',

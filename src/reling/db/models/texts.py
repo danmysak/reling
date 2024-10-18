@@ -1,5 +1,5 @@
 from __future__ import annotations
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from sqlalchemy import ForeignKey, Index
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -66,6 +66,7 @@ class TextExam(Base):
 
     id: Mapped[str] = mapped_column(primary_key=True)
     text_id: Mapped[str] = mapped_column(ForeignKey(Text.id, onupdate='CASCADE', ondelete='CASCADE'))
+    text: Mapped[Text] = relationship(Text, viewonly=True)
     source_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
     source_language: Mapped[Language] = relationship(Language, foreign_keys=source_language_id)
     target_language_id: Mapped[str] = mapped_column(ForeignKey(Language.id))
@@ -80,6 +81,19 @@ class TextExam(Base):
         order_by='TextExamResult.text_sentence_index',
         passive_deletes=True,
     )
+
+    __table_args__ = (
+        Index('text_exam_source_language', 'source_language_id', 'started_at'),
+        Index('text_exam_target_language', 'target_language_id', 'started_at'),
+    )
+
+    @property
+    def item_id(self) -> str:
+        return self.text_id
+
+    @property
+    def duration(self) -> timedelta:
+        return self.finished_at - self.started_at
 
 
 class TextExamResult(Base):

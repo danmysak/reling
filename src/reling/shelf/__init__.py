@@ -26,6 +26,6 @@ def get_value(key: str) -> str | None:
         return db.get(key)
 
 
-def set_value(key: str, value: str) -> None:
+def set_value(key: str, value: str | None) -> None:
     with shelve.open(get_filename()) as db:
         db[key] = value

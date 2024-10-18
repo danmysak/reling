@@ -55,9 +55,9 @@ def get_text(item: Text | Dialogue) -> list[str]:
 def match(item: Text | Dialogue, level: Level | None, language: Language | None, search: re.Pattern | None) -> bool:
     return (
         (level is None or item.level == level)
-        and (language is None or item.language.id == language.id)
+        and (language is None or cast(Language, item.language).id == language.id)
         and (search is None
-             or search.search(item.id) is not None
+             or search.search(cast(str, item.id)) is not None
              or any(search.search(text) is not None for text in get_text(item)))
     )
 

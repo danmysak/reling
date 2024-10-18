@@ -100,8 +100,8 @@ def perform_text_exam(
         voice_source_tts = source_tts.with_voice(source_voice) if source_tts else None
         voice_target_tts = target_tts.with_voice(target_voice) if target_tts else None
 
-        sentences = get_text_sentences(promisify(gpt), text, source_language)
-        original_translations = get_text_sentences(promisify(gpt), text, target_language)
+        sentences = get_text_sentences(text, source_language, promisify(gpt))
+        original_translations = get_text_sentences(text, target_language, promisify(gpt))
 
         started_at = now()
         translated = list(collect_text_translations(
@@ -170,8 +170,8 @@ def perform_dialogue_exam(
         target_user_tts = target_tts.with_voice(user_voice) if target_tts else None
         target_speaker_tts = target_tts.with_voice(speaker_voice) if target_tts else None
 
-        exchanges = get_dialogue_exchanges(promisify(gpt), dialogue, source_language)
-        original_translations = get_dialogue_exchanges(promisify(gpt), dialogue, target_language)
+        exchanges = get_dialogue_exchanges(dialogue, source_language, promisify(gpt))
+        original_translations = get_dialogue_exchanges(dialogue, target_language, promisify(gpt))
 
         started_at = now()
         translated = list(collect_dialogue_translations(

@@ -1,3 +1,4 @@
+from datetime import datetime
 import re
 from typing import Annotated
 
@@ -9,6 +10,7 @@ from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
 from reling.db.models import Dialogue, Language, Text
 from reling.types import WordWithSense
+from reling.utils.time import DATE_FORMAT, TIME_FORMAT
 from reling.utils.typer import (
     TyperExtraOption,
     typer_enum_autocompletion,
@@ -22,9 +24,12 @@ __all__ = [
     'API_KEY',
     'ARCHIVE_OPT',
     'ASR_MODEL',
+    'CHECKPOINT_OPT',
+    'COMPREHENSION_OPT',
     'CONTENT_ARG',
     'CONTENT_CATEGORY_OPT',
     'FORCE_OPT',
+    'GRAMMAR_OPT',
     'IDS_ONLY_OPT',
     'INCLUDE_OPT',
     'LANGUAGE_ARG',
@@ -35,6 +40,7 @@ __all__ = [
     'LISTEN_OPT',
     'MODEL',
     'NEW_ID_ARG',
+    'PRODUCTION_OPT',
     'READ_LANGUAGE_OPT',
     'READ_OPT',
     'REGEX_CONTENT_OPT',
@@ -183,6 +189,11 @@ REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
     help='regular expression to filter results by ID, content, topic, style, or speaker',
 )]
 
+CHECKPOINT_OPT = Annotated[list[datetime] | None, typer.Option(
+    help='starting date(s) or time(s) to add statistics checkpoints',
+    formats=[DATE_FORMAT, TIME_FORMAT],
+)]
+
 READ_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
     parser=typer_func_parser(find_language),
     help='language(s) to read the content out loud in',
@@ -195,6 +206,18 @@ READ_OPT = Annotated[bool | None, typer.Option(
 
 LISTEN_OPT = Annotated[bool | None, typer.Option(
     help='Record the response as audio and transcribe it into text.',
+)]
+
+GRAMMAR_OPT = Annotated[bool | None, typer.Option(
+    help='Include statistics on learned words.',
+)]
+
+COMPREHENSION_OPT = Annotated[bool | None, typer.Option(
+    help='Compute only comprehension-related statistics.',
+)]
+
+PRODUCTION_OPT = Annotated[bool | None, typer.Option(
+    help='Compute only production-related statistics.',
 )]
 
 ARCHIVE_OPT = Annotated[bool | None, typer.Option(

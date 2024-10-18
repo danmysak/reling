@@ -16,6 +16,7 @@ __all__ = [
     'typer_enum_parser',
     'typer_func_parser',
     'typer_raise',
+    'typer_raise_import',
     'typer_regex_parser',
 ]
 
@@ -23,6 +24,10 @@ __all__ = [
 def typer_raise(message: str) -> Never:
     typer.echo(message, err=True)
     raise typer.Exit(code=1)
+
+
+def typer_raise_import(library: str) -> Never:
+    typer_raise(f'{library} could not be imported. See Readme for installation instructions.')
 
 
 def typer_func_parser[R](func: Callable[[str], R | None]) -> Callable[[str], R]:

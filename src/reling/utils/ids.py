@@ -1,4 +1,4 @@
-import uuid
+from nanoid import generate
 
 __all__ = [
     'generate_id',
@@ -7,4 +7,4 @@ __all__ = [
 
 def generate_id() -> str:
     """Generate a unique identifier."""
-    return str(uuid.uuid4())
+    return generate(size=12)

@@ -17,10 +17,10 @@ def pick_voices(*positions: Gender | None) -> tuple[Voice, ...]:
 
     :raises ValueError: If there are not enough voices to satisfy the requirements.
     """
-    pools = cast(dict[Gender | None, list[Voice]], {None: []})
+    pools: dict[Gender | None, list[Voice]] = {None: []}
 
     for gender in Gender:
-        gender_voices = cast(list[Voice], [voice for voice in Voice if cast(Voice, voice).gender == gender])
+        gender_voices = [cast(Voice, voice) for voice in Voice if cast(Voice, voice).gender == gender]
 
         required_count = positions.count(gender)
         if len(gender_voices) < required_count:

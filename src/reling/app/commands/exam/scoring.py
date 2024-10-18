@@ -1,9 +1,10 @@
 from itertools import islice, starmap
 from math import floor
-from typing import Generator
+from typing import cast, Generator
 
 from lcs2 import lcs_length
 
+from reling.app.config import MAX_SCORE
 from reling.app.exceptions import AlgorithmException
 from reling.db.enums import ContentCategory
 from reling.db.models import Language
@@ -15,12 +16,10 @@ from reling.utils.transformers import add_numbering, apply, omit_empty, remove_n
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
-    'MAX_SCORE',
     'score_dialogue_translations',
     'score_text_translations',
 ]
 
-MAX_SCORE = 10
 NA = 'N/A'
 EMPTY_TRANSLATION = '<empty>'
 
@@ -123,7 +122,7 @@ def score_text_translations(
         category=ContentCategory.TEXT,
         source_language=source_language,
         target_language=target_language,
-        blocks=[sentence.sentence for sentence in sentences],
+        blocks=[cast(str, sentence.sentence) for sentence in sentences],
         translations=[sentence.translation.text for sentence in sentences],
     )
     yield from starmap(compare_strings, zip(

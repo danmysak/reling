@@ -7,6 +7,7 @@ from .history import history
 from .list import list_
 from .rename import rename
 from .show import show
+from .stats import stats
 from .unarchive import unarchive
 
 __all__ = [
@@ -18,5 +19,6 @@ __all__ = [
     'history',
     'list_',
     'show',
+    'stats',
     'unarchive',
 ]
