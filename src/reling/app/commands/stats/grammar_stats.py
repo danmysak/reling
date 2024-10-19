@@ -26,7 +26,7 @@ __all__ = [
 
 PREPARING = 'Preparing...'
 
-TITLE = '{modality}\n(entry = text or dialogue)'
+TITLE = '{modality}\n(only perfect answers are included; entry = unique text or dialogue)'
 
 POS = 'Part of\nspeech'
 TYPE = 'Word\ntype'
