@@ -207,7 +207,7 @@ Optionally, specify a language to view the content in that language, translating
 
 ### `read`
 
-If enabled, the content will be read aloud.
+If enabled, the content will be read aloud. You can stop the reading at any time by pressing `Ctrl + C`.
 
 ### `model`, `tts-model` & `api-key`
 
@@ -233,7 +233,7 @@ Specify the languages from which and to which you would like to translate the te
 
 ### `read`
 
-Optionally, you can specify one or both of the selected source and target languages to have the text read aloud. For example, use `--read en --read fr` to hear the content in English and French.
+Optionally, you can specify one or both of the selected source and target languages to have the text read aloud. For example, use `--read en --read fr` to hear the content in English and French. You can stop the reading at any time by pressing `Ctrl + C`.
 
 ### `listen`
 

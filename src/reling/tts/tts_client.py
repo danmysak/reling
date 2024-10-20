@@ -31,5 +31,9 @@ class TTSVoiceClient:
 
     def get_reader(self, text: str) -> Reader:
         def read(speed: Speed) -> None:
-            self._tts.read(text, self._voice, speed)
+            try:
+                self._tts.read(text, self._voice, speed)
+            except KeyboardInterrupt:
+                pass
+
         return read
