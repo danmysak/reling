@@ -22,7 +22,7 @@ from reling.app.types import (
 from reling.asr import ASRClient
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
-from reling.helpers.pyaudio import ensure_pyaudio
+from reling.helpers.audio import ensure_audio
 from reling.helpers.voices import pick_voices
 from reling.tts import get_tts_client, TTSClient
 from reling.utils.functions import promisify
@@ -58,7 +58,7 @@ def exam(
     """
     set_default_content(content)
     if read or listen:
-        ensure_pyaudio()
+        ensure_audio()
     if from_ is None and to is None:
         typer_raise('You must specify at least one language.')
     from_ = from_ or content.language

@@ -7,10 +7,7 @@ from typing import Callable, Generator, Mapping, TYPE_CHECKING
 if TYPE_CHECKING:
     from pyaudio import PyAudio, Stream
 
-from reling.utils.typer import typer_raise_import
-
 __all__ = [
-    'ensure_pyaudio',
     'get_audio',
     'get_stream',
     'PyAudioData'
@@ -25,14 +22,6 @@ class PyAudioData:
     paInt16: int
     paContinue: int
     paFramesPerBufferUnspecified: int
-
-
-def ensure_pyaudio() -> None:
-    """Ensure PyAudio is installed."""
-    try:
-        import pyaudio
-    except ImportError:
-        typer_raise_import('PyAudio')
 
 
 @contextmanager
