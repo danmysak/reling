@@ -17,6 +17,8 @@ NORMAL_SPEED = 'normal speed'
 SLOWLY = 'slowly'
 REPLAY = 'replay'
 
+HIDDEN_TEXT = '(...)'
+
 
 @dataclass
 class SentenceData:
@@ -24,6 +26,7 @@ class SentenceData:
     print_prefix: str = ''
     reader: Reader | None = None
     reader_id: str | None = None
+    hide_text: bool = False
 
     @staticmethod
     def from_tts(
@@ -32,12 +35,14 @@ class SentenceData:
             *,
             print_prefix: str = '',
             reader_id: str | None = None,
+            hide_text: bool = False,
     ) -> SentenceData:
         return SentenceData(
             text=text,
             print_prefix=print_prefix,
             reader=client.get_reader(text) if client else None,
             reader_id=reader_id,
+            hide_text=hide_text,
         )
 
 
@@ -114,7 +119,7 @@ def output(*sentences: SentenceData) -> None:
     :raises ValueError: If reader_id is not provided for a sentence with a reader in a multi-sentence output.
     """
     for sentence in sentences:
-        print(sentence.print_prefix + sentence.text)
+        print(sentence.print_prefix + (sentence.text if not sentence.hide_text else HIDDEN_TEXT))
     multi_sentence = len(sentences) > 1
     if sentences_with_readers := [sentence for sentence in sentences if sentence.reader]:
         current = ReaderWithSpeed(sentences_with_readers[0].reader, Speed.NORMAL) if len(sentences) == 1 else None

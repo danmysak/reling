@@ -24,12 +24,18 @@ def collect_text_translations(
         target_language: Language,
         source_tts: TTSVoiceClient | None,
         asr: ASRClient | None,
+        hide_prompts: bool,
         storage: Path,
 ) -> Generator[SentenceWithTranslation, None, None]:
     """Collect the translations of text sentences."""
     collected: list[str] = []
     for index, sentence in enumerate(sentences):
-        output(SentenceData.from_tts(sentence, source_tts, print_prefix=get_numbering_prefix(index)))
+        output(SentenceData.from_tts(
+            sentence,
+            source_tts,
+            print_prefix=get_numbering_prefix(index),
+            hide_text=hide_prompts,
+        ))
         translation = get_input(
             prompt=TRANSLATION_PROMPT,
             transcriber_params=TranscriberParams(
@@ -49,14 +55,20 @@ def collect_dialogue_translations(
         source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
         asr: ASRClient | None,
+        hide_prompts: bool,
         storage: Path,
 ) -> Generator[ExchangeWithTranslation, None, None]:
     """Collect the translations of user turns in a dialogue."""
     speaker_translations: list[str] = []
     collected: list[str] = []
     for index, (exchange, original_translation) in enumerate(zip(exchanges, original_translations)):
-        output(SentenceData.from_tts(original_translation.speaker, target_speaker_tts))
-        output(SentenceData.from_tts(exchange.user, source_user_tts, print_prefix=get_numbering_prefix(index)))
+        output(SentenceData.from_tts(original_translation.speaker, target_speaker_tts, hide_text=hide_prompts))
+        output(SentenceData.from_tts(
+            exchange.user,
+            source_user_tts,
+            print_prefix=get_numbering_prefix(index),
+            hide_text=hide_prompts,
+        ))
         speaker_translations.append(original_translation.speaker)
         translation = get_input(
             prompt=TRANSLATION_PROMPT,

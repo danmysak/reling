@@ -30,6 +30,7 @@ __all__ = [
     'CONTENT_CATEGORY_OPT',
     'FORCE_OPT',
     'GRAMMAR_OPT',
+    'HIDE_PROMPTS_OPT',
     'IDS_ONLY_OPT',
     'INCLUDE_OPT',
     'LANGUAGE_ARG',
@@ -206,6 +207,10 @@ READ_OPT = Annotated[bool | None, typer.Option(
 
 LISTEN_OPT = Annotated[bool | None, typer.Option(
     help='Record the response as audio and transcribe it into text.',
+)]
+
+HIDE_PROMPTS_OPT = Annotated[bool | None, typer.Option(
+    help='Hide the original language text and interlocutor\'s turn.',
 )]
 
 GRAMMAR_OPT = Annotated[bool | None, typer.Option(

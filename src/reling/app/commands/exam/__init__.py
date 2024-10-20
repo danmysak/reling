@@ -11,6 +11,7 @@ from reling.app.types import (
     API_KEY,
     ASR_MODEL,
     CONTENT_ARG,
+    HIDE_PROMPTS_OPT,
     LANGUAGE_OPT,
     LANGUAGE_OPT_FROM,
     LISTEN_OPT,
@@ -49,6 +50,7 @@ def exam(
         to: LANGUAGE_OPT = None,
         read: READ_LANGUAGE_OPT = None,
         listen: LISTEN_OPT = False,
+        hide_prompts: HIDE_PROMPTS_OPT = False,
 ) -> None:
     """
     Test the user's ability to translate content from one language to another.
@@ -79,6 +81,7 @@ def exam(
         target_tts=(get_tts_client(model=tts_model.get(), api_key=api_key.promise(), language=to)
                     if to in read else None),
         asr=ASRClient(api_key=api_key.get(), model=asr_model.get()) if listen else None,
+        hide_prompts=hide_prompts,
     )
 
 
@@ -90,6 +93,7 @@ def perform_text_exam(
         source_tts: TTSClient | None,
         target_tts: TTSClient | None,
         asr: ASRClient | None,
+        hide_prompts: bool,
 ) -> None:
     """
     Translate the text as needed, collect user translations, score them, save and present the results to the user,
@@ -109,6 +113,7 @@ def perform_text_exam(
             target_language=target_language,
             source_tts=voice_source_tts,
             asr=asr,
+            hide_prompts=hide_prompts,
             storage=Path(file_storage),
         ))
         finished_at = now()
@@ -159,6 +164,7 @@ def perform_dialogue_exam(
         source_tts: TTSClient | None,
         target_tts: TTSClient | None,
         asr: ASRClient | None,
+        hide_prompts: bool,
 ) -> None:
     """
     Translate the dialogue as needed, collect user translations, score them, save and present the results to the user,
@@ -181,6 +187,7 @@ def perform_dialogue_exam(
             source_user_tts=source_user_tts,
             target_speaker_tts=target_speaker_tts,
             asr=asr,
+            hide_prompts=hide_prompts,
             storage=Path(file_storage),
         ))
         finished_at = now()

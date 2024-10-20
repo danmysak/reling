@@ -220,7 +220,7 @@ Refer to [Setting Models and API Key](#setting-models-and-api-key).
 To translate a text or dialogue and receive feedback, run:
 
 ```bash
-reling exam <CONTENT-ID> [--from en] [--to fr] [--read fr] [--listen] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
+reling exam <CONTENT-ID> [--from en] [--to fr] [--read fr] [--listen] [--hide-prompts] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
 ```
 
 ### Content ID
@@ -238,6 +238,10 @@ Optionally, you can specify one or both of the selected source and target langua
 ### `listen`
 
 When this flag is enabled, ReLing will accept your responses via voice. You also have the option to switch to manual input mode if needed.
+
+### `hide-prompts`
+
+This flag allows you to hide the original language text as well as the interlocutor’s turn (if in a dialogue). It can help train recall or listening skills (when the `listen` flag is enabled).
 
 ### `model`, `tts-model`, `asr-model` & `api-key`
 
