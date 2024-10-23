@@ -16,6 +16,7 @@ __all__ = [
     'collect_text_translations',
 ]
 
+HIDDEN_TEXT = '(...)'
 TRANSLATION_PROMPT = 'Translation: '
 
 
@@ -33,8 +34,8 @@ def collect_text_translations(
         output(SentenceData.from_tts(
             sentence,
             source_tts,
+            print_text=HIDDEN_TEXT if hide_prompts else None,
             print_prefix=get_numbering_prefix(index),
-            hide_text=hide_prompts,
         ))
         translation = get_input(
             prompt=TRANSLATION_PROMPT,
@@ -62,12 +63,16 @@ def collect_dialogue_translations(
     speaker_translations: list[str] = []
     collected: list[str] = []
     for index, (exchange, original_translation) in enumerate(zip(exchanges, original_translations)):
-        output(SentenceData.from_tts(original_translation.speaker, target_speaker_tts, hide_text=hide_prompts))
+        output(SentenceData.from_tts(
+            original_translation.speaker,
+            target_speaker_tts,
+            print_text=HIDDEN_TEXT if hide_prompts else None,
+        ))
         output(SentenceData.from_tts(
             exchange.user,
             source_user_tts,
+            print_text=HIDDEN_TEXT if hide_prompts else None,
             print_prefix=get_numbering_prefix(index),
-            hide_text=hide_prompts,
         ))
         speaker_translations.append(original_translation.speaker)
         translation = get_input(

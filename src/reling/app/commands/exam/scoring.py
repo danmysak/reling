@@ -79,7 +79,7 @@ def ask_and_parse(gpt: GPTClient, prompt: str) -> Generator[ScoreWithSuggestion,
             raise AlgorithmException(f'The score {score} given by the model is not in the range from 0 to {MAX_SCORE}.')
         yield ScoreWithSuggestion(
             score=score,
-            suggestion=suggestion if suggestion != NA and score < MAX_SCORE else None,
+            suggestion=(stripped or None) if (stripped := suggestion.strip()) != NA else None,
         )
 
 
@@ -94,16 +94,15 @@ def compare_strings(
         score: ScoreWithSuggestion,
 ) -> ScoreWithSuggestion:
     """
-    Return the original score if the provided translation is different from the original one,
-    otherwise return the maximum score with no suggestion.
+    Return the highest score among the original score and the scores calculated using the longest common subsequences
+    of the provided translation and both the original and suggested translations.
     """
-    fixed_score = max([score.score] + [lcs_score(provided_translation, corrected) for corrected in filter(None, [
-        original_translation,
-        score.suggestion,
-    ])])
     return ScoreWithSuggestion(
-        score=fixed_score,
-        suggestion=score.suggestion if fixed_score < MAX_SCORE else None,
+        score=max([score.score] + [lcs_score(provided_translation, corrected) for corrected in filter(None, [
+            original_translation,
+            score.suggestion,
+        ])]),
+        suggestion=score.suggestion,
     )
 
 

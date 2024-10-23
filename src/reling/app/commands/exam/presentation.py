@@ -19,6 +19,7 @@ __all__ = [
 ]
 
 NA = 'N/A'
+NOTHING_TO_IMPROVE = '(no changes needed)'
 
 
 @dataclass
@@ -52,16 +53,22 @@ def present_results(
                 print_prefix=get_numbering_prefix(index) if title.should_number else '',
             ))
         print(f'Your score: {result.score}/{MAX_SCORE}')
+        provided_text = provided_translation.text.strip() or None
+        perfect_text = ((result.suggestion if result.suggestion != provided_text else None)
+                        or (provided_text if result.score == MAX_SCORE else None))
+        improved_print_text = (perfect_text if perfect_text != provided_text else
+                               (NOTHING_TO_IMPROVE if perfect_text is not None else None))
         output(
             SentenceData(
-                text=provided_translation.text.strip() or NA,
+                text=provided_text or NA,
                 print_prefix='Provided: ',
                 reader=partial(play, provided_translation.audio) if provided_translation.audio and target_tts else None,
                 reader_id='provided',
             ),
             SentenceData.from_tts(
-                text=result.suggestion or NA,
-                client=target_tts if result.suggestion else None,
+                text=perfect_text or NA,
+                client=target_tts if perfect_text else None,
+                print_text=improved_print_text or NA,
                 print_prefix='Improved: ',
                 reader_id='improved',
             ),
