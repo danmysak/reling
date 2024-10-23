@@ -42,5 +42,8 @@ class ASRClient:
 
     def get_transcriber(self, language: Language | None = None, context: str | None = None) -> Transcriber:
         def transcribe(file: Path) -> str:
-            return self.transcribe(file, language, context)
+            try:
+                return self.transcribe(file, language, context)
+            except KeyboardInterrupt:
+                return ''
         return transcribe
