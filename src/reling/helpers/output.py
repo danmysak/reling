@@ -2,7 +2,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import cast
 
-from rich import print
+from rich.console import Console
 from rich.text import Text
 
 from reling.tts import TTSVoiceClient
@@ -121,9 +121,10 @@ def output(*sentences: SentenceData) -> None:
 
     :raises ValueError: If reader_id is not provided for a sentence with a reader in a multi-sentence output.
     """
+    console = Console(highlight=False)
     for sentence in sentences:
-        print(sentence.print_prefix or '', end='')
-        print(coalesce(sentence.print_text, cast(str | Text, NA)))
+        console.print(sentence.print_prefix or '', end='')
+        console.print(coalesce(sentence.print_text, cast(str | Text, NA)))
     multi_sentence = len(sentences) > 1
     if sentences_with_readers := [sentence for sentence in sentences if sentence.reader]:
         current = ReaderWithSpeed(sentences_with_readers[0].reader, Speed.NORMAL) if len(sentences) == 1 else None
