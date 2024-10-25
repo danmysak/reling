@@ -124,7 +124,10 @@ def output(*sentences: SentenceData) -> None:
         current = ReaderWithSpeed(sentences_with_readers[0].reader, Speed.NORMAL) if len(sentences) == 1 else None
         while True:
             if current:
-                current.reader(current.speed)
+                try:
+                    current.reader(current.speed)
+                except KeyboardInterrupt:
+                    pass
                 clear_current_line()  # Otherwise the input made during the reading will get displayed twice
             current = construct_prompt(sentences_with_readers, current, multi_sentence).prompt()
             if not current:

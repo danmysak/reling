@@ -48,7 +48,10 @@ def do_record(prompt: str, file: Path) -> bool:
 
 def do_transcribe(prompt: str, transcribe: Transcriber, file: Path) -> str:
     with print_and_erase(prompt + TRANSCRIBING):
-        return transcribe(file)
+        try:
+            return transcribe(file)
+        except KeyboardInterrupt:
+            return ''
 
 
 def get_audio_input(prompt: str, params: TranscriberParams) -> Input:
