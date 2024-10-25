@@ -7,6 +7,8 @@ from typing import Callable, Generator, Mapping, TYPE_CHECKING
 if TYPE_CHECKING:
     from pyaudio import PyAudio, Stream
 
+from reling.utils.values import coalesce
+
 __all__ = [
     'get_audio',
     'get_stream',
@@ -58,7 +60,7 @@ def get_stream(
         rate=rate,
         input=input,
         output=output,
-        frames_per_buffer=frames_per_buffer if frames_per_buffer is not None else pyaudio.paFramesPerBufferUnspecified,
+        frames_per_buffer=coalesce(frames_per_buffer, pyaudio.paFramesPerBufferUnspecified),
         stream_callback=stream_callback,
     )
     try:

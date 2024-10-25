@@ -2,6 +2,7 @@ from datetime import datetime
 
 from rich.text import Text
 
+from reling.helpers.colors import fade
 from reling.utils.time import format_time
 
 __all__ = [
@@ -11,7 +12,6 @@ __all__ = [
 
 SINCE_TEXT = 'since {checkpoint}'
 TODAY_TEXT = 'today'
-COLOR = 'grey50'
 
 
 def since(checkpoint: datetime) -> str:
@@ -21,4 +21,4 @@ def since(checkpoint: datetime) -> str:
 
 def colorize(text: str) -> Text:
     """Colorize the given checkpoint text for display."""
-    return Text(text, style=COLOR)
+    return fade(text)

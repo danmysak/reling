@@ -1,16 +1,23 @@
 from __future__ import annotations
 from dataclasses import dataclass
+from typing import cast
 
-from reling.utils.prompts import enter_to_continue, Prompt, PromptOption
+from rich import print
+from rich.text import Text
+
+from reling.helpers.colors import fade
 from reling.tts import TTSVoiceClient
 from reling.types import Reader, Speed
 from reling.utils.console import clear_current_line
-from reling.utils.types import ensure_not_none
+from reling.utils.prompts import enter_to_continue, Prompt, PromptOption
+from reling.utils.values import coalesce, ensure_not_none
 
 __all__ = [
     'output',
     'SentenceData',
 ]
+
+NA = fade('N/A')
 
 PROMPT_TITLE = 'Play'
 NORMAL_SPEED = 'normal speed'
@@ -20,26 +27,24 @@ REPLAY = 'replay'
 
 @dataclass
 class SentenceData:
-    text: str
-    print_text: str | None = None
-    print_prefix: str = ''
+    print_text: str | Text | None = None
+    print_prefix: str | Text | None = None
     reader: Reader | None = None
     reader_id: str | None = None
 
     @staticmethod
     def from_tts(
-            text: str,
+            text: str | None,
             client: TTSVoiceClient | None,
             *,
-            print_text: str | None = None,
-            print_prefix: str = '',
+            print_text: str | Text | None = None,
+            print_prefix: str | Text | None = None,
             reader_id: str | None = None,
     ) -> SentenceData:
         return SentenceData(
-            text=text,
-            print_text=print_text,
+            print_text=coalesce(print_text, text),
             print_prefix=print_prefix,
-            reader=client.get_reader(text) if client else None,
+            reader=client.get_reader(text) if client and (text is not None) else None,
             reader_id=reader_id,
         )
 
@@ -117,8 +122,8 @@ def output(*sentences: SentenceData) -> None:
     :raises ValueError: If reader_id is not provided for a sentence with a reader in a multi-sentence output.
     """
     for sentence in sentences:
-        sentence_text = sentence.text if sentence.print_text is None else sentence.print_text
-        print(sentence.print_prefix + sentence_text)
+        print(sentence.print_prefix or '', end='')
+        print(coalesce(sentence.print_text, cast(str | Text, NA)))
     multi_sentence = len(sentences) > 1
     if sentences_with_readers := [sentence for sentence in sentences if sentence.reader]:
         current = ReaderWithSpeed(sentences_with_readers[0].reader, Speed.NORMAL) if len(sentences) == 1 else None

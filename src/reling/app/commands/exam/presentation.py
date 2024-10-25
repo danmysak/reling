@@ -4,6 +4,7 @@ from functools import partial
 from typing import Iterable
 
 from reling.app.config import MAX_SCORE
+from reling.helpers.colors import fade
 from reling.helpers.output import output, SentenceData
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
@@ -18,8 +19,7 @@ __all__ = [
     'present_text_results',
 ]
 
-NA = 'N/A'
-NOTHING_TO_IMPROVE = '(no changes needed)'
+NOTHING_TO_IMPROVE = fade('(no changes needed)')
 
 
 @dataclass
@@ -60,15 +60,15 @@ def present_results(
                                (NOTHING_TO_IMPROVE if perfect_text is not None else None))
         output(
             SentenceData(
-                text=provided_text or NA,
+                print_text=provided_text,
                 print_prefix='Provided: ',
                 reader=partial(play, provided_translation.audio) if provided_translation.audio and target_tts else None,
                 reader_id='provided',
             ),
             SentenceData.from_tts(
-                text=perfect_text or NA,
+                text=perfect_text,
                 client=target_tts if perfect_text else None,
-                print_text=improved_print_text or NA,
+                print_text=improved_print_text,
                 print_prefix='Improved: ',
                 reader_id='improved',
             ),
