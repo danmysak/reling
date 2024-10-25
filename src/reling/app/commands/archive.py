@@ -2,8 +2,8 @@ from reling.app.app import app
 from reling.app.default_content import set_default_content
 from reling.app.types import CONTENT_ARG
 from reling.db import single_session
+from reling.helpers.typer import typer_raise
 from reling.utils.time import now
-from reling.utils.typer import typer_raise
 
 __all__ = [
     'archive',

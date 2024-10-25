@@ -1,7 +1,7 @@
 from reling.app.default_content import get_default_content_id
 from reling.db import single_session
 from reling.db.models import Dialogue, Text
-from reling.utils.typer import typer_raise
+from reling.helpers.typer import typer_raise
 
 __all__ = [
     'find_content',

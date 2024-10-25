@@ -6,7 +6,7 @@ from reling.app.app import app
 from reling.app.default_content import set_default_content
 from reling.app.types import CONTENT_ARG, LANGUAGE_OPT, LANGUAGE_OPT_FROM
 from reling.db.models import DialogueExam, Language, TextExam
-from reling.utils.scores import format_average_score
+from reling.helpers.scores import format_average_score
 from reling.utils.tables import build_table, print_table
 from reling.utils.time import format_time, format_time_delta
 

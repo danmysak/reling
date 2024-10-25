@@ -5,7 +5,7 @@ from reling.app.default_content import set_default_content
 from reling.app.types import CONTENT_ARG, NEW_ID_ARG
 from reling.db import single_session
 from reling.db.models import IdIndex
-from reling.utils.typer import typer_raise
+from reling.helpers.typer import typer_raise
 
 __all__ = [
     'rename',

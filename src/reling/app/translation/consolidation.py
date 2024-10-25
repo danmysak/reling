@@ -4,8 +4,8 @@ from reling.app.exceptions import AlgorithmException
 from reling.db import single_session
 from reling.db.models import Dialogue, DialogueExchangeTranslation, Language, Text, TextSentenceTranslation
 from reling.gpt import GPTClient
+from reling.helpers.typer import typer_raise
 from reling.types import DialogueExchangeData, Promise
-from reling.utils.typer import typer_raise
 from .exceptions import TranslationExistsException
 from .operation import translate_dialogue, translate_text
 

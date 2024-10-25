@@ -4,8 +4,8 @@ import re
 from openai import OpenAI
 
 from reling.db.models import Language
+from reling.helpers.openai import openai_handler
 from reling.types import Transcriber
-from reling.utils.openai import openai_handler
 from reling.utils.strings import capitalize_first_char
 
 __all__ = [

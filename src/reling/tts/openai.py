@@ -1,8 +1,8 @@
 from openai import OpenAI
 
+from reling.helpers.openai import openai_handler
 from reling.helpers.pyaudio import get_audio, get_stream
 from reling.types import Speed
-from reling.utils.openai import openai_handler
 from .tts_client import TTSClient
 from .voices import Voice
 

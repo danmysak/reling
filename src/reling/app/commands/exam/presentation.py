@@ -6,10 +6,10 @@ from typing import Iterable
 from reling.app.config import MAX_SCORE
 from reling.helpers.colors import fade
 from reling.helpers.output import output, SentenceData
+from reling.helpers.scores import format_average_score
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
-from reling.utils.scores import format_average_score
 from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation

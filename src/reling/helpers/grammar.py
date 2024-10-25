@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 from reling.db import Session, single_session
 from reling.db.models import GrammarCacheSentence, GrammarCacheWord, Language
 from reling.utils.ids import generate_id
-from reling.utils.typer import typer_raise, typer_raise_import
+from .typer import typer_raise, typer_raise_import
 
 __all__ = [
     'Analyzer',

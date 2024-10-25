@@ -1,8 +1,8 @@
 from io import BytesIO
 
 from reling.db.models import Language
+from reling.helpers.typer import typer_raise
 from reling.types import Speed
-from reling.utils.typer import typer_raise
 from .tts_client import TTSClient
 from .voices import Voice
 

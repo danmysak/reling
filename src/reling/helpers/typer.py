@@ -6,8 +6,8 @@ from typing import Callable, Never
 import typer
 
 from reling.types import Promise
-from .functions import named_function
-from .strings import replace_prefix_casing
+from reling.utils.functions import named_function
+from reling.utils.strings import replace_prefix_casing
 
 __all__ = [
     'TyperExtraOption',

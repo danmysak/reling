@@ -22,8 +22,8 @@ from reling.db.enums import Gender, Level
 from reling.db.helpers.modifiers import get_random_modifier
 from reling.db.models import Speaker, Style, Topic
 from reling.gpt import GPTClient
+from reling.helpers.typer import typer_raise
 from reling.types import WordWithSense
-from reling.utils.typer import typer_raise
 from .generation import generate_dialogue_exchanges, generate_id, generate_text_sentences
 from .storage import save_dialogue, save_text
 

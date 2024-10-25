@@ -9,9 +9,7 @@ from reling.db.helpers.content import find_content
 from reling.db.helpers.ids import find_ids_by_prefix
 from reling.db.helpers.languages import find_language, find_languages_by_prefix
 from reling.db.models import Dialogue, Language, Text
-from reling.types import WordWithSense
-from reling.utils.time import DATE_FORMAT, TIME_FORMAT
-from reling.utils.typer import (
+from reling.helpers.typer import (
     TyperExtraOption,
     typer_enum_autocompletion,
     typer_enum_options,
@@ -19,6 +17,8 @@ from reling.utils.typer import (
     typer_func_parser,
     typer_regex_parser,
 )
+from reling.types import WordWithSense
+from reling.utils.time import DATE_FORMAT, TIME_FORMAT
 
 __all__ = [
     'API_KEY',

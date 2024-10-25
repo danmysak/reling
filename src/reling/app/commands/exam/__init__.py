@@ -23,11 +23,11 @@ from reling.asr import ASRClient
 from reling.db.models import Dialogue, Language, Text
 from reling.gpt import GPTClient
 from reling.helpers.audio import ensure_audio
+from reling.helpers.typer import typer_raise
 from reling.helpers.voices import pick_voices
 from reling.tts import get_tts_client, TTSClient
 from reling.utils.functions import promisify
 from reling.utils.time import now
-from reling.utils.typer import typer_raise
 from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
 from .scoring import score_dialogue_translations, score_text_translations

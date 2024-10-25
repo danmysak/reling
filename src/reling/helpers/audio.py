@@ -1,4 +1,4 @@
-from reling.utils.typer import typer_raise_import
+from .typer import typer_raise_import
 
 __all__ = [
     'ensure_audio',

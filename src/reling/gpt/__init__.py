@@ -2,8 +2,8 @@ from typing import Generator
 
 from openai import OpenAI
 
+from reling.helpers.openai import openai_handler
 from reling.utils.feeders import Feeder, LineFeeder
-from reling.utils.openai import openai_handler
 from reling.utils.transformers import Transformer
 
 __all__ = [

@@ -5,12 +5,12 @@ from typing import cast
 from rich import print
 from rich.text import Text
 
-from reling.helpers.colors import fade
 from reling.tts import TTSVoiceClient
 from reling.types import Reader, Speed
 from reling.utils.console import clear_current_line
 from reling.utils.prompts import enter_to_continue, Prompt, PromptOption
 from reling.utils.values import coalesce, ensure_not_none
+from .colors import fade
 
 __all__ = [
     'output',

@@ -2,8 +2,8 @@ from reling.data import LANGUAGES_PATH, SPEAKERS_PATH, STYLES_PATH, TOPICS_PATH
 from reling.db.helpers.languages import populate_languages
 from reling.db.helpers.modifiers import populate_modifiers
 from reling.db.models import Speaker, Style, Topic
+from reling.helpers.paths import get_app_data_parent
 from reling.shelf import init_shelf
-from reling.utils.paths import get_app_data_parent
 from . import commands  # Register commands with Typer
 from .app import app
 from .db import init_db

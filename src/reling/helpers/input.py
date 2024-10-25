@@ -3,10 +3,10 @@ from enum import StrEnum
 from pathlib import Path
 from tempfile import mkstemp
 
-from reling.helpers.wave import FILE_EXTENSION, play, record
 from reling.types import Input, Transcriber
 from reling.utils.console import clear_previous, input_and_erase, print_and_erase
 from reling.utils.prompts import ENTER, format_shortcut, Prompt
+from .wave import FILE_EXTENSION, play, record
 
 __all__ = [
     'get_input',
