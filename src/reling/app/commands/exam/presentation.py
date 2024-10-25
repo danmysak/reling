@@ -1,10 +1,14 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
+from itertools import chain
 from typing import Iterable
 
+from lcs2 import diff_ranges
+from rich.text import Text
+
 from reling.app.config import MAX_SCORE
-from reling.helpers.colors import fade
+from reling.helpers.colors import default, fade, green, red
 from reling.helpers.output import output, SentenceData
 from reling.helpers.scores import format_average_score
 from reling.helpers.wave import play
@@ -27,6 +31,41 @@ class TitleData:
     text: str
     should_number: bool
     tts: TTSVoiceClient | None
+
+
+def colorize_diff(worse: str, better: str) -> tuple[Text, Text]:
+    """Return the formatted pair of strings, highlighting the difference between the two."""
+    worse_sections: list[Text] = []
+    better_sections: list[Text] = []
+    worse_pos = better_pos = 0
+    for worse_range, better_range in chain(
+            diff_ranges(worse, better),
+            [(range(len(worse), len(worse)), range(len(better), len(better)))],
+    ):
+        worse_sections.append(default(worse[worse_pos:worse_range.start]))
+        worse_pos = worse_range.stop
+        worse_sections.append(red(worse[worse_range.start:worse_pos]))
+        better_sections.append(default(better[better_pos:better_range.start]))
+        better_pos = better_range.stop
+        better_sections.append(green(better[better_range.start:better_pos]))
+    return (
+        sum(worse_sections, Text('')),
+        sum(better_sections, Text('')),
+    )
+
+
+def format_provided_and_suggestion(
+        provided: str | None,
+        perfect: str | None,
+) -> tuple[str | Text | None, str | Text | None]:
+    """Compute the representation of the provided answer and suggested improvement to be shown to the user."""
+    if provided is not None and perfect is not None:
+        if provided == perfect:
+            return provided, NOTHING_TO_IMPROVE
+        else:
+            return colorize_diff(provided, perfect)
+    else:
+        return provided, perfect
 
 
 def present_results(
@@ -56,18 +95,17 @@ def present_results(
         provided_text = provided_translation.text.strip() or None
         perfect_text = ((result.suggestion if result.suggestion != provided_text else None)
                         or (provided_text if result.score == MAX_SCORE else None))
-        improved_print_text = (perfect_text if perfect_text != provided_text else
-                               (NOTHING_TO_IMPROVE if perfect_text is not None else None))
+        provided_print_text, improved_print_text = format_provided_and_suggestion(provided_text, perfect_text)
         output(
             SentenceData(
-                print_text=provided_text,
+                print_text=provided_print_text,
                 print_prefix='Provided: ',
                 reader=partial(play, provided_translation.audio) if provided_translation.audio and target_tts else None,
                 reader_id='provided',
             ),
             SentenceData.from_tts(
                 text=perfect_text,
-                client=target_tts if perfect_text else None,
+                client=target_tts,
                 print_text=improved_print_text,
                 print_prefix='Improved: ',
                 reader_id='improved',
