@@ -69,7 +69,10 @@ def get_audio_input(prompt: str, params: TranscriberParams) -> Input:
                     clear_previous()
                     break
                 case Action.LISTEN:
-                    play(file)
+                    try:
+                        play(file)
+                    except KeyboardInterrupt:
+                        pass
                 case Action.MANUAL_INPUT:
                     clear_previous()
                     return get_manual_input(prompt)
