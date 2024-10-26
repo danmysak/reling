@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
-from itertools import chain
 from typing import Iterable
 
 from lcs2 import diff_ranges
@@ -14,6 +13,7 @@ from reling.helpers.scores import format_average_score
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
+from reling.utils.strings import tokenize
 from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
@@ -35,22 +35,16 @@ class TitleData:
 
 def colorize_diff(worse: str, better: str) -> tuple[Text, Text]:
     """Return the formatted pair of strings, highlighting the difference between the two."""
-    worse_sections: list[Text] = []
-    better_sections: list[Text] = []
-    worse_pos = better_pos = 0
-    for worse_range, better_range in chain(
-            diff_ranges(worse, better),
-            [(range(len(worse), len(worse)), range(len(better), len(better)))],
-    ):
-        worse_sections.append(default(worse[worse_pos:worse_range.start]))
-        worse_pos = worse_range.stop
-        worse_sections.append(red(worse[worse_range.start:worse_pos]))
-        better_sections.append(default(better[better_pos:better_range.start]))
-        better_pos = better_range.stop
-        better_sections.append(green(better[better_range.start:better_pos]))
+    worse_tokens = tokenize(worse)
+    better_tokens = tokenize(better)
+    diff = diff_ranges(*([token.lower() for token in tokens] for tokens in (worse_tokens, better_tokens)))
+    worse_in_diff = {index for worse, _ in diff for index in range(worse.start, worse.stop)}
+    better_in_diff = {index for _, better in diff for index in range(better.start, better.stop)}
     return (
-        sum(worse_sections, Text('')),
-        sum(better_sections, Text('')),
+        sum(((red if index in worse_in_diff else default)(token)
+             for index, token in enumerate(worse_tokens)), Text('')),
+        sum(((green if index in better_in_diff else default)(token)
+             for index, token in enumerate(better_tokens)), Text('')),
     )
 
 
