@@ -29,7 +29,7 @@ def is_whitespace(char: str) -> bool:
     return category(char).startswith('Z')
 
 
-def tokenize(string: str) -> list[str]:
+def tokenize(string: str, words_only: bool = False) -> list[str]:
     """Tokenize a string into words, punctuation, and whitespace."""
     tokens: list[str] = []
     current: list[str] = []
@@ -38,7 +38,8 @@ def tokenize(string: str) -> list[str]:
             if current:
                 tokens.append(''.join(current))
                 current.clear()
-            tokens.append(char)
+            if not words_only:
+                tokens.append(char)
         else:
             current.append(char)
     if current:

@@ -72,6 +72,7 @@ def text(
         ),
         desc=f'Generating text in {language.name}',
         total=size,
+        leave=False,
     ))
     if len(sentences) < round(size * MIN_SIZE_THRESHOLD):
         typer_raise('Failed to generate the text.')
@@ -120,6 +121,7 @@ def dialogue(
         ),
         desc=f'Generating dialogue in {language.name}',
         total=size,
+        leave=False,
     ))
     if len(exchanges) < round(size * MIN_SIZE_THRESHOLD):
         typer_raise('Failed to generate the dialogue.')

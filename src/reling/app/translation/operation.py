@@ -57,6 +57,7 @@ def translate_text(gpt: Promise[GPTClient], text: Text, language: Language) -> N
         ),
         desc=f'Translating text into {language.name}',
         total=len(text.sentences),
+        leave=False,
     ))
     if len(sentences) != len(text.sentences):
         raise AlgorithmException(
@@ -94,6 +95,7 @@ def translate_dialogue(gpt: Promise[GPTClient], dialogue: Dialogue, language: La
         ),
         desc=f'Translating dialogue into {language.name}',
         total=len(dialogue.exchanges),
+        leave=False,
     ))
     if len(exchanges) != len(dialogue.exchanges):
         AlgorithmException(

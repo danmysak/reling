@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import timedelta
 from functools import partial
+from itertools import repeat
 from typing import Iterable
 
 from lcs2 import diff_ranges
@@ -9,7 +10,7 @@ from rich.text import Text
 from reling.app.config import MAX_SCORE
 from reling.helpers.colors import default, fade, green, red
 from reling.helpers.output import output, SentenceData
-from reling.helpers.scores import format_average_score
+from reling.helpers.scoring import format_average_score
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
@@ -65,7 +66,7 @@ def format_provided_and_suggestion(
 def present_results(
         titles: Iterable[list[TitleData]],
         provided_translations: Iterable[Input],
-        original_translations: Iterable[str],
+        original_translations: Iterable[str] | None,
         results: Iterable[ScoreWithSuggestion],
         duration: timedelta,
         target_tts: TTSVoiceClient | None,
@@ -75,7 +76,7 @@ def present_results(
     for index, (title_items, provided_translation, original_translation, result) in enumerate(zip(
             titles,
             provided_translations,
-            original_translations,
+            original_translations if original_translations is not None else repeat(None),
             results,
     )):
         scores.append(result.score)
@@ -90,7 +91,7 @@ def present_results(
         perfect_text = ((result.suggestion if result.suggestion != provided_text else None)
                         or (provided_text if result.score == MAX_SCORE else None))
         provided_print_text, improved_print_text = format_provided_and_suggestion(provided_text, perfect_text)
-        output(
+        output(*[
             SentenceData(
                 print_text=provided_print_text,
                 print_prefix='Provided: ',
@@ -104,13 +105,13 @@ def present_results(
                 print_prefix='Improved: ',
                 reader_id='improved',
             ),
-            SentenceData.from_tts(
+            *([SentenceData.from_tts(
                 text=original_translation,
                 client=target_tts,
                 print_prefix='Original: ',
                 reader_id='original',
-            ),
-        )
+            )] if original_translation is not None else []),
+        ])
         print()
     print(f'Average score: {format_average_score(scores)}')
     print(f'Exam duration: {format_time_delta(duration)}')
@@ -119,6 +120,7 @@ def present_results(
 def present_text_results(
         sentences: Iterable[SentenceWithTranslation],
         original_translations: Iterable[str],
+        show_original: bool,
         results: Iterable[ScoreWithSuggestion],
         duration: timedelta,
         source_tts: TTSVoiceClient | None,
@@ -134,7 +136,7 @@ def present_text_results(
             ),
         ] for sentence in sentences),
         provided_translations=(sentence.translation for sentence in sentences),
-        original_translations=original_translations,
+        original_translations=original_translations if show_original else None,
         results=results,
         duration=duration,
         target_tts=target_tts,
@@ -144,6 +146,7 @@ def present_text_results(
 def present_dialogue_results(
         exchanges: Iterable[ExchangeWithTranslation],
         original_translations: Iterable[DialogueExchangeData],
+        show_original: bool,
         results: Iterable[ScoreWithSuggestion],
         duration: timedelta,
         source_user_tts: TTSVoiceClient | None,
@@ -168,7 +171,7 @@ def present_dialogue_results(
             exchanges,
         )),
         provided_translations=(exchange.user_translation for exchange in exchanges),
-        original_translations=(exchange.user for exchange in original_translations),
+        original_translations=(exchange.user for exchange in original_translations) if show_original else None,
         results=results,
         duration=duration,
         target_tts=target_user_tts,

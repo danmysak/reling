@@ -41,6 +41,7 @@ __all__ = [
     'LISTEN_OPT',
     'MODEL',
     'NEW_ID_ARG',
+    'OFFLINE_SCORING_OPT',
     'PRODUCTION_OPT',
     'READ_LANGUAGE_OPT',
     'READ_OPT',
@@ -211,6 +212,10 @@ LISTEN_OPT = Annotated[bool | None, typer.Option(
 
 HIDE_PROMPTS_OPT = Annotated[bool | None, typer.Option(
     help='Hide the original language text and interlocutor\'s turn.',
+)]
+
+OFFLINE_SCORING_OPT = Annotated[bool | None, typer.Option(
+    help='Score answers using an offline algorithm.',
 )]
 
 GRAMMAR_OPT = Annotated[bool | None, typer.Option(

@@ -10,3 +10,7 @@ __all__ = [
 class Input:
     text: str
     audio: Path | None = None
+
+    def __init__(self, text: str, audio: Path | None = None) -> None:
+        self.text = text.strip()
+        self.audio = audio

@@ -16,6 +16,7 @@ from reling.app.types import (
     LANGUAGE_OPT_FROM,
     LISTEN_OPT,
     MODEL,
+    OFFLINE_SCORING_OPT,
     READ_LANGUAGE_OPT,
     TTS_MODEL,
 )
@@ -26,7 +27,7 @@ from reling.helpers.audio import ensure_audio
 from reling.helpers.typer import typer_raise
 from reling.helpers.voices import pick_voices
 from reling.tts import get_tts_client, TTSClient
-from reling.utils.functions import promisify
+from reling.types import Promise
 from reling.utils.time import now
 from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
@@ -51,6 +52,7 @@ def exam(
         read: READ_LANGUAGE_OPT = None,
         listen: LISTEN_OPT = False,
         hide_prompts: HIDE_PROMPTS_OPT = False,
+        offline_scoring: OFFLINE_SCORING_OPT = False,
 ) -> None:
     """
     Test the user's ability to translate content from one language to another.
@@ -72,7 +74,7 @@ def exam(
             typer_raise(f'Cannot read in {language.name} as it is not the source or target language.')
 
     (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(
-        GPTClient(api_key=api_key.get(), model=model.get()),
+        lambda: GPTClient(api_key=api_key.get(), model=model.get()),
         content,
         from_,
         to,
@@ -82,11 +84,12 @@ def exam(
                     if to in read else None),
         asr=ASRClient(api_key=api_key.get(), model=asr_model.get()) if listen else None,
         hide_prompts=hide_prompts,
+        offline_scoring=offline_scoring,
     )
 
 
 def perform_text_exam(
-        gpt: GPTClient,
+        gpt: Promise[GPTClient],
         text: Text,
         source_language: Language,
         target_language: Language,
@@ -94,6 +97,7 @@ def perform_text_exam(
         target_tts: TTSClient | None,
         asr: ASRClient | None,
         hide_prompts: bool,
+        offline_scoring: bool,
 ) -> None:
     """
     Translate the text as needed, collect user translations, score them, save and present the results to the user,
@@ -104,8 +108,8 @@ def perform_text_exam(
         voice_source_tts = source_tts.with_voice(source_voice) if source_tts else None
         voice_target_tts = target_tts.with_voice(target_voice) if target_tts else None
 
-        sentences = get_text_sentences(text, source_language, promisify(gpt))
-        original_translations = get_text_sentences(text, target_language, promisify(gpt))
+        sentences = get_text_sentences(text, source_language, gpt)
+        original_translations = get_text_sentences(text, target_language, gpt)
 
         started_at = now()
         translated = list(collect_text_translations(
@@ -126,9 +130,11 @@ def perform_text_exam(
                     original_translations=original_translations,
                     source_language=source_language,
                     target_language=target_language,
+                    offline=offline_scoring,
                 ),
                 desc='Scoring translations',
                 total=len(translated),
+                leave=False,
             ))
         except AlgorithmException as e:
             typer_raise(e.msg)
@@ -149,6 +155,7 @@ def perform_text_exam(
         present_text_results(
             sentences=translated,
             original_translations=original_translations,
+            show_original=not offline_scoring,
             results=results,
             duration=finished_at - started_at,
             source_tts=voice_source_tts,
@@ -157,7 +164,7 @@ def perform_text_exam(
 
 
 def perform_dialogue_exam(
-        gpt: GPTClient,
+        gpt: Promise[GPTClient],
         dialogue: Dialogue,
         source_language: Language,
         target_language: Language,
@@ -165,6 +172,7 @@ def perform_dialogue_exam(
         target_tts: TTSClient | None,
         asr: ASRClient | None,
         hide_prompts: bool,
+        offline_scoring: bool,
 ) -> None:
     """
     Translate the dialogue as needed, collect user translations, score them, save and present the results to the user,
@@ -176,8 +184,8 @@ def perform_dialogue_exam(
         target_user_tts = target_tts.with_voice(user_voice) if target_tts else None
         target_speaker_tts = target_tts.with_voice(speaker_voice) if target_tts else None
 
-        exchanges = get_dialogue_exchanges(dialogue, source_language, promisify(gpt))
-        original_translations = get_dialogue_exchanges(dialogue, target_language, promisify(gpt))
+        exchanges = get_dialogue_exchanges(dialogue, source_language, gpt)
+        original_translations = get_dialogue_exchanges(dialogue, target_language, gpt)
 
         started_at = now()
         translated = list(collect_dialogue_translations(
@@ -200,9 +208,11 @@ def perform_dialogue_exam(
                     original_translations=original_translations,
                     source_language=source_language,
                     target_language=target_language,
+                    offline=offline_scoring,
                 ),
                 desc='Scoring translations',
                 total=len(translated),
+                leave=False,
             ))
         except AlgorithmException as e:
             typer_raise(e.msg)
@@ -223,6 +233,7 @@ def perform_dialogue_exam(
         present_dialogue_results(
             exchanges=translated,
             original_translations=original_translations,
+            show_original=not offline_scoring,
             results=results,
             duration=finished_at - started_at,
             source_user_tts=source_user_tts,
