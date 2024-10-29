@@ -23,12 +23,7 @@ def calculate_char_diff_score(a: str, b: str) -> int:
 
 def calculate_mistake_score(mistakes: int) -> int:
     """Return the score based on the number of mistakes."""
-    score = MAX_SCORE
-    penalty = 1
-    for _ in range(mistakes):
-        score -= penalty
-        penalty *= (1 - 1 / MAX_SCORE)
-    return floor(score)
+    return floor(MAX_SCORE * ((1 - 1 / MAX_SCORE) ** mistakes))
 
 
 def calculate_word_diff_score(a: str, b: str) -> int:
