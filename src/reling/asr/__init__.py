@@ -24,7 +24,7 @@ class ASRClient:
     @staticmethod
     def _normalize_transcription(text: str) -> str:
         return capitalize_first_char(re.sub(
-            r'^([a-zA-Z]+|[ľĽîÎ¹²³⁴-⁹])[\'’]?(?=[A-Z][a-z\'’]+([.?!,;:]|\s))',
+            r'^[a-zA-Z\u00C0-\u024F¹²³⁴-⁹]+(?=[A-Z][a-z\'’]+([.?!,;:]|\s))',
             '',  # ^ Remove extra prefixes that Whisper sometimes adds
             ''.join(char for char in text.strip()
                     if not (0xE000 <= ord(char) <= 0xF8FF))  # Strip private use area characters from the Whisper output
