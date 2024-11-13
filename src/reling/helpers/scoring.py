@@ -18,7 +18,9 @@ def format_average_score(scores: list[int]) -> str:
 
 def calculate_char_diff_score(a: str, b: str) -> int:
     """Return the score based on the longest common subsequence of two strings."""
-    return floor(2 * lcs_length(a, b) / (len(a) + len(b)) * MAX_SCORE)
+    if a == b:  # Avoid division by zero
+        return MAX_SCORE
+    return floor(lcs_length(a, b) / max(len(a), len(b)) * MAX_SCORE)
 
 
 def calculate_mistake_score(mistakes: int) -> int:
