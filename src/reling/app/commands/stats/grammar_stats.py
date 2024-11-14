@@ -129,20 +129,25 @@ class StatsHandler:
                         update_stats(period, Pos.from_upos(word.upos), stats_type, len(item_ids))
 
 
-def compute_stats(language: Language, modality: Modality, checkpoints: list[datetime]) -> PeriodStats:
-    """Compute grammar statistics for the given language and modality."""
+def compute_stats(
+        language: Language,
+        paired: list[Language] | None,
+        modality: Modality,
+        checkpoints: list[datetime],
+) -> PeriodStats:
+    """Compute grammar statistics for the given language(s) and modality."""
     handler = StatsHandler(language, checkpoints)
     with single_session() as session:
         for exam in progress(
             merge(
                 *[(item for item in session.query(model).filter(
-                    get_filter(language, modality, model),
+                    get_filter(language, paired, modality, model),
                 ).order_by(model.started_at))
                   for model in [TextExam, DialogueExam]],
                 key=lambda item: item.started_at,
             ),
             total=sum(
-                session.query(model).filter(get_filter(language, modality, model)).count()
+                session.query(model).filter(get_filter(language, paired, modality, model)).count()
                 for model in [TextExam, DialogueExam]
             ),
             modality=modality,
@@ -222,7 +227,12 @@ def print_stats(stats: PeriodStats, modality: Modality, add_dividers: bool) -> N
     ))
 
 
-def display_stats(language: Language, modality: Modality, checkpoints: list[datetime]) -> None:
-    """Display grammar statistics for the given language and modality."""
-    stats = compute_stats(language, modality, checkpoints)
+def display_stats(
+        language: Language,
+        paired: list[Language] | None,
+        modality: Modality,
+        checkpoints: list[datetime],
+) -> None:
+    """Display grammar statistics for the given language(s) and modality."""
+    stats = compute_stats(language, paired, modality, checkpoints)
     print_stats(stats, modality, add_dividers=len(checkpoints) > 0)

@@ -1,5 +1,12 @@
 from reling.app.app import app
-from reling.app.types import CHECKPOINT_OPT, COMPREHENSION_OPT, GRAMMAR_OPT, LANGUAGE_ARG, PRODUCTION_OPT
+from reling.app.types import (
+    CHECKPOINT_OPT,
+    COMPREHENSION_OPT,
+    GRAMMAR_OPT,
+    LANGUAGE_ARG,
+    PAIR_LANGUAGE_OPT,
+    PRODUCTION_OPT,
+)
 from reling.utils.time import local_to_utc
 from .grammar_stats import display_stats as display_grammar_stats
 from .modalities import Modality
@@ -13,6 +20,7 @@ __all__ = [
 @app.command()
 def stats(
         language: LANGUAGE_ARG,
+        pair: PAIR_LANGUAGE_OPT = None,
         grammar: GRAMMAR_OPT = False,
         comprehension: COMPREHENSION_OPT = False,
         production: PRODUCTION_OPT = False,
@@ -28,4 +36,4 @@ def stats(
     ]:
         if should_display:
             print()
-            display_stats(language, modality, checkpoint_dates)
+            display_stats(language, pair, modality, checkpoint_dates)

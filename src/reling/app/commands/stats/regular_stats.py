@@ -124,8 +124,13 @@ def update_stats(stats: PeriodStats, exam: TextExam | DialogueExam, is_first_exa
             update_single_stats(type_stats, exam, is_first_exam)
 
 
-def compute_stats(language: Language, modality: Modality, checkpoints: list[datetime]) -> PeriodStats:
-    """Compute regular statistics for the given language and modality."""
+def compute_stats(
+        language: Language,
+        paired: list[Language] | None,
+        modality: Modality,
+        checkpoints: list[datetime],
+) -> PeriodStats:
+    """Compute regular statistics for the given language(s) and modality."""
     with single_session() as session:
         stats = PeriodStats(
             all_time=TypeStats(),
@@ -133,7 +138,7 @@ def compute_stats(language: Language, modality: Modality, checkpoints: list[date
         )
         for model in [TextExam, DialogueExam]:
             seen_item_ids: set[str] = set()
-            condition = get_filter(language, modality, model)
+            condition = get_filter(language, paired, modality, model)
             for exam in progress(
                 session.query(model).filter(condition).order_by(model.started_at),
                 total=session.query(model).filter(condition).count(),
@@ -199,7 +204,12 @@ def print_stats(stats: PeriodStats, modality: Modality) -> None:
     ))
 
 
-def display_stats(language: Language, modality: Modality, checkpoints: list[datetime]) -> None:
-    """Display regular statistics for the given language and modality."""
-    stats = compute_stats(language, modality, checkpoints)
+def display_stats(
+        language: Language,
+        paired: list[Language] | None,
+        modality: Modality,
+        checkpoints: list[datetime],
+) -> None:
+    """Display regular statistics for the given language(s) and modality."""
+    stats = compute_stats(language, paired, modality, checkpoints)
     print_stats(stats, modality)

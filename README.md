@@ -276,12 +276,18 @@ Limit the display of exam results to translations between specified source and t
 The `stats` command provides detailed statistics about your learning progress in specific languages. The command format is:
 
 ```bash
-reling stats en [--grammar] [--comprehension] [--production] [--checkpoint 2024-12-01] [--checkpoint "2025-01-01, 15:00"]
+reling stats en [--pair fr] [--grammar] [--comprehension] [--production] [--checkpoint 2024-12-01] [--checkpoint "2025-01-01, 15:00"]
 ```
 
 ### Language
 
 Specify a [supported language](#languages) as the only positional argument. The statistics will be shown for this language.
+
+### `pair`
+
+Optionally, specify one or more languages such that the statistics will be displayed for translations between the main language and these languages only.
+
+If you need to specify more than one language, use the `--pair` flag multiple times: `--pair fr --pair es`.
 
 ### `grammar`
 

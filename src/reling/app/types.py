@@ -42,6 +42,7 @@ __all__ = [
     'MODEL',
     'NEW_ID_ARG',
     'OFFLINE_SCORING_OPT',
+    'PAIR_LANGUAGE_OPT',
     'PRODUCTION_OPT',
     'READ_LANGUAGE_OPT',
     'READ_OPT',
@@ -216,6 +217,12 @@ HIDE_PROMPTS_OPT = Annotated[bool | None, typer.Option(
 
 OFFLINE_SCORING_OPT = Annotated[bool | None, typer.Option(
     help='Score answers using an offline algorithm.',
+)]
+
+PAIR_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
+    parser=typer_func_parser(find_language),
+    help='language(s) to restrict statistics to translations between the main language and these languages',
+    autocompletion=find_languages_by_prefix,
 )]
 
 GRAMMAR_OPT = Annotated[bool | None, typer.Option(
