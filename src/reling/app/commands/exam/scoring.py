@@ -1,5 +1,8 @@
+from functools import partial
 from itertools import islice, starmap
 from typing import cast, Generator
+
+from lcs2 import lcs_indices
 
 from reling.app.config import MAX_SCORE
 from reling.app.exceptions import AlgorithmException
@@ -11,7 +14,7 @@ from reling.types import DialogueExchangeData, Promise
 from reling.utils.english import pluralize
 from reling.utils.iterables import group_items
 from reling.utils.transformers import add_numbering, apply, omit_empty, remove_numbering, strip
-from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
+from .types import ExchangeWithTranslation, PreScoreWithSuggestion, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
     'score_dialogue_translations',
@@ -22,7 +25,7 @@ NA = 'N/A'
 EMPTY_TRANSLATION = '<empty>'
 
 
-def build_prompt(
+def build_prompt_translation(
         category: ContentCategory,
         source_language: Language,
         target_language: Language,
@@ -59,43 +62,114 @@ def build_prompt(
     ])
 
 
-def ask_and_parse(gpt: Promise[GPTClient], prompt: str) -> Generator[ScoreWithSuggestion, None, None]:
+def parse_scoring(string_score: str, suggestion: str) -> PreScoreWithSuggestion:
+    """
+    Parse the score and suggestion from the model output.
+    :raises AlgorithmException: If there is an issue with the output of the model.
+    """
+    try:
+        score = int(string_score)
+    except ValueError:
+        raise AlgorithmException(f'Could not parse the score as an integer from the model output: {string_score}.')
+    if score < 0 or score > MAX_SCORE:
+        raise AlgorithmException(f'The score {score} given by the model is not in the range from 0 to {MAX_SCORE}.')
+    return PreScoreWithSuggestion(
+        score=score,
+        suggestion=(stripped or None) if (stripped := suggestion.strip()) != NA else None,
+    )
+
+
+def ask_and_parse_translation(gpt: GPTClient, prompt: str) -> Generator[PreScoreWithSuggestion, None, None]:
     """
     Ask the model to score translations and parse the output.
     :raises AlgorithmException: If there is an issue with the output of the model.
     """
-    for _, _, string_score, suggestion in group_items(gpt().ask(
+    for _, _, string_score, suggestion in group_items(gpt.ask(
         prompt,
         creative=False,
         transformers=[strip, omit_empty, remove_numbering],
     ), 4):
-        try:
-            score = int(string_score)
-        except ValueError:
-            raise AlgorithmException(f'Could not parse the score as an integer from the model output: {string_score}.')
-        if score < 0 or score > MAX_SCORE:
-            raise AlgorithmException(f'The score {score} given by the model is not in the range from 0 to {MAX_SCORE}.')
-        yield ScoreWithSuggestion(
-            score=score,
-            suggestion=(stripped or None) if (stripped := suggestion.strip()) != NA else None,
-        )
+        yield parse_scoring(string_score, suggestion)
 
 
-def compare_strings(
-        provided_translation: str,
-        original_translation: str,
-        score: ScoreWithSuggestion,
-) -> ScoreWithSuggestion:
+def build_prompt_averaging(language: Language, sentence: str, a: str, b: str) -> str:
+    """Build a prompt for scoring an "averaged" translation."""
+    return '\n'.join([
+        f'Below are two nearly identical sentences in {language.name}:',
+
+        add_numbering(a, 0),
+        add_numbering(b, 1),
+
+        f'A learner of {language.name} briefly viewed both sentences and was then asked to reproduce a similar '
+        f'sentence from memory. The learner\'s response is provided below:',
+
+        f'"""{sentence}"""',
+
+        f'Score the learner\'s response on a scale from 0 to {MAX_SCORE}. Deduct points if the response contains '
+        f'grammatical errors or does not convey the same meaning as the original sentences.',
+
+        f'If the response is less than perfect, suggest a minimally modified version of it that would deserve a score '
+        f'of {MAX_SCORE}.',
+
+        f'Provide your feedback on exactly two lines:',
+        f'- the score (just the number) on the first line;',
+        f'- the suggested improved response (or "{NA}") on the second line.',
+    ])
+
+
+def ask_and_parse_averaging(gpt: GPTClient, prompt: str) -> PreScoreWithSuggestion:
     """
-    Return the highest score among the original score and the scores calculated using the diffs between
-    the provided translation and both the original and suggested translations.
+    Ask the model to score an "averaged" translation and parse the output.
+    :raises AlgorithmException: If there is an issue with the output of the model.
+    """
+    for string_score, suggestion in group_items(gpt.ask(
+            prompt,
+            creative=False,
+            transformers=[strip, omit_empty, remove_numbering],
+    ), 2):
+        return parse_scoring(string_score, suggestion)
+
+
+def lcs_indices_a(a: str, b: str) -> set[int]:
+    """Return the indices of the longest common subsequence of two strings in the first string."""
+    return set(a_index for a_index, _ in lcs_indices(a, b))
+
+
+def finalize_scoring(provided_translation: str, score: PreScoreWithSuggestion) -> ScoreWithSuggestion:
+    """
+    Return the highest score among the original score and the score calculated
+    using the diff between the provided translation and the suggested translation;
+    clear the suggestion if it is the same as the provided translation.
     """
     return ScoreWithSuggestion(
-        score=max([score.score] + [calculate_diff_score(provided_translation, corrected) for corrected in filter(None, [
-            original_translation,
-            score.suggestion,
-        ])]),
-        suggestion=score.suggestion,
+        score=max([score.score] + ([calculate_diff_score(score.suggestion, provided_translation)]
+                                   if score.suggestion is not None and provided_translation != '' else [])),
+        suggestion=score.suggestion if score.suggestion != provided_translation else None,
+    )
+
+
+def fix_scoring(
+        gpt: GPTClient,
+        language: Language,
+        provided_translation: str,
+        original_translation: str,
+        score: PreScoreWithSuggestion,
+) -> ScoreWithSuggestion:
+    """
+    Fix the scoring by comparing the provided translation with the original translation and the suggested translation.
+    """
+    return finalize_scoring(
+        provided_translation,
+        score if (score.suggestion is None
+                  or lcs_indices_a(provided_translation, score.suggestion)
+                  >= lcs_indices_a(provided_translation, original_translation))
+        else ask_and_parse_averaging(
+            gpt,
+            build_prompt_averaging(language, provided_translation, a=original_translation, b=score.suggestion),
+        ),
+    ) if provided_translation != original_translation else ScoreWithSuggestion(
+        score=MAX_SCORE,
+        suggestion=None,
     )
 
 
@@ -118,17 +192,18 @@ def score_text_translations(
                 suggestion=original_translation,
             )
     else:
-        prompt = build_prompt(
+        client = gpt()
+        prompt = build_prompt_translation(
             category=ContentCategory.TEXT,
             source_language=source_language,
             target_language=target_language,
             blocks=[cast(str, sentence.sentence) for sentence in sentences],
             translations=[sentence.translation.text for sentence in sentences],
         )
-        yield from starmap(compare_strings, zip(
+        yield from starmap(partial(fix_scoring, client, target_language), zip(
             (sentence.translation.text for sentence in sentences),
             original_translations,
-            ask_and_parse(gpt, prompt),
+            ask_and_parse_translation(client, prompt),
         ))
 
 
@@ -151,7 +226,8 @@ def score_dialogue_translations(
                 suggestion=original_translation.user,
             )
     else:
-        prompt = build_prompt(
+        client = gpt()
+        prompt = build_prompt_translation(
             category=ContentCategory.DIALOGUE,
             source_language=source_language,
             target_language=target_language,
@@ -160,8 +236,8 @@ def score_dialogue_translations(
                           for exchange, original_translation in zip(exchanges, original_translations)
                           for turn in [original_translation.speaker, exchange.user_translation.text]],
         )
-        yield from starmap(compare_strings, zip(
+        yield from starmap(partial(fix_scoring, client, target_language), zip(
             (exchange.user_translation.text for exchange in exchanges),
             (original_translation.user for original_translation in original_translations),
-            islice(ask_and_parse(gpt, prompt), 1, None, 2),
+            islice(ask_and_parse_translation(client, prompt), 1, None, 2),
         ))
