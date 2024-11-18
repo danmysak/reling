@@ -163,7 +163,7 @@ Choose from three complexity levels:
 
 ### `speaker`
 
-Specify an interlocutor or let the system choose randomly from [20 predefined options](src/reling/data/speakers.csv).
+Specify an interlocutor or let the system choose randomly from [200 predefined options](src/reling/data/speakers.csv).
 
 ### `topic`
 
