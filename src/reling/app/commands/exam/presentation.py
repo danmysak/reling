@@ -36,8 +36,11 @@ class TitleData:
 
 def colorize_diff(worse: str, better: str) -> tuple[Text, Text]:
     """Return the formatted pair of strings, highlighting the difference between the two."""
-    worse_tokens = tokenize(worse)
-    better_tokens = tokenize(better)
+    tokenizer = (tokenize
+                 if any(' ' in sentence for sentence in (worse, better))
+                 else list)  # Tokenize into characters for, e.g., Chinese and Japanese
+    worse_tokens = tokenizer(worse)
+    better_tokens = tokenizer(better)
     diff = diff_ranges(*([token.lower() for token in tokens] for tokens in (worse_tokens, better_tokens)))
     worse_in_diff = {index for worse, _ in diff for index in range(worse.start, worse.stop)}
     better_in_diff = {index for _, better in diff for index in range(better.start, better.stop)}
