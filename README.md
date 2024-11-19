@@ -121,11 +121,11 @@ Choose from three complexity levels:
 
 ### `topic`
 
-You may select a topic for the text. If unspecified, a random topic from [100 predefined options](src/reling/data/topics.csv) will be chosen.
+You may select a topic for the text. If unspecified, a random topic from [500 predefined options](src/reling/data/topics.csv) will be chosen.
 
 ### `style`
 
-You may also choose a style for the text. If unspecified, a random style from [25 predefined options](src/reling/data/styles.csv) will be chosen.
+You may also choose a style for the text. If unspecified, a random style from [50 predefined options](src/reling/data/styles.csv) will be chosen.
 
 ### `size`
 
