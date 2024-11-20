@@ -130,9 +130,19 @@ def ask_and_parse_averaging(gpt: GPTClient, prompt: str) -> PreScoreWithSuggesti
         return parse_scoring(string_score, suggestion)
 
 
-def lcs_indices_a(a: str, b: str) -> set[int]:
-    """Return the indices of the longest common subsequence of two strings in the first string."""
-    return set(a_index for a_index, _ in lcs_indices(a, b))
+def lcs_indices_a(a: str, b: str) -> set[int | tuple[int, int]]:
+    """
+    Return a set of indices and consecutive index pairs in `a` that are part of the longest common subsequence with `b`.
+    Consecutive index pairs are included only if the corresponding indices in `b` are also consecutive.
+    """
+    result: set[int | tuple[int, int]] = set()
+    last_a_index = last_b_index = None
+    for a_index, b_index in lcs_indices(a, b):
+        result.add(a_index)
+        if last_a_index == a_index - 1 and last_b_index == b_index - 1:
+            result.add((last_a_index, a_index))
+        last_a_index, last_b_index = a_index, b_index
+    return result
 
 
 def finalize_scoring(provided_translation: str, score: PreScoreWithSuggestion) -> ScoreWithSuggestion:
@@ -161,6 +171,9 @@ def fix_scoring(
     return finalize_scoring(
         provided_translation,
         score if (score.suggestion is None
+                  # If the provided translation shares as much or more common characters (individual indices)
+                  # and omissions (pairs of consecutive indices) with the suggestion as with the original translation,
+                  # proceed with the current score; otherwise, recalculate the score using "averaging":
                   or lcs_indices_a(provided_translation, score.suggestion)
                   >= lcs_indices_a(provided_translation, original_translation))
         else ask_and_parse_averaging(
