@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from reling.db import single_session
 from reling.db.models import Dialogue, DialogueExam, DialogueExamResult, Language, Text, TextExam, TextExamResult
@@ -20,9 +20,10 @@ def save_text_exam(
         listened: bool,
         started_at: datetime,
         finished_at: datetime,
+        total_pause_time: timedelta,
         sentences: list[SentenceWithTranslation],
         results: list[ScoreWithSuggestion],
-) -> None:
+) -> TextExam:
     """Save the results of a text exam."""
     with single_session() as session:
         exam = TextExam(
@@ -35,6 +36,7 @@ def save_text_exam(
             listened=listened,
             started_at=started_at,
             finished_at=finished_at,
+            total_pause_time=total_pause_time,
         )
         session.add(exam)
         for index, (sentence, result) in enumerate(zip(sentences, results)):
@@ -46,6 +48,7 @@ def save_text_exam(
                 score=result.score,
             ))
         session.commit()
+        return exam
 
 
 def save_dialogue_exam(
@@ -57,9 +60,10 @@ def save_dialogue_exam(
         listened: bool,
         started_at: datetime,
         finished_at: datetime,
+        total_pause_time: timedelta,
         exchanges: list[ExchangeWithTranslation],
         results: list[ScoreWithSuggestion],
-) -> None:
+) -> DialogueExam:
     """Save the results of a dialogue exam."""
     with single_session() as session:
         exam = DialogueExam(
@@ -72,6 +76,7 @@ def save_dialogue_exam(
             listened=listened,
             started_at=started_at,
             finished_at=finished_at,
+            total_pause_time=total_pause_time,
         )
         session.add(exam)
         for index, (exchange, result) in enumerate(zip(exchanges, results)):
@@ -83,3 +88,4 @@ def save_dialogue_exam(
                 score=result.score,
             ))
         session.commit()
+        return exam

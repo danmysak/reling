@@ -86,6 +86,7 @@ class DialogueExam(Base):
     listened: Mapped[bool]
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
+    total_pause_time: Mapped[timedelta]
     results: Mapped[list[DialogueExamResult]] = relationship(
         'DialogueExamResult',
         order_by='DialogueExamResult.dialogue_exchange_index',
@@ -103,7 +104,7 @@ class DialogueExam(Base):
 
     @property
     def duration(self) -> timedelta:
-        return self.finished_at - self.started_at
+        return self.finished_at - self.started_at - self.total_pause_time
 
 
 class DialogueExamResult(Base):

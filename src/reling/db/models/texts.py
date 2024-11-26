@@ -76,6 +76,7 @@ class TextExam(Base):
     listened: Mapped[bool]
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
+    total_pause_time: Mapped[timedelta]
     results: Mapped[list[TextExamResult]] = relationship(
         'TextExamResult',
         order_by='TextExamResult.text_sentence_index',
@@ -93,7 +94,7 @@ class TextExam(Base):
 
     @property
     def duration(self) -> timedelta:
-        return self.finished_at - self.started_at
+        return self.finished_at - self.started_at - self.total_pause_time
 
 
 class TextExamResult(Base):

@@ -1,7 +1,9 @@
+from typing import Generator
 from unicodedata import category
 
 __all__ = [
     'capitalize_first_char',
+    'char_range',
     'is_punctuation',
     'is_whitespace',
     'replace_prefix_casing',
@@ -45,3 +47,10 @@ def tokenize(string: str, words_only: bool = False) -> list[str]:
     if current:
         tokens.append(''.join(current))
     return tokens
+
+
+def char_range(from_char: str, to_char: str) -> Generator[str, None, None]:
+    """Generate characters from the given range, inclusive."""
+    direction = 1 if from_char <= to_char else -1
+    for char_code in range(ord(from_char), ord(to_char) + direction, direction):
+        yield chr(char_code)

@@ -7,9 +7,11 @@ from sqlalchemy.orm import Session
 
 from . import models  # Register models with SQLAlchemy
 from .base import Base
+from .migrations import migrate
 
 __all__ = [
     'init_db',
+    'migrate',
     'Session',
     'single_session',
 ]

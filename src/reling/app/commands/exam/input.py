@@ -1,6 +1,6 @@
 from itertools import zip_longest
 from pathlib import Path
-from typing import Generator, Iterable
+from typing import Callable, Generator, Iterable
 
 from reling.asr import ASRClient
 from reling.db.models import Language
@@ -27,6 +27,8 @@ def collect_text_translations(
         asr: ASRClient | None,
         hide_prompts: bool,
         storage: Path,
+        on_pause: Callable[[], None],
+        on_resume: Callable[[], None],
 ) -> Generator[SentenceWithTranslation, None, None]:
     """Collect the translations of text sentences."""
     collected: list[str] = []
@@ -38,6 +40,8 @@ def collect_text_translations(
             print_prefix=get_numbering_prefix(index),
         ))
         translation = get_input(
+            on_pause=on_pause,
+            on_resume=on_resume,
             prompt=TRANSLATION_PROMPT,
             transcriber_params=TranscriberParams(
                 transcribe=asr.get_transcriber(target_language, '\n'.join(collected)),
@@ -58,6 +62,8 @@ def collect_dialogue_translations(
         asr: ASRClient | None,
         hide_prompts: bool,
         storage: Path,
+        on_pause: Callable[[], None],
+        on_resume: Callable[[], None],
 ) -> Generator[ExchangeWithTranslation, None, None]:
     """Collect the translations of user turns in a dialogue."""
     speaker_translations: list[str] = []
@@ -76,6 +82,8 @@ def collect_dialogue_translations(
         ))
         speaker_translations.append(original_translation.speaker)
         translation = get_input(
+            on_pause=on_pause,
+            on_resume=on_resume,
             prompt=TRANSLATION_PROMPT,
             transcriber_params=TranscriberParams(
                 transcribe=asr.get_transcriber(target_language, '\n'.join(

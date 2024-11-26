@@ -6,6 +6,7 @@ __all__ = [
     'clear_previous',
     'erase_previous',
     'input_and_erase',
+    'interruptible_input',
     'print_and_erase',
 ]
 
@@ -18,12 +19,21 @@ def clear_previous(lines: int = 1) -> None:
     print('\033[F\033[K' * lines, end='\r')
 
 
-def erase_previous(text: str) -> None:
-    clear_previous(text.count('\n') + 1)
+def erase_previous(text: str, include_extra_line: bool = True) -> None:
+    clear_current_line()
+    clear_previous(text.count('\n') + (1 if include_extra_line else 0))
+
+
+def interruptible_input(prompt: str) -> str:
+    try:
+        return input(prompt)
+    except KeyboardInterrupt:
+        erase_previous(prompt, include_extra_line=False)
+        raise
 
 
 def input_and_erase(prompt: str) -> str:
-    data = input(prompt)
+    data = interruptible_input(prompt)
     erase_previous(prompt)
     return data
 

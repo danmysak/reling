@@ -223,6 +223,8 @@ To translate a text or dialogue and receive feedback, run:
 reling exam <CONTENT-ID> [--from en] [--to fr] [--read fr] [--listen] [--hide-prompts] [--offline-scoring] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
 ```
 
+While inputting your answers during an exam, you can press `Ctrl + C` to pause. This affects the calculation of exam duration and, consequently, your [learning statistics](#learning-statistics).
+
 ### Content ID
 
 Specify the content identifier for the exam. This ID is provided when content is created and [listed](#listing-content).

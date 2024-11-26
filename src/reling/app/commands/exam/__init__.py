@@ -28,7 +28,7 @@ from reling.helpers.typer import typer_raise
 from reling.helpers.voices import pick_voices
 from reling.tts import get_tts_client, TTSClient
 from reling.types import Promise
-from reling.utils.time import now
+from reling.utils.timetracker import TimeTracker
 from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
 from .scoring import score_dialogue_translations, score_text_translations
@@ -111,7 +111,7 @@ def perform_text_exam(
         sentences = get_text_sentences(text, source_language, gpt)
         original_translations = get_text_sentences(text, target_language, gpt)
 
-        started_at = now()
+        tracker = TimeTracker()
         translated = list(collect_text_translations(
             sentences=sentences,
             target_language=target_language,
@@ -119,8 +119,10 @@ def perform_text_exam(
             asr=asr,
             hide_prompts=hide_prompts,
             storage=Path(file_storage),
+            on_pause=tracker.pause,
+            on_resume=tracker.resume,
         ))
-        finished_at = now()
+        tracker.stop()
 
         try:
             results = list(tqdm(
@@ -139,15 +141,16 @@ def perform_text_exam(
         except AlgorithmException as e:
             typer_raise(e.msg)
 
-        save_text_exam(
+        text_exam = save_text_exam(
             text=text,
             source_language=source_language,
             target_language=target_language,
             read_source=source_tts is not None,
             read_target=target_tts is not None,
             listened=asr is not None,
-            started_at=started_at,
-            finished_at=finished_at,
+            started_at=tracker.started_at,
+            finished_at=tracker.finished_at,
+            total_pause_time=tracker.total_pause_time,
             sentences=translated,
             results=results,
         )
@@ -157,7 +160,7 @@ def perform_text_exam(
             original_translations=original_translations,
             show_original=not offline_scoring,
             results=results,
-            duration=finished_at - started_at,
+            duration=text_exam.duration,
             source_tts=voice_source_tts,
             target_tts=voice_target_tts,
         )
@@ -187,7 +190,7 @@ def perform_dialogue_exam(
         exchanges = get_dialogue_exchanges(dialogue, source_language, gpt)
         original_translations = get_dialogue_exchanges(dialogue, target_language, gpt)
 
-        started_at = now()
+        tracker = TimeTracker()
         translated = list(collect_dialogue_translations(
             exchanges=exchanges,
             original_translations=original_translations,
@@ -197,8 +200,10 @@ def perform_dialogue_exam(
             asr=asr,
             hide_prompts=hide_prompts,
             storage=Path(file_storage),
+            on_pause=tracker.pause,
+            on_resume=tracker.resume,
         ))
-        finished_at = now()
+        tracker.stop()
 
         try:
             results = list(tqdm(
@@ -217,15 +222,16 @@ def perform_dialogue_exam(
         except AlgorithmException as e:
             typer_raise(e.msg)
 
-        save_dialogue_exam(
+        dialogue_exam = save_dialogue_exam(
             dialogue=dialogue,
             source_language=source_language,
             target_language=target_language,
             read_source=source_tts is not None,
             read_target=target_tts is not None,
             listened=asr is not None,
-            started_at=started_at,
-            finished_at=finished_at,
+            started_at=tracker.started_at,
+            finished_at=tracker.finished_at,
+            total_pause_time=tracker.total_pause_time,
             exchanges=translated,
             results=results,
         )
@@ -235,7 +241,7 @@ def perform_dialogue_exam(
             original_translations=original_translations,
             show_original=not offline_scoring,
             results=results,
-            duration=finished_at - started_at,
+            duration=dialogue_exam.duration,
             source_user_tts=source_user_tts,
             target_speaker_tts=target_speaker_tts,
             target_user_tts=target_user_tts,
