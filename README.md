@@ -97,6 +97,24 @@ reling --install-completion
 
 For Mac users, you may also need to append `compinit -D` to the end of your `~/.zshrc` file.
 
+### Updating the Tool
+
+To update ReLing to its latest version, run:
+
+```bash
+pipx upgrade reling
+```
+
+### Uninstalling the Tool
+
+To remove ReLing from your system, execute:
+
+```bash
+pipx uninstall reling
+```
+
+This will uninstall the tool but will **not** delete your [data storage file](#exporting-data). If you wish to delete this file as well, you must remove it manually.
+
 
 ## Generating Texts<a id="generating-texts"></a>
 `reling create text`
@@ -227,7 +245,7 @@ While inputting your answers during an exam, you can press `Ctrl + C` to pause. 
 
 ### Content ID
 
-Specify the content identifier for the exam. This ID is provided when content is created and [listed](#listing-content).
+Specify the content identifier for the exam. This ID is provided when content is created and [listed](#listing-content). You may also [use a dot](#automatic-content-id) (`.`) to refer to the last text or dialogue you interacted with or just created.
 
 ### `from` & `to`
 
