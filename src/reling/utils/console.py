@@ -1,6 +1,8 @@
 from contextlib import contextmanager
 from typing import Generator
 
+from .strings import unicode_normalize
+
 __all__ = [
     'clear_current_line',
     'clear_previous',
@@ -26,7 +28,7 @@ def erase_previous(text: str, include_extra_line: bool = True) -> None:
 
 def interruptible_input(prompt: str) -> str:
     try:
-        return input(prompt)
+        return unicode_normalize(input(prompt))
     except KeyboardInterrupt:
         erase_previous(prompt, include_extra_line=False)
         raise

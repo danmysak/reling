@@ -1,10 +1,13 @@
 import re
 from typing import Callable, Iterable, Generator
 
+from .strings import unicode_normalize
+
 __all__ = [
     'add_numbering',
     'apply',
     'get_numbering_prefix',
+    'normalize',
     'omit_empty',
     'remove_numbering',
     'slugify',
@@ -43,3 +46,7 @@ def omit_empty(text: str, _: int) -> str | None:
 
 def slugify(text: str, _: int) -> str:
     return re.sub(r'[^\w-]', '', re.sub(r'\s+', '-', text.lower().strip()))
+
+
+def normalize(text: str, _: int) -> str:
+    return unicode_normalize(text)

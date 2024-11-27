@@ -1,5 +1,5 @@
 from typing import Generator
-from unicodedata import category
+from unicodedata import category, normalize
 
 __all__ = [
     'capitalize_first_char',
@@ -8,7 +8,13 @@ __all__ = [
     'is_whitespace',
     'replace_prefix_casing',
     'tokenize',
+    'unicode_normalize',
 ]
+
+
+def unicode_normalize(string: str) -> str:
+    """Normalize a string to Unicode NFC form."""
+    return normalize('NFC', string)
 
 
 def capitalize_first_char(string: str) -> str:

@@ -4,7 +4,7 @@ from openai import OpenAI
 
 from reling.helpers.openai import openai_handler
 from reling.utils.feeders import Feeder, LineFeeder
-from reling.utils.transformers import Transformer
+from reling.utils.transformers import normalize, Transformer
 
 __all__ = [
     'GPTClient',
@@ -27,6 +27,7 @@ class GPTClient:
             creative: bool = True,
             feeder_type: type[Feeder] = LineFeeder,
             transformers: list[Transformer] | None = None,
+            auto_normalize: bool = True,
     ) -> Generator[str, None, None]:
         """
         Ask the model a question and yield sections of the response as they become available, applying transformers.
@@ -46,7 +47,7 @@ class GPTClient:
         def flush() -> Generator[str, None, None]:
             nonlocal section_index
             while (section := feeder.get()) is not None:
-                for transformer in transformers or []:
+                for transformer in (transformers or []) + ([normalize] if auto_normalize else []):
                     section = transformer(section, section_index)
                     if section is None:
                         break
