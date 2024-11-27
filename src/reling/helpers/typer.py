@@ -55,12 +55,12 @@ def typer_enum_parser(enum: type[Enum]) -> Callable[[str | Enum], Enum]:
     def wrapper(arg: str | Enum) -> Enum:
         if isinstance(arg, Enum):  # Due to https://github.com/tiangolo/typer/discussions/720
             return arg
-        try:
-            return enum[arg.upper()]
-        except KeyError:
-            raise typer.BadParameter(
-                f'{arg} (expected one of {typer_enum_options(enum)})',
-            )
+        for member in enum:
+            if member.name.lower().startswith(arg.lower()):
+                return member
+        raise typer.BadParameter(
+            f'{arg} (expected one of {typer_enum_options(enum)})',
+        )
 
     return wrapper
 
