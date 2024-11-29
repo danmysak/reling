@@ -1,7 +1,7 @@
 import re
 from typing import Callable, Iterable, Generator
 
-from .strings import unicode_normalize
+from .strings import universal_normalize
 
 __all__ = [
     'add_numbering',
@@ -49,4 +49,4 @@ def slugify(text: str, _: int) -> str:
 
 
 def normalize(text: str, _: int) -> str:
-    return unicode_normalize(text)
+    return universal_normalize(text)

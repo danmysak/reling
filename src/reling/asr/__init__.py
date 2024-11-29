@@ -6,7 +6,7 @@ from openai import OpenAI
 from reling.db.models import Language
 from reling.helpers.openai import openai_handler
 from reling.types import Transcriber
-from reling.utils.strings import capitalize_first_char, unicode_normalize
+from reling.utils.strings import capitalize_first_char, universal_normalize
 
 __all__ = [
     'ASRClient',
@@ -33,7 +33,7 @@ class ASRClient:
     def transcribe(self, file: Path, language: Language | None = None, context: str | None = None) -> str:
         """Transcribe an audio file."""
         with openai_handler():
-            return unicode_normalize(self._normalize_transcription(self._client.audio.transcriptions.create(
+            return universal_normalize(self._normalize_transcription(self._client.audio.transcriptions.create(
                 file=file.open('rb'),
                 model=self._model,
                 language=language.short_code if language else None,

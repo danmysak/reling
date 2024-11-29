@@ -8,13 +8,13 @@ __all__ = [
     'is_whitespace',
     'replace_prefix_casing',
     'tokenize',
-    'unicode_normalize',
+    'universal_normalize',
 ]
 
 
-def unicode_normalize(string: str) -> str:
-    """Normalize a string to Unicode NFC form."""
-    return normalize('NFC', string)
+def universal_normalize(string: str) -> str:
+    """Normalize a string using Unicode NFC and replace specific characters."""
+    return normalize('NFC', string).replace('’', "'")
 
 
 def capitalize_first_char(string: str) -> str:
