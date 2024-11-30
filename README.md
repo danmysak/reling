@@ -441,6 +441,8 @@ ReLing supports over **180 major languages** [sourced from Wikipedia](https://en
 
 To specify a language in a command argument, you can either write its full name (e.g., `English` or `english`) or use the 2-character or 3-character code for that language (e.g., `en` or `eng` for English).
 
+For languages written in multiple scripts, the system does not currently support specifying a particular script in the commands. The script used will depend on GPT’s output and may vary. Additionally, for right-to-left scripts such as Arabic or Hebrew, punctuation is likely to display incorrectly. If you plan to use the tool with these languages, feel free to request a fix or contribute a solution.
+
 
 ## Setting Models and API Key<a id="setting-models-and-api-key"></a>
 
