@@ -47,6 +47,7 @@ class Scanner:
         self._camera.release()
 
     def capture(self) -> Image:
+        """Capture an image from the camera."""
         success, frame = self._camera.read()
         if not success:
             typer_raise('Failed to capture an image.')
@@ -57,6 +58,7 @@ class Scanner:
         return Image(IMAGE_URL_FORMAT.format(image=base64.b64encode(buffer).decode('utf-8')))
 
     def process(self, image: Image, language: Language) -> str:
+        """Process the image and extract text in the specified language."""
         return list(self._gpt.ask(
             '\n'.join([
                 f'What is written in the following image? The text is in {language.name}.',

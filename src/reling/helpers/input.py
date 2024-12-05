@@ -79,7 +79,10 @@ def do_transcribe(prompt: str, transcribe: Transcriber, file: Path) -> str:
 
 
 def get_audio_input(prompt: str, params: TranscriberParams) -> Input | None:
-    """Get input from the user via audio recording, with options for re-recording, listening, and manual input."""
+    """
+    Get input from the user via audio recording, with options for re-recording, listening, and manual input.
+    :return: The user's input, or None if the user has chosen to manually input the text.
+    """
     input_and_erase(prompt + ENTER_TO_START_RECORDING)
     file = get_temp_file(params.storage)
     while True:
@@ -125,7 +128,10 @@ def do_scan(prompt: str, scanner: Scanner, language: Language) -> str:
 
 
 def get_image_input(prompt: str, params: ScannerParams) -> Input | None:
-    """Get input from the user via image capture, with options for retaking or manual input."""
+    """
+    Get input from the user via image capture, with options for retaking or manual input.
+    :return: The user's input, or None if the user has chosen to manually input the text.
+    """
     input_and_erase(prompt + ENTER_TO_CAPTURE_IMAGE)
     while True:
         text = do_scan(prompt, params.scanner, params.language)
