@@ -4,8 +4,9 @@ from typing import Callable, Generator, Iterable
 
 from reling.asr import ASRClient
 from reling.db.models import Language
-from reling.helpers.input import get_input, TranscriberParams
+from reling.helpers.input import get_input, ScannerParams, TranscriberParams
 from reling.helpers.output import output, SentenceData
+from reling.scanner import Scanner
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData
 from reling.utils.transformers import get_numbering_prefix
@@ -25,6 +26,7 @@ def collect_text_translations(
         target_language: Language,
         source_tts: TTSVoiceClient | None,
         asr: ASRClient | None,
+        scanner: Scanner | None,
         hide_prompts: bool,
         storage: Path,
         on_pause: Callable[[], None],
@@ -47,6 +49,10 @@ def collect_text_translations(
                 transcribe=asr.get_transcriber(target_language, '\n'.join(collected)),
                 storage=storage,
             ) if asr else None,
+            scanner_params=ScannerParams(
+                scanner=scanner,
+                language=target_language,
+            ) if scanner else None,
         )
         collected.append(translation.text)
         yield SentenceWithTranslation(sentence, translation)
@@ -60,6 +66,7 @@ def collect_dialogue_translations(
         source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
         asr: ASRClient | None,
+        scanner: Scanner | None,
         hide_prompts: bool,
         storage: Path,
         on_pause: Callable[[], None],
@@ -91,6 +98,10 @@ def collect_dialogue_translations(
                 )),
                 storage=storage,
             ) if asr else None,
+            scanner_params=ScannerParams(
+                scanner=scanner,
+                language=target_language,
+            ) if scanner else None,
         )
         collected.append(translation.text)
         yield ExchangeWithTranslation(exchange, translation)

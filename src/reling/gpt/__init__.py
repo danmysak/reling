@@ -3,6 +3,7 @@ from typing import Generator
 from openai import OpenAI
 
 from reling.helpers.openai import openai_handler
+from reling.types import Image
 from reling.utils.feeders import Feeder, LineFeeder
 from reling.utils.transformers import normalize, Transformer
 
@@ -24,6 +25,7 @@ class GPTClient:
     def ask(
             self,
             prompt: str,
+            image: Image | None = None,
             creative: bool = True,
             feeder_type: type[Feeder] = LineFeeder,
             transformers: list[Transformer] | None = None,
@@ -38,7 +40,10 @@ class GPTClient:
             stream = self._client.chat.completions.create(
                 model=self._model,
                 stream=True,
-                messages=[{'role': 'user', 'content': prompt}],
+                messages=[{'role': 'user', 'content': [
+                    {'type': 'text', 'text': prompt},
+                    *([{'type': 'image_url', 'image_url': {'url': image.get_url()}}] if image else []),
+                ]}],
                 temperature=CREATIVE_TEMPERATURE if creative else 0.0,
             )
 

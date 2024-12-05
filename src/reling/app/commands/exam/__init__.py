@@ -18,6 +18,7 @@ from reling.app.types import (
     MODEL,
     OFFLINE_SCORING_OPT,
     READ_LANGUAGE_OPT,
+    SCAN_OPT,
     TTS_MODEL,
 )
 from reling.asr import ASRClient
@@ -26,6 +27,7 @@ from reling.gpt import GPTClient
 from reling.helpers.audio import ensure_audio
 from reling.helpers.typer import typer_raise
 from reling.helpers.voices import pick_voices
+from reling.scanner import ScannerManager, ScannerParams
 from reling.tts import get_tts_client, TTSClient
 from reling.types import Promise
 from reling.utils.timetracker import TimeTracker
@@ -51,6 +53,7 @@ def exam(
         to: LANGUAGE_OPT = None,
         read: READ_LANGUAGE_OPT = None,
         listen: LISTEN_OPT = False,
+        scan: SCAN_OPT = None,
         hide_prompts: HIDE_PROMPTS_OPT = False,
         offline_scoring: OFFLINE_SCORING_OPT = False,
 ) -> None:
@@ -59,6 +62,8 @@ def exam(
     If only one language is specified, the content's original language is assumed for the unspecified direction.
     """
     set_default_content(content)
+    if listen and scan is not None:
+        typer_raise('Choose either listen or scan, not both.')
     if read or listen:
         ensure_audio()
     if from_ is None and to is None:
@@ -73,8 +78,11 @@ def exam(
         if language not in [from_, to]:
             typer_raise(f'Cannot read in {language.name} as it is not the source or target language.')
 
+    def get_gpt() -> GPTClient:
+        return GPTClient(api_key=api_key.get(), model=model.get())
+
     (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(
-        lambda: GPTClient(api_key=api_key.get(), model=model.get()),
+        get_gpt,
         content,
         from_,
         to,
@@ -83,6 +91,10 @@ def exam(
         target_tts=(get_tts_client(model=tts_model.get(), api_key=api_key.promise(), language=to)
                     if to in read else None),
         asr=ASRClient(api_key=api_key.get(), model=asr_model.get()) if listen else None,
+        scanner_manager=ScannerManager(ScannerParams(
+            camera_index=scan,
+            gpt=get_gpt(),
+        ) if scan is not None else None),
         hide_prompts=hide_prompts,
         offline_scoring=offline_scoring,
     )
@@ -96,6 +108,7 @@ def perform_text_exam(
         source_tts: TTSClient | None,
         target_tts: TTSClient | None,
         asr: ASRClient | None,
+        scanner_manager: ScannerManager,
         hide_prompts: bool,
         offline_scoring: bool,
 ) -> None:
@@ -111,18 +124,20 @@ def perform_text_exam(
         sentences = get_text_sentences(text, source_language, gpt)
         original_translations = get_text_sentences(text, target_language, gpt)
 
-        tracker = TimeTracker()
-        translated = list(collect_text_translations(
-            sentences=sentences,
-            target_language=target_language,
-            source_tts=voice_source_tts,
-            asr=asr,
-            hide_prompts=hide_prompts,
-            storage=Path(file_storage),
-            on_pause=tracker.pause,
-            on_resume=tracker.resume,
-        ))
-        tracker.stop()
+        with scanner_manager.get_scanner() as scanner:
+            tracker = TimeTracker()
+            translated = list(collect_text_translations(
+                sentences=sentences,
+                target_language=target_language,
+                source_tts=voice_source_tts,
+                asr=asr,
+                scanner=scanner,
+                hide_prompts=hide_prompts,
+                storage=Path(file_storage),
+                on_pause=tracker.pause,
+                on_resume=tracker.resume,
+            ))
+            tracker.stop()
 
         try:
             results = list(tqdm(
@@ -148,6 +163,7 @@ def perform_text_exam(
             read_source=source_tts is not None,
             read_target=target_tts is not None,
             listened=asr is not None,
+            scanned=scanner is not None,
             started_at=tracker.started_at,
             finished_at=tracker.finished_at,
             total_pause_time=tracker.total_pause_time,
@@ -174,6 +190,7 @@ def perform_dialogue_exam(
         source_tts: TTSClient | None,
         target_tts: TTSClient | None,
         asr: ASRClient | None,
+        scanner_manager: ScannerManager,
         hide_prompts: bool,
         offline_scoring: bool,
 ) -> None:
@@ -190,20 +207,22 @@ def perform_dialogue_exam(
         exchanges = get_dialogue_exchanges(dialogue, source_language, gpt)
         original_translations = get_dialogue_exchanges(dialogue, target_language, gpt)
 
-        tracker = TimeTracker()
-        translated = list(collect_dialogue_translations(
-            exchanges=exchanges,
-            original_translations=original_translations,
-            target_language=target_language,
-            source_user_tts=source_user_tts,
-            target_speaker_tts=target_speaker_tts,
-            asr=asr,
-            hide_prompts=hide_prompts,
-            storage=Path(file_storage),
-            on_pause=tracker.pause,
-            on_resume=tracker.resume,
-        ))
-        tracker.stop()
+        with scanner_manager.get_scanner() as scanner:
+            tracker = TimeTracker()
+            translated = list(collect_dialogue_translations(
+                exchanges=exchanges,
+                original_translations=original_translations,
+                target_language=target_language,
+                source_user_tts=source_user_tts,
+                target_speaker_tts=target_speaker_tts,
+                asr=asr,
+                scanner=scanner,
+                hide_prompts=hide_prompts,
+                storage=Path(file_storage),
+                on_pause=tracker.pause,
+                on_resume=tracker.resume,
+            ))
+            tracker.stop()
 
         try:
             results = list(tqdm(
@@ -229,6 +248,7 @@ def perform_dialogue_exam(
             read_source=source_tts is not None,
             read_target=target_tts is not None,
             listened=asr is not None,
+            scanned=scanner is not None,
             started_at=tracker.started_at,
             finished_at=tracker.finished_at,
             total_pause_time=tracker.total_pause_time,

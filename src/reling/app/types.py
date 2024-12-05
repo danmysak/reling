@@ -47,6 +47,7 @@ __all__ = [
     'READ_LANGUAGE_OPT',
     'READ_OPT',
     'REGEX_CONTENT_OPT',
+    'SCAN_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
     'SPEAKER_GENDER_OPT',
@@ -209,6 +210,11 @@ READ_OPT = Annotated[bool | None, typer.Option(
 
 LISTEN_OPT = Annotated[bool | None, typer.Option(
     help='Record the response as audio and transcribe it into text.',
+)]
+
+SCAN_OPT = Annotated[int | None, typer.Option(
+    min=0,
+    help='Capture the response using the specified camera index.',
 )]
 
 HIDE_PROMPTS_OPT = Annotated[bool | None, typer.Option(

@@ -15,7 +15,7 @@ You can retake exams at your preferred frequency until you achieve perfect score
 
 ReLing also enables you to view a [list](#listing-content) of all generated texts and dialogues and their associated [exam histories](#exam-history).
 
-Optionally, the system can vocalize sentences in both the source and target languages and accept your responses via voice.
+Optionally, the system can vocalize sentences in both the source and target languages and accept your responses via voice or image capture.
 
 
 ## Table of Contents<a id="table-of-contents"></a>
@@ -41,9 +41,9 @@ Optionally, the system can vocalize sentences in both the source and target lang
 
 ## Installation<a id="installation"></a>
 
-Install [Python](https://www.python.org/downloads/) 3.12 or higher and [pipx](https://pipx.pypa.io/stable/installation/), then proceed based on your audio and grammar preferences:
+Install [Python](https://www.python.org/downloads/) 3.12 or higher and [pipx](https://pipx.pypa.io/stable/installation/), then proceed based on your audio, image, and grammar preferences:
 
-### Without Audio or Grammar Support
+### Without Audio, Image, or Grammar Support
 
 ```bash
 pipx install reling
@@ -69,6 +69,14 @@ Install the tool with the `audio` extra:
 pipx install "reling[audio]"
 ```
 
+### With Image Support
+
+If you want to use the [image scanning feature](#taking-exams), install the tool with the `image` extra:
+
+```bash
+pipx install "reling[image]"
+```
+
 ### With Grammar Support
 
 If you want to track grammar-related [learning statistics](#learning-statistics), install the tool with the `grammar` extra:
@@ -77,12 +85,12 @@ If you want to track grammar-related [learning statistics](#learning-statistics)
 pipx install "reling[grammar]"
 ```
 
-### With Both Audio and Grammar Support
+### With Audio, Image, and Grammar Support
 
 Follow the instructions above to install the necessary dependencies, then run the following command:
 
 ```bash
-pipx install "reling[audio,grammar]"
+pipx install "reling[audio,image,grammar]"
 ```
 
 ### Finalizing Setup
@@ -238,7 +246,7 @@ Refer to [Setting Models and API Key](#setting-models-and-api-key).
 To translate a text or dialogue and receive feedback, run:
 
 ```bash
-reling exam <CONTENT-ID> [--from en] [--to fr] [--read fr] [--listen] [--hide-prompts] [--offline-scoring] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
+reling exam <CONTENT-ID> [--from en] [--to fr] [--read fr] [--listen] [--scan 0] [--hide-prompts] [--offline-scoring] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
 ```
 
 While inputting your answers during an exam, you can press `Ctrl + C` to pause. This affects the calculation of exam duration and, consequently, your [learning statistics](#learning-statistics).
@@ -258,6 +266,12 @@ Optionally, you can specify one or both of the selected source and target langua
 ### `listen`
 
 When this flag is enabled, ReLing will accept your responses via voice. You also have the option to switch to manual input mode if needed.
+
+### `scan`
+
+Use this parameter to have ReLing accept your response by capturing an image with one of the available cameras. The value of the parameter is the index of the camera to use. For example, camera 0 might be your laptop’s built-in camera, while camera 1 could be an external webcam or a connected smartphone.
+
+You also have the option to switch to manual input mode if needed.
 
 ### `hide-prompts`
 
@@ -449,7 +463,7 @@ For languages written in multiple scripts, the system does not currently support
 To avoid specifying [model names](https://platform.openai.com/docs/models) and entering the [API key](https://platform.openai.com/api-keys) separately for each command, you can set the following environment variables:
 
 - `RELING_API_KEY`: a pre-generated API key for OpenAI’s web API.
-- `RELING_MODEL`: the name of the GPT model used for generating text and taking exams (e.g., `gpt-4o`).
+- `RELING_MODEL`: the name of the GPT model used for generating text, taking exams, and scanning images (e.g., `gpt-4o`).
 - `RELING_TTS_MODEL`: the name of the text-to-speech (TTS) model (e.g., `tts-1`). Since current OpenAI TTS models primarily focus on English and may not perform well in other languages, you can use the additional model `_gtts` (Google Text-to-Speech) for better voice output in other languages (note the leading underscore).
 - `RELING_ASR_MODEL`: the name of the automatic speech recognition (ASR) model for voice response recognition (e.g., `whisper-1`).
 

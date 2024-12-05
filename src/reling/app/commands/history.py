@@ -22,6 +22,7 @@ SCORE = 'Score'
 
 AUDIO_OUTPUT = '🔈'
 AUDIO_INPUT = '🎤'
+IMAGE_INPUT = '📷'
 
 
 def match(exam: TextExam | DialogueExam, from_: Language | None, to: Language | None) -> bool:
@@ -70,6 +71,7 @@ def history(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_
                     cast(Language, exam.target_language).name,
                     *([AUDIO_OUTPUT] if exam.read_target else []),
                     *([AUDIO_INPUT] if exam.listened else []),
+                    *([IMAGE_INPUT] if exam.scanned else []),
                 ]),
                 TAKEN_AT: format_time(cast(datetime, exam.started_at)),
                 DURATION: format_time_delta(exam.duration),

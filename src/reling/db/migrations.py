@@ -15,6 +15,11 @@ def get_migration_commands(from_version: str) -> list[str]:
                 f'ALTER TABLE text_exams add total_pause_time DATETIME NOT NULL default {ZERO_DATETIME}',
                 f'ALTER TABLE dialogue_exams add total_pause_time DATETIME NOT NULL default {ZERO_DATETIME}',
             ]
+        case 'b':
+            return [
+                'ALTER TABLE text_exams add scanned BOOLEAN NOT NULL default 0',
+                'ALTER TABLE dialogue_exams add scanned BOOLEAN NOT NULL default 0',
+            ]
         case _:
             raise ValueError(f'Unknown migration from version {from_version}')
 

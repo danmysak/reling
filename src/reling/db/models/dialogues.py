@@ -84,6 +84,7 @@ class DialogueExam(Base):
     read_source: Mapped[bool]
     read_target: Mapped[bool]
     listened: Mapped[bool]
+    scanned: Mapped[bool]
     started_at: Mapped[datetime]
     finished_at: Mapped[datetime]
     total_pause_time: Mapped[timedelta]
