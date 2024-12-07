@@ -4,17 +4,16 @@ from functools import partial
 from itertools import repeat
 from typing import Iterable
 
-from lcs2 import diff_ranges
 from rich.text import Text
 
 from reling.app.config import MAX_SCORE
-from reling.helpers.colors import default, fade, green, red
+from reling.helpers.colors import fade
+from reling.helpers.diff import DiffType, highlight_diff
 from reling.helpers.output import output, SentenceData
 from reling.helpers.scoring import format_average_score
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
-from reling.utils.strings import tokenize
 from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
@@ -34,24 +33,6 @@ class TitleData:
     tts: TTSVoiceClient | None
 
 
-def colorize_diff(worse: str, better: str) -> tuple[Text, Text]:
-    """Return the formatted pair of strings, highlighting the difference between the two."""
-    tokenizer = (tokenize
-                 if any(' ' in sentence for sentence in (worse, better))
-                 else list)  # Tokenize into characters for, e.g., Chinese and Japanese
-    worse_tokens = tokenizer(worse)
-    better_tokens = tokenizer(better)
-    diff = diff_ranges(*([token.lower() for token in tokens] for tokens in (worse_tokens, better_tokens)))
-    worse_in_diff = {index for worse, _ in diff for index in range(worse.start, worse.stop)}
-    better_in_diff = {index for _, better in diff for index in range(better.start, better.stop)}
-    return (
-        sum(((red if index in worse_in_diff else default)(token)
-             for index, token in enumerate(worse_tokens)), Text('')),
-        sum(((green if index in better_in_diff else default)(token)
-             for index, token in enumerate(better_tokens)), Text('')),
-    )
-
-
 def format_provided_and_suggestion(
         provided: str | None,
         perfect: str | None,
@@ -61,7 +42,12 @@ def format_provided_and_suggestion(
         if provided == perfect:
             return provided, NOTHING_TO_IMPROVE
         else:
-            return colorize_diff(provided, perfect)
+            return highlight_diff(
+                provided,
+                perfect,
+                # Tokenize into characters for, e.g., Chinese and Japanese, and into words for other languages:
+                DiffType.TOKEN if any(' ' in sentence for sentence in (provided, perfect)) else DiffType.CHAR,
+            )
     else:
         return provided, perfect
 
