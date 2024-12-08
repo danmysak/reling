@@ -153,6 +153,8 @@ def perform_text_exam(
                 total=len(translated),
                 leave=False,
             ))
+            if len(results) != len(translated):
+                raise AlgorithmException('The number of results does not match the number of translations.')
         except AlgorithmException as e:
             typer_raise(e.msg)
 
@@ -238,6 +240,8 @@ def perform_dialogue_exam(
                 total=len(translated),
                 leave=False,
             ))
+            if len(results) != len(translated):
+                raise AlgorithmException('The number of results does not match the number of translations.')
         except AlgorithmException as e:
             typer_raise(e.msg)
 
