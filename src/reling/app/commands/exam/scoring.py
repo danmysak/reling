@@ -49,7 +49,7 @@ def build_prompt_translation(
         f'- original sentence on the first line;',  # The first two lines help improve the model's performance
         f'- learner\'s translation on the second line;',
         f'- score (just the number) on the third line;',
-        f'- suggested modified translation (or "{NA}") on the fourth line.',
+        f'- suggested modified translation (or "{NA}") on the fourth line (do not enclose it in quotes).',
 
         *([f'Provide this feedback for each of the {n} translations.'] if n > 1 else []),
         f'Say nothing else.',
