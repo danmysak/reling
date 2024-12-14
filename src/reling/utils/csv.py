@@ -5,7 +5,7 @@ __all__ = [
     'read_csv',
 ]
 
-DELIMITER = ','
+DEFAULT_DELIMITER = ','
 
 
 def read_csv(
@@ -13,11 +13,12 @@ def read_csv(
         columns: list[str],
         *,
         empty_as_none: bool = False,
+        delimiter: str = DEFAULT_DELIMITER,
 ) -> Generator[dict[str, str | None], None, None]:
     """Read a CSV file and yield dictionaries with column names as keys."""
     with path.open('r') as file:
         for line in file:
             yield {
                 column: value if value != '' or not empty_as_none else None
-                for column, value in zip(columns, line.strip().split(DELIMITER))
+                for column, value in zip(columns, line.strip('\n').split(delimiter))
             }

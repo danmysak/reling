@@ -32,7 +32,7 @@ class DiffType(StrEnum):
                 return lambda section: section.lower()
 
 
-def highlight_diff(worse: str, better: str, diff_type: DiffType) -> tuple[Text, Text]:
+def highlight_diff(worse: str, better: str, diff_type: DiffType = DiffType.TOKEN) -> tuple[Text, Text]:
     """Return the formatted pair of strings, highlighting the difference between the two."""
     tokenizer, normalizer = diff_type.get_tokenizer(), diff_type.get_normalizer()
     worse_tokens, better_tokens = tokenizer(worse), tokenizer(better)

@@ -6,8 +6,8 @@ from typing import cast
 
 from rich.text import Text
 
-from reling.app.config import MAX_SCORE
 from reling.app.translation import get_dialogue_exchanges, get_text_sentences
+from reling.config import MAX_SCORE
 from reling.db import single_session
 from reling.db.models import DialogueExam, Language, TextExam
 from reling.helpers.grammar import Analyzer, WordInfo

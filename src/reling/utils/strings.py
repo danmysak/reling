@@ -1,15 +1,19 @@
+import re
 from typing import Generator
 from unicodedata import category, normalize
 
 __all__ = [
     'capitalize_first_char',
     'char_range',
+    'is_cj',
     'is_punctuation',
     'is_whitespace',
     'replace_prefix_casing',
     'tokenize',
     'universal_normalize',
 ]
+
+CJ = re.compile(r'[\u4E00-\u9FFF\u3040-\u30FF]')
 
 
 def universal_normalize(string: str) -> str:
@@ -37,17 +41,28 @@ def is_whitespace(char: str) -> bool:
     return category(char).startswith('Z')
 
 
-def tokenize(string: str, words_only: bool = False) -> list[str]:
-    """Tokenize a string into words, punctuation, and whitespace."""
+def is_cj(char: str) -> bool:
+    """Return whether the character is a Chinese or Japanese character."""
+    return CJ.fullmatch(char) is not None
+
+
+def tokenize(string: str, *, punctuation: bool = True, whitespace: bool = True, cj: bool = True) -> list[str]:
+    """Tokenize a string into words, punctuation, whitespace, and individual CJ characters."""
     tokens: list[str] = []
     current: list[str] = []
     for char in string:
-        if is_punctuation(char) or is_whitespace(char):
-            if current:
-                tokens.append(''.join(current))
-                current.clear()
-            if not words_only:
-                tokens.append(char)
+        for (checker, should_include) in [
+            (is_punctuation, punctuation),
+            (is_whitespace, whitespace),
+            (is_cj, cj),
+        ]:
+            if checker(char):
+                if current:
+                    tokens.append(''.join(current))
+                    current.clear()
+                if should_include:
+                    tokens.append(char)
+                break
         else:
             current.append(char)
     if current:

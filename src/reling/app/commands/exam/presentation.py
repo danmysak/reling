@@ -6,9 +6,9 @@ from typing import Iterable
 
 from rich.text import Text
 
-from reling.app.config import MAX_SCORE
+from reling.config import MAX_SCORE
 from reling.helpers.colors import fade
-from reling.helpers.diff import DiffType, highlight_diff
+from reling.helpers.diff import highlight_diff
 from reling.helpers.output import output, SentenceData
 from reling.helpers.scoring import format_average_score
 from reling.helpers.wave import play
@@ -42,12 +42,7 @@ def format_provided_and_suggestion(
         if provided == perfect:
             return provided, NOTHING_TO_IMPROVE
         else:
-            return highlight_diff(
-                provided,
-                perfect,
-                # Tokenize into characters for, e.g., Chinese and Japanese, and into words for other languages:
-                DiffType.TOKEN if any(' ' in sentence for sentence in (provided, perfect)) else DiffType.CHAR,
-            )
+            return highlight_diff(provided, perfect)
     else:
         return provided, perfect
 

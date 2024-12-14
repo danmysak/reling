@@ -4,8 +4,8 @@ from typing import cast, Generator
 
 from lcs2 import lcs_indices
 
-from reling.app.config import MAX_SCORE
 from reling.app.exceptions import AlgorithmException
+from reling.config import MAX_SCORE
 from reling.db.enums import ContentCategory
 from reling.db.models import Language
 from reling.gpt import GPTClient
