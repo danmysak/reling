@@ -12,7 +12,7 @@ __all__ = [
     'format_average_score',
 ]
 
-FUZZY_RATIO = 0.51
+FUZZY_RATIO = 0.61
 
 
 def calculate_mistake_score(mistakes: int) -> int:
