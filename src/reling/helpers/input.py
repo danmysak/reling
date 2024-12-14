@@ -1,8 +1,9 @@
+from contextlib import contextmanager
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
 from tempfile import mkstemp
-from typing import Callable
+from typing import Callable, Generator
 
 from reling.db.models import Language
 from reling.scanner import Scanner
@@ -53,6 +54,14 @@ class ScannerParams:
     language: Language
 
 
+@contextmanager
+def pausing(on_pause: Callable[[], None], on_resume: Callable[[], None]) -> Generator[None, None, None]:
+    """Pause and then resume once the context is exited."""
+    on_pause()
+    yield
+    on_resume()
+
+
 def get_manual_input(prompt: str) -> Input:
     """Prompt the user for manual input."""
     return Input(interruptible_input(prompt))
@@ -78,7 +87,12 @@ def do_transcribe(prompt: str, transcribe: Transcriber, file: Path) -> str:
             return ''
 
 
-def get_audio_input(prompt: str, params: TranscriberParams) -> Input | None:
+def get_audio_input(
+        prompt: str,
+        params: TranscriberParams,
+        on_pause: Callable[[], None],
+        on_resume: Callable[[], None],
+) -> Input | None:
     """
     Get input from the user via audio recording, with options for re-recording, listening, and manual input.
     :return: The user's input, or None if the user has chosen to manually input the text.
@@ -88,7 +102,8 @@ def get_audio_input(prompt: str, params: TranscriberParams) -> Input | None:
     while True:
         if not do_record(prompt, file):
             continue
-        transcription = do_transcribe(prompt, params.transcribe, file)
+        with pausing(on_pause, on_resume):
+            transcription = do_transcribe(prompt, params.transcribe, file)
         print(prompt + transcription)
         try:
             while True:
@@ -127,14 +142,20 @@ def do_scan(prompt: str, scanner: Scanner, language: Language) -> str:
             return ''
 
 
-def get_image_input(prompt: str, params: ScannerParams) -> Input | None:
+def get_image_input(
+        prompt: str,
+        params: ScannerParams,
+        on_pause: Callable[[], None],
+        on_resume: Callable[[], None],
+) -> Input | None:
     """
     Get input from the user via image capture, with options for retaking or manual input.
     :return: The user's input, or None if the user has chosen to manually input the text.
     """
     input_and_erase(prompt + ENTER_TO_CAPTURE_IMAGE)
     while True:
-        text = do_scan(prompt, params.scanner, params.language)
+        with pausing(on_pause, on_resume):
+            text = do_scan(prompt, params.scanner, params.language)
         print(prompt + text)
         try:
             while True:
@@ -168,11 +189,10 @@ def get_input(
     while True:
         try:
             return (
-                (transcriber_params and get_audio_input(prompt, transcriber_params)) or
-                (scanner_params and get_image_input(prompt, scanner_params)) or
+                (transcriber_params and get_audio_input(prompt, transcriber_params, on_pause, on_resume)) or
+                (scanner_params and get_image_input(prompt, scanner_params, on_pause, on_resume)) or
                 get_manual_input(prompt)
             )
         except KeyboardInterrupt:
-            on_pause()
-            input_and_erase(PAUSED)
-            on_resume()
+            with pausing(on_pause, on_resume):
+                input_and_erase(PAUSED)
