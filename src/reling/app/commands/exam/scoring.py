@@ -149,12 +149,13 @@ def finalize_scoring(provided_translation: str, score: PreScoreWithSuggestion) -
     """
     Return the highest score among the original score and the score calculated
     using the diff between the provided translation and the suggested translation;
-    clear the suggestion if it is the same as the provided translation.
+    clear the suggestion if it is the same as the provided translation or the score is 0.
     """
+    final_score = max([score.score] + ([calculate_diff_score(score.suggestion, provided_translation)]
+                                       if score.suggestion is not None and provided_translation != '' else []))
     return ScoreWithSuggestion(
-        score=max([score.score] + ([calculate_diff_score(score.suggestion, provided_translation)]
-                                   if score.suggestion is not None and provided_translation != '' else [])),
-        suggestion=score.suggestion if score.suggestion != provided_translation else None,
+        score=final_score,
+        suggestion=score.suggestion if score.suggestion != provided_translation and final_score > 0 else None,
     )
 
 
