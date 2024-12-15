@@ -9,6 +9,7 @@ __all__ = [
     'enter_to_continue',
     'format_shortcut',
     'Prompt',
+    'PROMPT_SEPARATOR',
     'PromptOption',
 ]
 
@@ -112,6 +113,9 @@ class Prompt[T]:
         Prompt the user for a choice and return the corresponding action (or None if the response is empty).
         If the response is invalid, the prompt is repeated until a valid response is given.
         """
+        if not self._options:
+            enter_to_continue()
+            return None
         while True:
             response = input_and_erase(
                 '\n'.join([

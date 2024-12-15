@@ -45,7 +45,8 @@ def build_prompt_translation(
         f'If the translation is less than perfect, suggest a minimally modified version that would '
         f'deserve a {MAX_SCORE}.',
 
-        f'{'Provide' if n == 1 else 'For each translation, provide'} your feedback on exactly four lines:',
+        f'{'Provide' if n == 1 else 'For each translation, provide'} your feedback on exactly four lines '
+        f'(without adding bullet points or dashes in front of them):',
         f'- original sentence on the first line;',  # The first two lines help improve the model's performance
         f'- learner\'s translation on the second line;',
         f'- score (just the number) on the third line;',
@@ -58,7 +59,7 @@ def build_prompt_translation(
         *apply(add_numbering, blocks),
         f'',
         f'The translations are:',
-        *apply(add_numbering, [translation.strip() or EMPTY_TRANSLATION for translation in translations]),
+        *apply(add_numbering, [translation or EMPTY_TRANSLATION for translation in translations]),
     ])
 
 
@@ -75,7 +76,7 @@ def parse_scoring(string_score: str, suggestion: str) -> PreScoreWithSuggestion:
         raise AlgorithmException(f'The score {score} given by the model is not in the range from 0 to {MAX_SCORE}.')
     return PreScoreWithSuggestion(
         score=score,
-        suggestion=(stripped or None) if (stripped := suggestion.strip()) != NA else None,
+        suggestion=(suggestion or None) if suggestion != NA else None,
     )
 
 
@@ -111,9 +112,9 @@ def build_prompt_averaging(language: Language, sentence: str, a: str, b: str) ->
         f'If the response is less than perfect, suggest a minimally modified version of it that would deserve a score '
         f'of {MAX_SCORE}.',
 
-        f'Provide your feedback on exactly two lines:',
+        f'Provide your feedback on exactly two lines (without adding bullet points or dashes in front of them):',
         f'- the score (just the number) on the first line;',
-        f'- the suggested improved response (or "{NA}") on the second line.',
+        f'- the suggested improved response (or "{NA}") on the second line (do not enclose it in quotes).',
     ])
 
 

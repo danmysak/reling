@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Generator
+from typing import Generator, Iterable
 
 from .strings import universal_normalize
 
@@ -10,6 +10,7 @@ __all__ = [
     'input_and_erase',
     'interruptible_input',
     'print_and_erase',
+    'stream_print',
 ]
 
 
@@ -45,3 +46,10 @@ def print_and_erase(text: str) -> Generator[None, None, None]:
     print(text)
     yield
     erase_previous(text)
+
+
+def stream_print(stream: Iterable[str], start: str = '', end: str = '\n') -> None:
+    print(start, end='', flush=True)
+    for part in stream:
+        print(part, end='', flush=True)
+    print(end, end='', flush=True)

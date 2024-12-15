@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from queue import Queue
 
 __all__ = [
+    'CharFeeder',
     'Feeder',
     'LineFeeder',
 ]
@@ -27,6 +28,25 @@ class Feeder(ABC):
     def get(self) -> str | None:
         """Get the next piece of data or None if there is no more data ready."""
         pass
+
+
+class CharFeeder(Feeder):
+    """Feeder that provides data character-by-character when the characters are ready."""
+
+    _chars: Queue[str]
+
+    def __init__(self) -> None:
+        self._chars = Queue()
+
+    def put(self, chunk: str) -> None:
+        for char in chunk:
+            self._chars.put(char)
+
+    def end(self) -> None:
+        pass
+
+    def get(self) -> str | None:
+        return self._chars.get() if not self._chars.empty() else None
 
 
 class LineFeeder(Feeder):

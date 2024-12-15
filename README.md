@@ -37,6 +37,7 @@ Optionally, the system can vocalize sentences in both the source and target lang
 - [Languages](#languages)
 - [Setting Models and API Key](#setting-models-and-api-key)
 - [Specifying Genders](#specifying-genders)
+- [Acknowledgements](#acknowledgements)
 
 
 ## Installation<a id="installation"></a>
@@ -479,3 +480,8 @@ The system requires knowledge of your gender and the gender of your interlocutor
 To avoid specifying your gender each time you generate a new dialogue, you can set the environment variable `RELING_USER_GENDER`.
 
 The system accepts one of the following values for gender: `male`, `female`, or `nonbinary`.
+
+
+## Acknowledgements<a id="acknowledgements"></a>
+
+Thank you to [Tamila Krashtan](https://github.com/tamila-krashtan) for assisting with testing and suggesting improvements to ReLing.

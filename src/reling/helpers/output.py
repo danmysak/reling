@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from typing import cast
+from typing import Callable, cast
 
 from rich.console import Console
 from rich.text import Text
@@ -8,7 +8,7 @@ from rich.text import Text
 from reling.tts import TTSVoiceClient
 from reling.types import Reader, Speed
 from reling.utils.console import clear_current_line
-from reling.utils.prompts import enter_to_continue, Prompt, PromptOption
+from reling.utils.prompts import Prompt, PromptOption
 from reling.utils.values import coalesce, ensure_not_none
 from .colors import fade
 
@@ -19,7 +19,7 @@ __all__ = [
 
 NA = fade('N/A')
 
-PROMPT_TITLE = 'Play'
+PLAY_PROMPT_TITLE = 'Play'
 NORMAL_SPEED = 'normal speed'
 SLOWLY = 'slowly'
 REPLAY = 'replay'
@@ -61,7 +61,10 @@ class ReaderWithId:
     id: str
 
 
-def add_single_sentence_options(prompt: Prompt[ReaderWithSpeed], reader: Reader) -> None:
+type OutputPrompt = Prompt[ReaderWithSpeed | Callable[[], None]]
+
+
+def add_single_sentence_options(prompt: OutputPrompt, reader: Reader) -> None:
     """Attach the options for a single sentence to the prompt: '[n]ormal speed | [s]lowly'."""
     prompt.add_option(PromptOption(
         description=NORMAL_SPEED,
@@ -73,7 +76,7 @@ def add_single_sentence_options(prompt: Prompt[ReaderWithSpeed], reader: Reader)
     ))
 
 
-def add_multi_sentence_options(prompt: Prompt[ReaderWithSpeed], readers: list[ReaderWithId]) -> None:
+def add_multi_sentence_options(prompt: OutputPrompt, readers: list[ReaderWithId]) -> None:
     """Attach the options for multiple sentences to the prompt: '[i]mproved | [is] | [o]riginal | [os]'."""
     for reader in readers:
         prompt.add_option(PromptOption(
@@ -85,16 +88,23 @@ def add_multi_sentence_options(prompt: Prompt[ReaderWithSpeed], readers: list[Re
         ))
 
 
-def construct_prompt(
+def add_extra_options(prompt: OutputPrompt, extra_options: list[PromptOption[Callable[[], None]]]) -> None:
+    """Attach the extra options to the prompt."""
+    for option in extra_options:
+        prompt.add_option(option)
+
+
+def construct_play_prompt(
         sentences_with_readers: list[SentenceData],
         current: ReaderWithSpeed | None,
         multi_sentence: bool,
-) -> Prompt:
+        extra_options: list[PromptOption[Callable[[], None]]],
+) -> OutputPrompt:
     """
     Construct a prompt for the user to choose the next sentence to read and the speed of the reading.
     :raises ValueError: If reader_id is not provided for a sentence with a reader in a multi-sentence output.
     """
-    prompt = Prompt(PROMPT_TITLE)
+    prompt: OutputPrompt = Prompt(PLAY_PROMPT_TITLE)
     if multi_sentence:
         add_multi_sentence_options(prompt, [
             ReaderWithId(
@@ -110,10 +120,23 @@ def construct_prompt(
             description=REPLAY,
             action=current,
         ))
+    add_extra_options(prompt, extra_options)
     return prompt
 
 
-def output(*sentences: SentenceData) -> None:
+def invoke(option: ReaderWithSpeed | Callable[[], None]) -> None:
+    """Invoke the reader or the function."""
+    try:
+        if isinstance(option, ReaderWithSpeed):
+            option.reader(option.speed)
+        else:
+            option()
+    except KeyboardInterrupt:
+        pass
+    clear_current_line()  # Otherwise the input made during the operation will get displayed twice
+
+
+def output(*sentences: SentenceData, extra_options: list[PromptOption[Callable[[], None]]] | None = None) -> None:
     """
     Output the sentences, reading them if a reader is provided.
     If multiple readers are provided, the user can choose which sentence to read next.
@@ -121,6 +144,7 @@ def output(*sentences: SentenceData) -> None:
 
     :raises ValueError: If reader_id is not provided for a sentence with a reader in a multi-sentence output.
     """
+    extra_options = extra_options or []
     console = Console(highlight=False)
     for sentence in sentences:
         console.print(sentence.print_prefix or '', end='')
@@ -130,13 +154,15 @@ def output(*sentences: SentenceData) -> None:
         current = ReaderWithSpeed(sentences_with_readers[0].reader, Speed.NORMAL) if len(sentences) == 1 else None
         while True:
             if current:
-                try:
-                    current.reader(current.speed)
-                except KeyboardInterrupt:
-                    pass
-                clear_current_line()  # Otherwise the input made during the reading will get displayed twice
-            current = construct_prompt(sentences_with_readers, current, multi_sentence).prompt()
+                invoke(current)
+            current = construct_play_prompt(sentences_with_readers, current, multi_sentence, extra_options).prompt()
             if not current:
                 break
-    elif multi_sentence:
-        enter_to_continue()
+    elif multi_sentence or extra_options:
+        prompt: OutputPrompt = Prompt()
+        add_extra_options(prompt, extra_options)
+        while True:
+            if current := prompt.prompt():
+                invoke(current)
+            else:
+                break

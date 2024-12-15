@@ -31,6 +31,7 @@ from reling.scanner import ScannerManager, ScannerParams
 from reling.tts import get_tts_client, TTSClient
 from reling.types import Promise
 from reling.utils.timetracker import TimeTracker
+from .explanation import build_dialogue_explainer, build_text_explainer
 from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
 from .scoring import score_dialogue_translations, score_text_translations
@@ -181,6 +182,14 @@ def perform_text_exam(
             duration=text_exam.duration,
             source_tts=voice_source_tts,
             target_tts=voice_target_tts,
+            explain=build_text_explainer(
+                gpt=gpt,
+                sentences=translated,
+                original_translations=original_translations,
+                results=results,
+                source_language=source_language,
+                target_language=target_language,
+            ),
         )
 
 
@@ -269,4 +278,12 @@ def perform_dialogue_exam(
             source_user_tts=source_user_tts,
             target_speaker_tts=target_speaker_tts,
             target_user_tts=target_user_tts,
+            explain=build_dialogue_explainer(
+                gpt=gpt,
+                exchanges=translated,
+                original_translations=original_translations,
+                results=results,
+                source_language=source_language,
+                target_language=target_language,
+            ),
         )
