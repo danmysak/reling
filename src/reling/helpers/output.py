@@ -7,8 +7,8 @@ from rich.text import Text
 
 from reling.tts import TTSVoiceClient
 from reling.types import Reader, Speed
-from reling.utils.console import clear_current_line
-from reling.utils.prompts import Prompt, PromptOption
+from reling.utils.console import clear_current_line, input_and_erase
+from reling.utils.prompts import ENTER, Prompt, PromptOption
 from reling.utils.values import coalesce, ensure_not_none
 from .colors import fade
 
@@ -23,6 +23,8 @@ PLAY_PROMPT_TITLE = 'Play'
 NORMAL_SPEED = 'normal speed'
 SLOWLY = 'slowly'
 REPLAY = 'replay'
+
+INTERRUPTED = f'INTERRUPTED ({ENTER} to continue)'
 
 
 @dataclass
@@ -61,7 +63,8 @@ class ReaderWithId:
     id: str
 
 
-type OutputPrompt = Prompt[ReaderWithSpeed | Callable[[], None]]
+type OutputPromptOption = ReaderWithSpeed | Callable[[], None]
+type OutputPrompt = Prompt[OutputPromptOption]
 
 
 def add_single_sentence_options(prompt: OutputPrompt, reader: Reader) -> None:
@@ -124,7 +127,16 @@ def construct_play_prompt(
     return prompt
 
 
-def invoke(option: ReaderWithSpeed | Callable[[], None]) -> None:
+def do_prompt(prompt: OutputPrompt) -> OutputPromptOption | None:
+    """Prompt the user and return the chosen option."""
+    while True:
+        try:
+            return prompt.prompt()
+        except KeyboardInterrupt:
+            input_and_erase(INTERRUPTED)
+
+
+def invoke(option: OutputPromptOption) -> None:
     """Invoke the reader or the function."""
     try:
         if isinstance(option, ReaderWithSpeed):
@@ -155,14 +167,14 @@ def output(*sentences: SentenceData, extra_options: list[PromptOption[Callable[[
         while True:
             if current:
                 invoke(current)
-            current = construct_play_prompt(sentences_with_readers, current, multi_sentence, extra_options).prompt()
+            current = do_prompt(construct_play_prompt(sentences_with_readers, current, multi_sentence, extra_options))
             if not current:
                 break
     elif multi_sentence or extra_options:
         prompt: OutputPrompt = Prompt()
         add_extra_options(prompt, extra_options)
         while True:
-            if current := prompt.prompt():
+            if current := do_prompt(prompt):
                 invoke(current)
             else:
                 break
