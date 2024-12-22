@@ -7,7 +7,7 @@ from reling.gpt import GPTClient
 from reling.types import DialogueExchangeData, Promise
 from reling.utils.feeders import CharFeeder
 from reling.utils.values import coalesce
-from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
+from .types import ExchangeWithTranslation, ExplanationRequest, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
     'build_dialogue_explainer',
@@ -52,6 +52,13 @@ def explain_difference(sentence: str, alternative: str, language: Language) -> l
     ]
 
 
+def explain_source_structure(sentence: str) -> list[str]:
+    """Generate a prompt section for explaining the structure of a sentence in the source language."""
+    return [
+        f'Explain the grammatical and structural elements of the last line ("""{sentence}""") to a language learner.',
+    ]
+
+
 def do_explain(
         gpt: Promise[GPTClient],
         category: ContentCategory,
@@ -61,6 +68,7 @@ def do_explain(
         result: ScoreWithSuggestion,
         source_language: Language,
         target_language: Language,
+        explain_source: bool,
 ) -> Generator[str, None, None]:
     """Generate an explanation for translations based on user-provided and corrected data."""
     return gpt().ask(
@@ -70,6 +78,8 @@ def do_explain(
             *initial_sentences,
             f'',
             *(
+                explain_source_structure(initial_sentences[-1])
+                if explain_source else
                 explain_difference(
                     sentence=provided,
                     alternative=alternative,
@@ -106,9 +116,10 @@ def build_text_explainer(
         results: list[ScoreWithSuggestion],
         source_language: Language,
         target_language: Language,
-) -> Callable[[int], Generator[str, None, None]]:
+) -> Callable[[ExplanationRequest], Generator[str, None, None]]:
     """Create a function to generate explanations for text translations."""
-    def explain(index: int) -> Generator[str, None, None]:
+    def explain(request: ExplanationRequest) -> Generator[str, None, None]:
+        index = request.sentence_index
         return do_explain(
             gpt=gpt,
             category=ContentCategory.TEXT,
@@ -118,6 +129,7 @@ def build_text_explainer(
             result=results[index],
             source_language=source_language,
             target_language=target_language,
+            explain_source=request.source,
         )
     return explain
 
@@ -129,9 +141,10 @@ def build_dialogue_explainer(
         results: list[ScoreWithSuggestion],
         source_language: Language,
         target_language: Language,
-) -> Callable[[int], Generator[str, None, None]]:
+) -> Callable[[ExplanationRequest], Generator[str, None, None]]:
     """Create a function to generate explanations for dialogue translations."""
-    def explain(index: int) -> Generator[str, None, None]:
+    def explain(request: ExplanationRequest) -> Generator[str, None, None]:
+        index = request.sentence_index
         return do_explain(
             gpt=gpt,
             category=ContentCategory.DIALOGUE,
@@ -141,5 +154,6 @@ def build_dialogue_explainer(
             result=results[index],
             source_language=source_language,
             target_language=target_language,
+            explain_source=request.source,
         )
     return explain

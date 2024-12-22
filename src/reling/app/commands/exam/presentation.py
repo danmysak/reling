@@ -18,7 +18,7 @@ from reling.utils.console import stream_print
 from reling.utils.prompts import PROMPT_SEPARATOR, PromptOption
 from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
-from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
+from .types import ExchangeWithTranslation, ExplanationRequest, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
     'present_dialogue_results',
@@ -49,6 +49,14 @@ def format_provided_and_suggestion(
         return provided, perfect
 
 
+def build_explanation_printer(
+        explain: Callable[[ExplanationRequest], Iterable[str]],
+        request: ExplanationRequest,
+) -> Callable[[], None]:
+    """Create a function to print an explanation."""
+    return lambda: stream_print(explain(request), start=PROMPT_SEPARATOR + '\n')
+
+
 def present_results(
         titles: list[list[TitleData]],
         provided_translations: list[Input],
@@ -56,7 +64,7 @@ def present_results(
         results: list[ScoreWithSuggestion],
         duration: timedelta,
         target_tts: TTSVoiceClient | None,
-        explain: Callable[[int], Iterable[str]],
+        explain: Callable[[ExplanationRequest], Iterable[str]],
 ) -> None:
     """Present the results of scoring translations."""
     scores: list[int] = []
@@ -99,7 +107,11 @@ def present_results(
                 reader_id='original',
             )] if original_translation is not None else []),
         ], extra_options=[
-            PromptOption('explain', lambda: stream_print(explain(index), start=PROMPT_SEPARATOR + '\n')),
+            PromptOption(
+                'explain',
+                build_explanation_printer(explain, ExplanationRequest(index, source=False)),
+                {'source': build_explanation_printer(explain, ExplanationRequest(index, source=True))},
+            ),
         ])
         print()
     print(f'Average score: {format_average_score(scores)}')
@@ -114,7 +126,7 @@ def present_text_results(
         duration: timedelta,
         source_tts: TTSVoiceClient | None,
         target_tts: TTSVoiceClient | None,
-        explain: Callable[[int], Iterable[str]],
+        explain: Callable[[ExplanationRequest], Iterable[str]],
 ) -> None:
     """Present the results of scoring text translations."""
     present_results(
@@ -143,7 +155,7 @@ def present_dialogue_results(
         source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
         target_user_tts: TTSVoiceClient | None,
-        explain: Callable[[int], Iterable[str]],
+        explain: Callable[[ExplanationRequest], Iterable[str]],
 ) -> None:
     """Present the results of scoring dialogue translations."""
     present_results(

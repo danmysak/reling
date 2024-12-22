@@ -4,6 +4,7 @@ from reling.types import DialogueExchangeData, Input
 
 __all__ = [
     'ExchangeWithTranslation',
+    'ExplanationRequest',
     'PreScoreWithSuggestion',
     'ScoreWithSuggestion',
     'SentenceWithTranslation',
@@ -32,3 +33,9 @@ class PreScoreWithSuggestion:
 class ScoreWithSuggestion:
     score: int
     suggestion: str | None
+
+
+@dataclass
+class ExplanationRequest:
+    sentence_index: int
+    source: bool
