@@ -1,6 +1,6 @@
 from contextlib import contextmanager
 from shutil import get_terminal_size
-from typing import Generator, Iterable
+from typing import Callable, Generator, Iterable
 
 from wcwidth import wcwidth
 
@@ -8,11 +8,10 @@ from .strings import universal_normalize
 
 __all__ = [
     'clear_current_line',
-    'clear_previous',
-    'erase_previous',
     'input_and_erase',
     'interruptible_input',
     'print_and_erase',
+    'print_and_maybe_erase',
     'stream_print',
 ]
 
@@ -66,6 +65,12 @@ def print_and_erase(text: str) -> Generator[None, None, None]:
     print(text)
     yield
     erase_previous(text)
+
+
+@contextmanager
+def print_and_maybe_erase(text: str) -> Generator[Callable[[], None], None, None]:
+    print(text)
+    yield lambda: erase_previous(text)
 
 
 def stream_print(stream: Iterable[str], start: str = '', end: str = '\n') -> None:

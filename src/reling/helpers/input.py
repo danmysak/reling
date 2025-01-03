@@ -8,7 +8,7 @@ from typing import Callable, Generator
 from reling.db.models import Language
 from reling.scanner import Scanner
 from reling.types import Input, Transcriber
-from reling.utils.console import clear_previous, input_and_erase, interruptible_input, print_and_erase
+from reling.utils.console import input_and_erase, interruptible_input, print_and_erase, print_and_maybe_erase
 from reling.utils.prompts import ENTER, format_shortcut, Prompt
 from .wave import FILE_EXTENSION, play, record
 
@@ -104,28 +104,28 @@ def get_audio_input(
             continue
         with pausing(on_pause, on_resume):
             transcription = do_transcribe(prompt, params.transcribe, file)
-        print(prompt + transcription)
-        try:
-            while True:
-                match Prompt.from_enum(AudioAction).prompt():
-                    case AudioAction.RE_RECORD:
-                        clear_previous()
-                        break
-                    case AudioAction.LISTEN:
-                        try:
-                            play(file)
-                        except KeyboardInterrupt:
-                            pass
-                    case AudioAction.MANUAL_INPUT:
-                        clear_previous()
-                        return None
-                    case None:
-                        return Input(transcription, audio=file)
-                    case _:
-                        assert False
-        except KeyboardInterrupt:
-            clear_previous()
-            raise
+        with print_and_maybe_erase(prompt + transcription) as do_erase:
+            try:
+                while True:
+                    match Prompt.from_enum(AudioAction).prompt():
+                        case AudioAction.RE_RECORD:
+                            do_erase()
+                            break
+                        case AudioAction.LISTEN:
+                            try:
+                                play(file)
+                            except KeyboardInterrupt:
+                                pass
+                        case AudioAction.MANUAL_INPUT:
+                            do_erase()
+                            return None
+                        case None:
+                            return Input(transcription, audio=file)
+                        case _:
+                            assert False
+            except KeyboardInterrupt:
+                do_erase()
+                raise
 
 
 def do_scan(prompt: str, scanner: Scanner, language: Language) -> str:
@@ -156,23 +156,23 @@ def get_image_input(
     while True:
         with pausing(on_pause, on_resume):
             text = do_scan(prompt, params.scanner, params.language)
-        print(prompt + text)
-        try:
-            while True:
-                match Prompt.from_enum(ImageAction).prompt():
-                    case ImageAction.RETAKE:
-                        clear_previous()
-                        break
-                    case ImageAction.MANUAL_INPUT:
-                        clear_previous()
-                        return None
-                    case None:
-                        return Input(text)
-                    case _:
-                        assert False
-        except KeyboardInterrupt:
-            clear_previous()
-            raise
+        with print_and_maybe_erase(prompt + text) as do_erase:
+            try:
+                while True:
+                    match Prompt.from_enum(ImageAction).prompt():
+                        case ImageAction.RETAKE:
+                            do_erase()
+                            break
+                        case ImageAction.MANUAL_INPUT:
+                            do_erase()
+                            return None
+                        case None:
+                            return Input(text)
+                        case _:
+                            assert False
+            except KeyboardInterrupt:
+                do_erase()
+                raise
 
 
 def get_input(
