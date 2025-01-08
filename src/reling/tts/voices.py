@@ -9,10 +9,13 @@ __all__ = [
 
 class Voice(StrEnum):
     ALLOY = 'alloy'
+    ASH = 'ash'
+    CORAL = 'coral'
     ECHO = 'echo'
     FABLE = 'fable'
     ONYX = 'onyx'
     NOVA = 'nova'
+    SAGE = 'sage'
     SHIMMER = 'shimmer'
 
     @property
@@ -20,6 +23,10 @@ class Voice(StrEnum):
         match self:
             case Voice.ALLOY:
                 return Gender.NONBINARY
+            case Voice.ASH:
+                return Gender.MALE
+            case Voice.CORAL:
+                return Gender.FEMALE
             case Voice.ECHO:
                 return Gender.MALE
             case Voice.FABLE:
@@ -27,6 +34,8 @@ class Voice(StrEnum):
             case Voice.ONYX:
                 return Gender.MALE
             case Voice.NOVA:
+                return Gender.FEMALE
+            case Voice.SAGE:
                 return Gender.FEMALE
             case Voice.SHIMMER:
                 return Gender.FEMALE
