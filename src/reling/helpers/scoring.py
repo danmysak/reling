@@ -1,15 +1,18 @@
 from __future__ import annotations
 from math import ceil, floor
 from statistics import mean
+from typing import cast
 
 from lcs2 import diff, lcs_indices, lcs_length
 
 from reling.config import MAX_SCORE
+from reling.db.models import DialogueExam, TextExam
 from reling.utils.strings import tokenize
 
 __all__ = [
     'calculate_diff_score',
     'format_average_score',
+    'get_average_score',
 ]
 
 FUZZY_RATIO = 0.61
@@ -85,5 +88,13 @@ def calculate_diff_score(a: str, b: str) -> int:
     )
 
 
-def format_average_score(scores: list[int]) -> str:
-    return f'{mean(scores):.1f}'
+def get_average_score(exam: TextExam | DialogueExam) -> float:
+    """Return the average score of the exam."""
+    return mean(
+        [result.score for result in exam.results]
+        + [MAX_SCORE] * (exam.item.size - len(cast(list, exam.results))),
+    )
+
+
+def format_average_score(exam: TextExam | DialogueExam) -> str:
+    return f'{get_average_score(exam):.1f}'

@@ -50,6 +50,7 @@ __all__ = [
     'SCAN_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
+    'SKIP_OPT',
     'SPEAKER_GENDER_OPT',
     'SPEAKER_OPT',
     'STYLE_OPT',
@@ -196,6 +197,11 @@ REGEX_CONTENT_OPT = Annotated[re.Pattern | None, typer.Option(
 CHECKPOINT_OPT = Annotated[list[datetime] | None, typer.Option(
     help='starting date(s) or time(s) to add statistics checkpoints',
     formats=[DATE_FORMAT, TIME_FORMAT],
+)]
+
+SKIP_OPT = Annotated[int | None, typer.Option(
+    min=1,
+    help='Skip sentences after achieving this many consecutive perfect answers.',
 )]
 
 READ_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(

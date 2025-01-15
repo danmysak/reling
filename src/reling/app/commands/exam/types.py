@@ -14,13 +14,13 @@ __all__ = [
 @dataclass
 class SentenceWithTranslation:
     sentence: str
-    translation: Input
+    translation: Input | None
 
 
 @dataclass
 class ExchangeWithTranslation:
     exchange: DialogueExchangeData
-    user_translation: Input
+    user_translation: Input | None
 
 
 @dataclass

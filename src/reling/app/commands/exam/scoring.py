@@ -1,5 +1,4 @@
-from functools import partial
-from itertools import islice, starmap
+from itertools import islice
 from typing import cast, Generator
 
 from lcs2 import lcs_indices
@@ -30,7 +29,7 @@ def build_prompt_translation(
         source_language: Language,
         target_language: Language,
         blocks: list[str],
-        translations: list[str],
+        translations: list[str | None],
 ) -> str:
     """Build a prompt for scoring translations."""
     # Speaker turns in dialogues are "graded" as well so that the model appreciates the context.
@@ -195,7 +194,7 @@ def score_text_translations(
         source_language: Language,
         target_language: Language,
         offline: bool,
-) -> Generator[ScoreWithSuggestion, None, None]:
+) -> Generator[ScoreWithSuggestion | None, None, None]:
     """
     Score the translations of a text and provide suggestions for improvement.
     :raises AlgorithmException: If there is an issue with the scoring algorithm.
@@ -205,7 +204,7 @@ def score_text_translations(
             yield ScoreWithSuggestion(
                 score=calculate_diff_score(sentence.translation.text, original_translation),
                 suggestion=original_translation,
-            )
+            ) if sentence.translation else None
     else:
         client = gpt()
         prompt = build_prompt_translation(
@@ -213,13 +212,20 @@ def score_text_translations(
             source_language=source_language,
             target_language=target_language,
             blocks=[cast(str, sentence.sentence) for sentence in sentences],
-            translations=[sentence.translation.text for sentence in sentences],
+            translations=[sentence.translation.text if sentence.translation else None for sentence in sentences],
         )
-        yield from starmap(partial(fix_scoring, client, target_language), zip(
-            (sentence.translation.text for sentence in sentences),
-            original_translations,
-            ask_and_parse_translation(client, prompt),
-        ))
+        for sentence, original_translation, pre_score in zip(
+                sentences,
+                original_translations,
+                ask_and_parse_translation(client, prompt),
+        ):
+            yield fix_scoring(
+                client,
+                target_language,
+                sentence.translation.text,
+                original_translation,
+                pre_score,
+            ) if sentence.translation else None
 
 
 def score_dialogue_translations(
@@ -229,7 +235,7 @@ def score_dialogue_translations(
         source_language: Language,
         target_language: Language,
         offline: bool,
-) -> Generator[ScoreWithSuggestion, None, None]:
+) -> Generator[ScoreWithSuggestion | None, None, None]:
     """
     Score the translations of user turns in a dialogue and provide suggestions for improvement.
     :raises AlgorithmException: If there is an issue with the scoring algorithm.
@@ -239,7 +245,7 @@ def score_dialogue_translations(
             yield ScoreWithSuggestion(
                 score=calculate_diff_score(exchange.user_translation.text, original_translation.user),
                 suggestion=original_translation.user,
-            )
+            ) if exchange.user_translation else None
     else:
         client = gpt()
         prompt = build_prompt_translation(
@@ -249,10 +255,17 @@ def score_dialogue_translations(
             blocks=[turn for exchange in exchanges for turn in exchange.exchange.all()],
             translations=[turn
                           for exchange, original_translation in zip(exchanges, original_translations)
-                          for turn in [original_translation.speaker, exchange.user_translation.text]],
+                          for turn in [None, exchange.user_translation.text if exchange.user_translation else None]],
         )
-        yield from starmap(partial(fix_scoring, client, target_language), zip(
-            (exchange.user_translation.text for exchange in exchanges),
-            (original_translation.user for original_translation in original_translations),
-            islice(ask_and_parse_translation(client, prompt), 1, None, 2),
-        ))
+        for exchange, original_translation, pre_score in zip(
+                exchanges,
+                original_translations,
+                islice(ask_and_parse_translation(client, prompt), 1, None, 2),
+        ):
+            yield fix_scoring(
+                client,
+                target_language,
+                exchange.user_translation.text,
+                original_translation.user,
+                pre_score,
+            ) if exchange.user_translation else None

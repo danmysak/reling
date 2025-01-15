@@ -8,8 +8,14 @@ __all__ = [
 ]
 
 
-def find_content(content_id: str, last_content_marker: str) -> Text | Dialogue | None:
+def find_content[T](
+        content_id: str,
+        last_content_marker: str,
+        extra_options: dict[str, T] | None = None,
+) -> Text | Dialogue | T | None:
     """Find a text or dialogue by its ID."""
+    if extra_options and content_id in extra_options:
+        return extra_options[content_id]
     if content_id == last_content_marker:
         content_id = get_default_content_id()
         if content_id is None:

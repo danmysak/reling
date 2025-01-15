@@ -43,6 +43,10 @@ class Text(Base):
         Index('text_chronological', 'archived_at', 'created_at'),
     )
 
+    @property
+    def size(self) -> int:
+        return len(self.sentences)
+
 
 class TextSentence(Base):
     __tablename__ = 'text_sentences'
@@ -90,6 +94,10 @@ class TextExam(Base):
     )
 
     @property
+    def item(self) -> Text:
+        return self.text
+
+    @property
     def item_id(self) -> str:
         return self.text_id
 
@@ -109,3 +117,7 @@ class TextExamResult(Base):
     answer: Mapped[str]
     suggested_answer: Mapped[str | None]
     score: Mapped[int]
+
+    @property
+    def index(self) -> int:
+        return self.text_sentence_index

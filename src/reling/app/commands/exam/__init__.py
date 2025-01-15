@@ -1,4 +1,5 @@
 from pathlib import Path
+import sys
 from tempfile import TemporaryDirectory
 
 from tqdm import tqdm
@@ -19,6 +20,7 @@ from reling.app.types import (
     OFFLINE_SCORING_OPT,
     READ_LANGUAGE_OPT,
     SCAN_OPT,
+    SKIP_OPT,
     TTS_MODEL,
 )
 from reling.asr import ASRClient
@@ -35,6 +37,7 @@ from .explanation import build_dialogue_explainer, build_text_explainer
 from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
 from .scoring import score_dialogue_translations, score_text_translations
+from .skips import get_skipped_indices
 from .storage import save_dialogue_exam, save_text_exam
 from .types import ExchangeWithTranslation, SentenceWithTranslation
 
@@ -52,6 +55,7 @@ def exam(
         content: CONTENT_ARG,
         from_: LANGUAGE_OPT_FROM = None,
         to: LANGUAGE_OPT = None,
+        skip: SKIP_OPT = None,
         read: READ_LANGUAGE_OPT = None,
         listen: LISTEN_OPT = False,
         scan: SCAN_OPT = None,
@@ -79,14 +83,25 @@ def exam(
         if language not in [from_, to]:
             typer_raise(f'Cannot read in {language.name} as it is not the source or target language.')
 
+    skipped_indices = get_skipped_indices(
+        content,
+        source_language=from_,
+        target_language=to,
+        skip_after=skip,
+    ) if skip is not None else set()
+    if len(skipped_indices) == content.size:
+        print('All sentences are skipped, exiting.', file=sys.stderr)
+        return
+
     def get_gpt() -> GPTClient:
         return GPTClient(api_key=api_key.get(), model=model.get())
 
     (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(
         get_gpt,
         content,
-        from_,
-        to,
+        skipped_indices=skipped_indices,
+        source_language=from_,
+        target_language=to,
         source_tts=(get_tts_client(model=tts_model.get(), api_key=api_key.promise(), language=from_)
                     if from_ in read else None),
         target_tts=(get_tts_client(model=tts_model.get(), api_key=api_key.promise(), language=to)
@@ -104,6 +119,7 @@ def exam(
 def perform_text_exam(
         gpt: Promise[GPTClient],
         text: Text,
+        skipped_indices: set[int],
         source_language: Language,
         target_language: Language,
         source_tts: TTSClient | None,
@@ -129,6 +145,8 @@ def perform_text_exam(
             tracker = TimeTracker()
             translated = list(collect_text_translations(
                 sentences=sentences,
+                original_translations=original_translations,
+                skipped_indices=skipped_indices,
                 target_language=target_language,
                 source_tts=voice_source_tts,
                 asr=asr,
@@ -178,8 +196,7 @@ def perform_text_exam(
             sentences=translated,
             original_translations=original_translations,
             show_original=not offline_scoring,
-            results=results,
-            duration=text_exam.duration,
+            exam=text_exam,
             source_tts=voice_source_tts,
             target_tts=voice_target_tts,
             explain=build_text_explainer(
@@ -196,6 +213,7 @@ def perform_text_exam(
 def perform_dialogue_exam(
         gpt: Promise[GPTClient],
         dialogue: Dialogue,
+        skipped_indices: set[int],
         source_language: Language,
         target_language: Language,
         source_tts: TTSClient | None,
@@ -223,6 +241,7 @@ def perform_dialogue_exam(
             translated = list(collect_dialogue_translations(
                 exchanges=exchanges,
                 original_translations=original_translations,
+                skipped_indices=skipped_indices,
                 target_language=target_language,
                 source_user_tts=source_user_tts,
                 target_speaker_tts=target_speaker_tts,
@@ -273,8 +292,7 @@ def perform_dialogue_exam(
             exchanges=translated,
             original_translations=original_translations,
             show_original=not offline_scoring,
-            results=results,
-            duration=dialogue_exam.duration,
+            exam=dialogue_exam,
             source_user_tts=source_user_tts,
             target_speaker_tts=target_speaker_tts,
             target_user_tts=target_user_tts,

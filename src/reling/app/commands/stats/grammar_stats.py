@@ -12,6 +12,7 @@ from reling.db import single_session
 from reling.db.models import DialogueExam, Language, TextExam
 from reling.helpers.grammar import Analyzer, WordInfo
 from reling.utils.console import print_and_erase
+from reling.utils.iterables import extract_items
 from reling.utils.tables import build_table, print_table
 from .checkpoints import colorize, since
 from .filter import get_filter
@@ -94,10 +95,13 @@ def get_relevant_sentences(exam: TextExam | DialogueExam, language: Language, mo
     """Return the relevant sentences to analyze."""
     if modality == Modality.PRODUCTION:
         return [result.answer for result in exam.results]
-    elif isinstance(exam, TextExam):
-        return get_text_sentences(exam.text, language)
     else:
-        return [exchange.user for exchange in get_dialogue_exchanges(cast(DialogueExam, exam).dialogue, language)]
+        return list(extract_items(
+            get_text_sentences(exam.text, language)
+            if isinstance(exam, TextExam)
+            else (exchange.user for exchange in get_dialogue_exchanges(cast(DialogueExam, exam).dialogue, language)),
+            (result.index for result in exam.results),
+        ))
 
 
 class StatsHandler:

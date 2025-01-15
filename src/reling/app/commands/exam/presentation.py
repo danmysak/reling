@@ -1,12 +1,12 @@
 from dataclasses import dataclass
-from datetime import timedelta
 from functools import partial
 from itertools import repeat
-from typing import Callable, Iterable
+from typing import Callable, cast, Iterable
 
 from rich.text import Text
 
 from reling.config import MAX_SCORE
+from reling.db.models import DialogueExam, DialogueExamResult, TextExam, TextExamResult
 from reling.helpers.colors import fade
 from reling.helpers.diff import highlight_diff
 from reling.helpers.output import output, SentenceData
@@ -15,10 +15,11 @@ from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
 from reling.utils.console import stream_print
+from reling.utils.iterables import extract_items
 from reling.utils.prompts import PROMPT_SEPARATOR, PromptOption
 from reling.utils.time import format_time_delta
 from reling.utils.transformers import get_numbering_prefix
-from .types import ExchangeWithTranslation, ExplanationRequest, ScoreWithSuggestion, SentenceWithTranslation
+from .types import ExchangeWithTranslation, ExplanationRequest, SentenceWithTranslation
 
 __all__ = [
     'present_dialogue_results',
@@ -59,31 +60,29 @@ def build_explanation_printer(
 
 def present_results(
         titles: list[list[TitleData]],
-        provided_translations: list[Input],
+        provided_translations: list[Input | None],
         original_translations: list[str] | None,
-        results: list[ScoreWithSuggestion],
-        duration: timedelta,
+        exam: TextExam | DialogueExam,
         target_tts: TTSVoiceClient | None,
         explain: Callable[[ExplanationRequest], Iterable[str]],
 ) -> None:
     """Present the results of scoring translations."""
-    scores: list[int] = []
-    for index, (title_items, provided_translation, original_translation, result) in enumerate(zip(
-            titles,
-            provided_translations,
-            original_translations if original_translations is not None else repeat(None),
-            results,
-    )):
-        scores.append(result.score)
+    result_indices = [result.index for result in exam.results]
+    for title_items, provided_translation, original_translation, result in zip(
+            extract_items(titles, result_indices),
+            extract_items(provided_translations, result_indices),
+            extract_items(original_translations, result_indices) if original_translations is not None else repeat(None),
+            cast(list[TextExamResult] | list[DialogueExamResult], exam.results),
+    ):
         for title in title_items:
             output(SentenceData.from_tts(
                 title.text,
                 title.tts,
-                print_prefix=get_numbering_prefix(index) if title.should_number else '',
+                print_prefix=get_numbering_prefix(result.index) if title.should_number else '',
             ))
         print(f'Your score: {result.score}/{MAX_SCORE}')
         provided_text = provided_translation.text or None
-        perfect_text = ((result.suggestion if result.suggestion != provided_text else None)
+        perfect_text = ((result.suggested_answer if result.suggested_answer != provided_text else None)
                         or (provided_text if result.score == MAX_SCORE else None)) if provided_text else None
         provided_print_text, improved_print_text = format_provided_and_suggestion(provided_text, perfect_text)
         output(*[
@@ -109,21 +108,20 @@ def present_results(
         ], extra_options=[
             PromptOption(
                 'explain',
-                build_explanation_printer(explain, ExplanationRequest(index, source=False)),
-                {'source': build_explanation_printer(explain, ExplanationRequest(index, source=True))},
+                build_explanation_printer(explain, ExplanationRequest(result.index, source=False)),
+                {'source': build_explanation_printer(explain, ExplanationRequest(result.index, source=True))},
             ),
         ])
         print()
-    print(f'Average score: {format_average_score(scores)}')
-    print(f'Exam duration: {format_time_delta(duration)}')
+    print(f'Average score: {format_average_score(exam)}')
+    print(f'Exam duration: {format_time_delta(exam.duration)}')
 
 
 def present_text_results(
         sentences: list[SentenceWithTranslation],
         original_translations: list[str],
         show_original: bool,
-        results: list[ScoreWithSuggestion],
-        duration: timedelta,
+        exam: TextExam,
         source_tts: TTSVoiceClient | None,
         target_tts: TTSVoiceClient | None,
         explain: Callable[[ExplanationRequest], Iterable[str]],
@@ -139,8 +137,7 @@ def present_text_results(
         ] for sentence in sentences],
         provided_translations=[sentence.translation for sentence in sentences],
         original_translations=original_translations if show_original else None,
-        results=results,
-        duration=duration,
+        exam=exam,
         target_tts=target_tts,
         explain=explain,
     )
@@ -150,8 +147,7 @@ def present_dialogue_results(
         exchanges: list[ExchangeWithTranslation],
         original_translations: list[DialogueExchangeData],
         show_original: bool,
-        results: list[ScoreWithSuggestion],
-        duration: timedelta,
+        exam: DialogueExam,
         source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
         target_user_tts: TTSVoiceClient | None,
@@ -176,8 +172,7 @@ def present_dialogue_results(
         )],
         provided_translations=[exchange.user_translation for exchange in exchanges],
         original_translations=[exchange.user for exchange in original_translations] if show_original else None,
-        results=results,
-        duration=duration,
+        exam=exam,
         target_tts=target_user_tts,
         explain=explain,
     )

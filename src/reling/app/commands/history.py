@@ -18,6 +18,7 @@ FROM = 'From'
 TO = 'To'
 TAKEN_AT = 'Taken at'
 DURATION = 'Duration'
+SENTENCES = 'Sents'
 SCORE = 'Score'
 
 AUDIO_OUTPUT = '🔈'
@@ -53,6 +54,7 @@ def history(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_
                 TO,
                 TAKEN_AT,
                 DURATION,
+                SENTENCES,
                 SCORE,
             ],
             justify={
@@ -60,6 +62,7 @@ def history(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_
                 TO: 'left',
                 TAKEN_AT: 'left',
                 DURATION: 'right',
+                SENTENCES: 'right',
                 SCORE: 'right',
             },
             data=[{
@@ -75,7 +78,8 @@ def history(content: CONTENT_ARG, from_: LANGUAGE_OPT_FROM = None, to: LANGUAGE_
                 ]),
                 TAKEN_AT: format_time(cast(datetime, exam.started_at)),
                 DURATION: format_time_delta(exam.duration),
-                SCORE: format_average_score([result.score for result in exam.results]),
+                SENTENCES: str(len(cast(list, exam.results))),
+                SCORE: format_average_score(exam),
             } for exam in exams],
             group_by=[
                 FROM,

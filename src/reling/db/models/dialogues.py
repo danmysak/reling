@@ -45,6 +45,10 @@ class Dialogue(Base):
         Index('dialogue_chronological', 'archived_at', 'created_at'),
     )
 
+    @property
+    def size(self) -> int:
+        return len(self.exchanges)
+
 
 class DialogueExchange(Base):
     __tablename__ = 'dialogue_exchanges'
@@ -100,6 +104,10 @@ class DialogueExam(Base):
     )
 
     @property
+    def item(self) -> Dialogue:
+        return self.dialogue
+
+    @property
     def item_id(self) -> str:
         return self.dialogue_id
 
@@ -119,3 +127,7 @@ class DialogueExamResult(Base):
     answer: Mapped[str]
     suggested_answer: Mapped[str | None]
     score: Mapped[int]
+
+    @property
+    def index(self) -> int:
+        return self.dialogue_exchange_index

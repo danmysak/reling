@@ -247,7 +247,7 @@ Refer to [Setting Models and API Key](#setting-models-and-api-key).
 To translate a text or dialogue and receive feedback, run:
 
 ```bash
-reling exam <CONTENT-ID> [--from en] [--to fr] [--read fr] [--listen] [--scan 0] [--hide-prompts] [--offline-scoring] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
+reling exam <CONTENT-ID> [--from en] [--to fr] [--skip 3] [--read fr] [--listen] [--scan 0] [--hide-prompts] [--offline-scoring] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
 ```
 
 While inputting your answers during an exam, you can press `Ctrl + C` to pause. This affects the calculation of exam duration and, consequently, your [learning statistics](#learning-statistics).
@@ -259,6 +259,12 @@ Specify the content identifier for the exam. This ID is provided when content is
 ### `from` & `to`
 
 Specify the languages from which and to which you would like to translate the text or dialogue. If one of the languages is not specified, the original language of the selected text or dialogue will be used.
+
+
+### `skip`
+
+This parameter allows you to skip sentences after achieving a specified number of consecutive perfect answers in prior attempts (for the given pair of source and target languages).
+
 
 ### `read`
 
