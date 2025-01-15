@@ -82,8 +82,10 @@ def present_results(
             ))
         print(f'Your score: {result.score}/{MAX_SCORE}')
         provided_text = provided_translation.text or None
-        perfect_text = ((result.suggested_answer if result.suggested_answer != provided_text else None)
-                        or (provided_text if result.score == MAX_SCORE else None)) if provided_text else None
+        perfect_text = (((result.suggested_answer if result.suggested_answer != provided_text else None)
+                         or (provided_text if result.score == MAX_SCORE else None))
+                        if (provided_text or original_translation is None)
+                        else None)
         provided_print_text, improved_print_text = format_provided_and_suggestion(provided_text, perfect_text)
         output(*[
             SentenceData(
