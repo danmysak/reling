@@ -1,4 +1,3 @@
-from __future__ import annotations
 from math import ceil, floor
 from statistics import mean
 from typing import cast
@@ -8,14 +7,13 @@ from lcs2 import diff, lcs_indices, lcs_length
 from reling.config import MAX_SCORE
 from reling.db.models import DialogueExam, TextExam
 from reling.utils.strings import tokenize
+from .fuzzy_word import FuzzyWord
 
 __all__ = [
     'calculate_diff_score',
     'format_average_score',
     'get_average_score',
 ]
-
-FUZZY_RATIO = 0.61
 
 
 def calculate_mistake_score(mistakes: int) -> int:
@@ -34,21 +32,6 @@ def calculate_lcs_score(lcs_len: int, a_len: int, b_len: int) -> int:
 def calculate_char_diff_score(a: str, b: str) -> int:
     """Return the score based on the longest common subsequence of two strings."""
     return calculate_lcs_score(lcs_length(a, b), len(a), len(b))
-
-
-class FuzzyWord:
-    """
-    A class representing a word for fuzzy comparison.
-    Two words are considered equal if they share at least FUZZY_RATIO of their characters, ignoring case.
-    """
-    _normalized: str
-
-    def __init__(self, word: str) -> None:
-        self._normalized = word.lower()
-
-    def __eq__(self, other: FuzzyWord) -> bool:
-        return (2 * lcs_length(self._normalized, other._normalized)
-                >= (len(self._normalized) + len(other._normalized)) * FUZZY_RATIO)
 
 
 def calculate_fuzzy_word_diff_score(a: str, b: str, cj: bool) -> int:

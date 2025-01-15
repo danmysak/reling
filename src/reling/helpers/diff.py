@@ -1,11 +1,12 @@
 from enum import StrEnum
-from typing import Callable
+from typing import Any, Callable
 
 from lcs2 import lcs_indices
 from rich.text import Text
 
 from reling.utils.strings import tokenize
 from .colors import default, green, red
+from .fuzzy_word import FuzzyWord
 
 __all__ = [
     'DiffType',
@@ -24,12 +25,12 @@ class DiffType(StrEnum):
             case DiffType.TOKEN:
                 return lambda section: tokenize(section)
 
-    def get_normalizer(self) -> Callable[[str], str]:
+    def get_normalizer(self) -> Callable[[str], Any]:
         match self:
             case DiffType.CHAR:
                 return lambda section: section
             case DiffType.TOKEN:
-                return lambda section: section.lower()
+                return lambda section: FuzzyWord(section)
 
 
 def highlight_diff(worse: str, better: str, diff_type: DiffType = DiffType.TOKEN) -> tuple[Text, Text]:
