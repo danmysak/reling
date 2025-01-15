@@ -31,13 +31,15 @@ def explain_structure(sentence: str, language: Language) -> list[str]:
     ]
 
 
-def explain_mistakes(sentence: str, corrected: str, language: Language) -> list[str]:
+def explain_mistakes(sentence: str, corrected: str, language: Language, source_language: Language) -> list[str]:
     """Generate a prompt section for explaining why a corrected translation is preferred over the provided one."""
     return [
         f'A learner of {language.name} translated the last line as follows:',
         f'"""{sentence}"""',
         f'Explain why the following translation is more appropriate:'
         f'"""{corrected}"""',
+        f'You may translate the learner\'s sentence or any of its parts back into {source_language.name} '
+        f'to better explain the differences.'
     ]
 
 
@@ -93,6 +95,7 @@ def do_explain(
                     sentence=provided,
                     corrected=result.suggestion or original,
                     language=target_language,
+                    source_language=source_language,
                 )
                 if MISTAKE_THRESHOLD_RATIO * MAX_SCORE < result.score < MAX_SCORE else
                 explain_structure(
