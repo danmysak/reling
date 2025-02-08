@@ -22,13 +22,12 @@ from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
 from .scoring import score_dialogue_translations, score_text_translations
 from .storage import save_dialogue_exam, save_text_exam
+from .types import ScoreWithSuggestion
 
 __all__ = [
     'perform_dialogue_exam',
     'perform_text_exam',
 ]
-
-from .types import ScoreWithSuggestion
 
 
 def collect_perfect(content: Text | Dialogue, target_language: Language) -> list[set[str]]:
