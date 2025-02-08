@@ -6,6 +6,7 @@ from .strings import universal_normalize
 __all__ = [
     'add_numbering',
     'apply',
+    'get_number',
     'get_numbering_prefix',
     'normalize',
     'omit_empty',
@@ -24,8 +25,12 @@ def apply(transformer: Transformer, items: Iterable[str]) -> Generator[str, None
         yield transformer(item, index)
 
 
+def get_number(index: int) -> str:
+    return str(index + 1)
+
+
 def get_numbering_prefix(index: int) -> str:
-    return f'{index + 1}. '
+    return f'{get_number(index)}. '
 
 
 def add_numbering(text: str, index: int) -> str:

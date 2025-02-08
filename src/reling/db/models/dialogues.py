@@ -39,7 +39,11 @@ class Dialogue(Base):
         'DialogueExchangeTranslation',
         passive_deletes=True,
     )
-    exams: Mapped[list[DialogueExam]] = relationship('DialogueExam', passive_deletes=True)
+    exams: Mapped[list[DialogueExam]] = relationship(
+        'DialogueExam',
+        order_by='desc(DialogueExam.started_at)',
+        passive_deletes=True,
+    )
 
     __table_args__ = (
         Index('dialogue_chronological', 'archived_at', 'created_at'),
@@ -104,11 +108,11 @@ class DialogueExam(Base):
     )
 
     @property
-    def item(self) -> Dialogue:
+    def content(self) -> Dialogue:
         return self.dialogue
 
     @property
-    def item_id(self) -> str:
+    def content_id(self) -> str:
         return self.dialogue_id
 
     @property

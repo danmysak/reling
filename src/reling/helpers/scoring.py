@@ -75,7 +75,7 @@ def get_average_score(exam: TextExam | DialogueExam) -> float:
     """Return the average score of the exam."""
     return mean(
         [result.score for result in exam.results]
-        + [MAX_SCORE] * (exam.item.size - len(cast(list, exam.results))),
+        + [MAX_SCORE] * (exam.content.size - len(cast(list, exam.results))),
     )
 
 

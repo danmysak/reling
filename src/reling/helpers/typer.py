@@ -21,9 +21,9 @@ __all__ = [
 ]
 
 
-def typer_raise(message: str) -> Never:
+def typer_raise(message: str, is_error: bool = True) -> Never:
     typer.echo(message, err=True)
-    raise typer.Exit(code=1)
+    raise typer.Exit(code=1 if is_error else 0)
 
 
 def typer_raise_import(library: str) -> Never:

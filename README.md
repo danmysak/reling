@@ -11,7 +11,7 @@ The program operates as follows:
   - Suggestions for improving your translations;
   - The program’s own translation of the sentence.
 
-You can retake exams at your preferred frequency until you achieve perfect scores.
+You can retake exams at your preferred frequency until you achieve perfect scores. Once satisfied with your performance, you can [archive](#archiving-content) the content and optionally use it later for [spaced repetition](#taking-exams).
 
 ReLing also enables you to view a [list](#listing-content) of all generated texts and dialogues and their associated [exam histories](#exam-history).
 
@@ -254,17 +254,19 @@ While inputting your answers during an exam, you can press `Ctrl + C` to pause. 
 
 ### Content ID
 
-Specify the content identifier for the exam. This ID is provided when content is created and [listed](#listing-content). You may also [use a dot](#automatic-content-id) (`.`) to refer to the last text or dialogue you interacted with or just created.
+Specify the content identifier for the exam. This ID is provided when content is created and [listed](#listing-content).
+
+You may [use a dot](#automatic-content-id) (`.`) to refer to the last text or dialogue you interacted with or just created.
+
+Use two dots (`..`) to activate the spaced repetition mode, which automatically selects an [archived](#archiving-content) text or dialogue for the exam, based on the source and/or target language (if any of them is provided). Only sentences currently in the learning queue will be evaluated. A sentence is added to the queue if the last answer was not perfect or if the time elapsed since the last answer exceeds the duration between that answer and the start of the most recent streak of perfect answers; the minimum time, however, is always one hour.
 
 ### `from` & `to`
 
 Specify the languages from which and to which you would like to translate the text or dialogue. If one of the languages is not specified, the original language of the selected text or dialogue will be used.
 
-
 ### `skip`
 
 This parameter allows you to skip sentences after achieving a specified number of consecutive perfect answers in prior attempts (for the given pair of source and target languages).
-
 
 ### `read`
 
@@ -299,7 +301,7 @@ Refer to [Setting Models and API Key](#setting-models-and-api-key).
 To view your exam history, use the command:
 
 ```bash
-reling history <CONTENT-ID> [--from en] [--to fr]
+reling history <CONTENT-ID> [--from en] [--to fr] [--answers]
 ```
 
 ### Content ID
@@ -309,6 +311,10 @@ Specify the identifier of the text or dialogue whose exam history you wish to re
 ### `from` & `to`
 
 Limit the display of exam results to translations between specified source and target languages.
+
+### `answers`
+
+Use this flag to view your answers and corresponding scores for each sentence.
 
 
 ## Learning Statistics<a id="learning-statistics"></a>

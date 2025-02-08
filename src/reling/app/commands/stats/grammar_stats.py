@@ -107,8 +107,8 @@ def get_relevant_sentences(exam: TextExam | DialogueExam, language: Language, mo
 class StatsHandler:
     stats: PeriodStats
     analyzer: Analyzer
-    lemma_item_ids: defaultdict[str, set[str]]
-    form_item_ids: defaultdict[NormalizedForm, set[str]]
+    lemma_content_ids: defaultdict[str, set[str]]
+    form_content_ids: defaultdict[NormalizedForm, set[str]]
 
     def __init__(self, language: Language, checkpoints: list[datetime]) -> None:
         self.stats = PeriodStats(
@@ -117,20 +117,20 @@ class StatsHandler:
         )
         with print_and_erase(PREPARING):
             self.analyzer = Analyzer.get(language)
-        self.lemma_item_ids = defaultdict(set)
-        self.form_item_ids = defaultdict(set)
+        self.lemma_content_ids = defaultdict(set)
+        self.form_content_ids = defaultdict(set)
 
     def update(self, exam: TextExam | DialogueExam, sentence: str) -> None:
         """Update the statistics with the given exam and sentence."""
         for word in self.analyzer.analyze(sentence):
-            for stats_type, item_ids in [
-                (StatsType.LEMMAS, self.lemma_item_ids[word.lemma]),
-                (StatsType.FORMS, self.form_item_ids[get_normalized_form(word)]),
+            for stats_type, content_ids in [
+                (StatsType.LEMMAS, self.lemma_content_ids[word.lemma]),
+                (StatsType.FORMS, self.form_content_ids[get_normalized_form(word)]),
             ]:
-                if exam.item_id not in item_ids:
-                    item_ids.add(exam.item_id)
+                if exam.content_id not in content_ids:
+                    content_ids.add(exam.content_id)
                     for period in get_relevant_periods(self.stats, exam):
-                        update_stats(period, Pos.from_upos(word.upos), stats_type, len(item_ids))
+                        update_stats(period, Pos.from_upos(word.upos), stats_type, len(content_ids))
 
 
 def compute_stats(

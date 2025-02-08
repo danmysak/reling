@@ -137,7 +137,7 @@ def compute_stats(
             checkpoints=[Checkpoint(start_time=checkpoint, stats=TypeStats()) for checkpoint in checkpoints],
         )
         for model in [TextExam, DialogueExam]:
-            seen_item_ids: set[str] = set()
+            seen_content_ids: set[str] = set()
             condition = get_filter(language, paired, modality, model)
             for exam in progress(
                 session.query(model).filter(condition).order_by(model.started_at),
@@ -145,8 +145,8 @@ def compute_stats(
                 modality=modality,
                 model=model,
             ):
-                update_stats(stats, exam, is_first_exam=exam.item_id not in seen_item_ids)
-                seen_item_ids.add(exam.item_id)
+                update_stats(stats, exam, is_first_exam=exam.content_id not in seen_content_ids)
+                seen_content_ids.add(exam.content_id)
         return stats
 
 

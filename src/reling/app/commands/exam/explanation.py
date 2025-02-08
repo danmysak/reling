@@ -116,13 +116,14 @@ def build_text_explainer(
         gpt: Promise[GPTClient],
         sentences: list[SentenceWithTranslation],
         original_translations: list[str],
-        results: list[ScoreWithSuggestion],
+        results: list[ScoreWithSuggestion | None],
         source_language: Language,
         target_language: Language,
 ) -> Callable[[ExplanationRequest], Generator[str, None, None]]:
     """Create a function to generate explanations for text translations."""
     def explain(request: ExplanationRequest) -> Generator[str, None, None]:
         index = request.sentence_index
+        assert results[index] is not None
         return do_explain(
             gpt=gpt,
             category=ContentCategory.TEXT,
@@ -141,13 +142,14 @@ def build_dialogue_explainer(
         gpt: Promise[GPTClient],
         exchanges: list[ExchangeWithTranslation],
         original_translations: list[DialogueExchangeData],
-        results: list[ScoreWithSuggestion],
+        results: list[ScoreWithSuggestion | None],
         source_language: Language,
         target_language: Language,
 ) -> Callable[[ExplanationRequest], Generator[str, None, None]]:
     """Create a function to generate explanations for dialogue translations."""
     def explain(request: ExplanationRequest) -> Generator[str, None, None]:
         index = request.sentence_index
+        assert results[index] is not None
         return do_explain(
             gpt=gpt,
             category=ContentCategory.DIALOGUE,

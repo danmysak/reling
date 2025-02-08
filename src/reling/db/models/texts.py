@@ -37,7 +37,11 @@ class Text(Base):
         'TextSentenceTranslation',
         passive_deletes=True,
     )
-    exams: Mapped[list[TextExam]] = relationship('TextExam', passive_deletes=True)
+    exams: Mapped[list[TextExam]] = relationship(
+        'TextExam',
+        order_by='desc(TextExam.started_at)',
+        passive_deletes=True,
+    )
 
     __table_args__ = (
         Index('text_chronological', 'archived_at', 'created_at'),
@@ -94,11 +98,11 @@ class TextExam(Base):
     )
 
     @property
-    def item(self) -> Text:
+    def content(self) -> Text:
         return self.text
 
     @property
-    def item_id(self) -> str:
+    def content_id(self) -> str:
         return self.text_id
 
     @property

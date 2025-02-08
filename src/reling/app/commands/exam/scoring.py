@@ -1,4 +1,3 @@
-from itertools import islice
 from typing import cast, Generator
 
 from lcs2 import lcs_indices
@@ -11,8 +10,8 @@ from reling.gpt import GPTClient
 from reling.helpers.scoring import calculate_diff_score
 from reling.types import DialogueExchangeData, Promise
 from reling.utils.english import pluralize
-from reling.utils.iterables import group_items
-from reling.utils.transformers import add_numbering, apply, omit_empty, remove_numbering, strip
+from reling.utils.iterables import extract_items, group_items
+from reling.utils.transformers import add_numbering, apply, get_number, omit_empty, remove_numbering, strip
 from .types import ExchangeWithTranslation, PreScoreWithSuggestion, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
@@ -33,32 +32,37 @@ def build_prompt_translation(
 ) -> str:
     """Build a prompt for scoring translations."""
     # Speaker turns in dialogues are "graded" as well so that the model appreciates the context.
-    n = len(blocks)
+    total = len(blocks)
+    numbers = [get_number(index) for index, translation in enumerate(translations) if translation is not None]
+    n = len(numbers)
     return '\n'.join([
-        f'Below {'is' if n == 1 else 'are'} {n} {pluralize('sentence', n)} from a {category.value} '
-        f'in {source_language.name} along with {'its' if n == 1 else 'their'} {pluralize('translation', n)} '
-        f'into {target_language.name} made by a language learner.',
+        f'Below {'is' if total == 1 else 'are'} {total} {pluralize('sentence', total)} from a {category.value} '
+        f'in {source_language.name}, along with {'a ' if n == 1 else ''}{pluralize('translation', n)} '
+        f'of {n} of them into {target_language.name} made by a language learner.',
 
         f'Score {'the' if n == 1 else 'each'} translation on a scale from 0 to {MAX_SCORE}. '
         f'If {'the' if n == 1 else 'a'} translation is empty, very short, or poor, assign a low score. ',
-        f'If the translation is less than perfect, suggest a minimally modified version that would '
-        f'deserve a {MAX_SCORE}.',
+        f'If {'the' if n == 1 else 'a'} translation is less than perfect, suggest a minimally modified version that '
+        f'would deserve a {MAX_SCORE}.',
 
-        f'{'Provide' if n == 1 else 'For each translation, provide'} your feedback on exactly four lines '
+        f'{'Provide' if n == 1 else 'For each translation, provide'} your feedback on exactly five lines '
         f'(without adding bullet points or dashes in front of them):',
-        f'- original sentence on the first line;',  # The first two lines help improve the model's performance
-        f'- learner\'s translation on the second line;',
-        f'- score (just the number) on the third line;',
-        f'- suggested modified translation (or "{NA}") on the fourth line (do not enclose it in quotes).',
+        f'- number of the sentence being evaluated on the first line (one of {', '.join(numbers)});',
+        f'- original sentence on the second line;',  # The first three lines help improve the model's performance
+        f'- learner\'s translation on the third line;',
+        f'- score (just the number) on the fourth line;',
+        f'- suggested modified translation (or "{NA}") on the fifth line.',
 
-        *([f'Provide this feedback for each of the {n} translations.'] if n > 1 else []),
+        *([f'Provide this feedback for each of the {n} translations, on exactly {n * 5} lines.'] if n > 1 else []),
         f'Say nothing else.',
         f'',
         f'The original {category.value} is:',
         *apply(add_numbering, blocks),
         f'',
         f'The translations are:',
-        *apply(add_numbering, [translation or EMPTY_TRANSLATION for translation in translations]),
+        *(add_numbering(translation or EMPTY_TRANSLATION, index)
+          for index, translation in enumerate(translations)
+          if translation is not None),
     ])
 
 
@@ -84,11 +88,11 @@ def ask_and_parse_translation(gpt: GPTClient, prompt: str) -> Generator[PreScore
     Ask the model to score translations and parse the output.
     :raises AlgorithmException: If there is an issue with the output of the model.
     """
-    for _, _, string_score, suggestion in group_items(gpt.ask(
+    for _, _, _, string_score, suggestion in group_items(gpt.ask(
         prompt,
         creative=False,
         transformers=[strip, omit_empty, remove_numbering],
-    ), 4):
+    ), 5):
         yield parse_scoring(string_score, suggestion)
 
 
@@ -164,6 +168,7 @@ def fix_scoring(
         language: Language,
         provided_translation: str,
         original_translation: str,
+        previous_perfect: set[str],
         score: PreScoreWithSuggestion,
 ) -> ScoreWithSuggestion:
     """
@@ -181,7 +186,7 @@ def fix_scoring(
             gpt,
             build_prompt_averaging(language, provided_translation, a=original_translation, b=score.suggestion),
         ),
-    ) if provided_translation != original_translation else ScoreWithSuggestion(
+    ) if provided_translation not in {original_translation} | previous_perfect else ScoreWithSuggestion(
         score=MAX_SCORE,
         suggestion=None,
     )
@@ -191,20 +196,22 @@ def score_text_translations(
         gpt: Promise[GPTClient],
         sentences: list[SentenceWithTranslation],
         original_translations: list[str],
+        previous_perfect: list[set[str]],
         source_language: Language,
         target_language: Language,
         offline: bool,
-) -> Generator[ScoreWithSuggestion | None, None, None]:
+) -> Generator[ScoreWithSuggestion, None, None]:
     """
     Score the translations of a text and provide suggestions for improvement.
     :raises AlgorithmException: If there is an issue with the scoring algorithm.
     """
+    indices = [index for index in range(len(sentences)) if sentences[index].translation]
     if offline:
-        for sentence, original_translation in zip(sentences, original_translations):
+        for sentence, original_translation in extract_items(zip(sentences, original_translations), indices):
             yield ScoreWithSuggestion(
                 score=calculate_diff_score(sentence.translation.text, original_translation),
                 suggestion=original_translation,
-            ) if sentence.translation else None
+            )
     else:
         client = gpt()
         prompt = build_prompt_translation(
@@ -214,9 +221,10 @@ def score_text_translations(
             blocks=[cast(str, sentence.sentence) for sentence in sentences],
             translations=[sentence.translation.text if sentence.translation else None for sentence in sentences],
         )
-        for sentence, original_translation, pre_score in zip(
-                sentences,
-                original_translations,
+        for sentence, original_translation, perfect, pre_score in zip(
+                extract_items(sentences, indices),
+                extract_items(original_translations, indices),
+                extract_items(previous_perfect, indices),
                 ask_and_parse_translation(client, prompt),
         ):
             yield fix_scoring(
@@ -224,28 +232,31 @@ def score_text_translations(
                 target_language,
                 sentence.translation.text,
                 original_translation,
+                perfect,
                 pre_score,
-            ) if sentence.translation else None
+            )
 
 
 def score_dialogue_translations(
         gpt: Promise[GPTClient],
         exchanges: list[ExchangeWithTranslation],
         original_translations: list[DialogueExchangeData],
+        previous_perfect: list[set[str]],
         source_language: Language,
         target_language: Language,
         offline: bool,
-) -> Generator[ScoreWithSuggestion | None, None, None]:
+) -> Generator[ScoreWithSuggestion, None, None]:
     """
     Score the translations of user turns in a dialogue and provide suggestions for improvement.
     :raises AlgorithmException: If there is an issue with the scoring algorithm.
     """
+    indices = [index for index in range(len(exchanges)) if exchanges[index].user_translation]
     if offline:
-        for exchange, original_translation in zip(exchanges, original_translations):
+        for exchange, original_translation in extract_items(zip(exchanges, original_translations), indices):
             yield ScoreWithSuggestion(
                 score=calculate_diff_score(exchange.user_translation.text, original_translation.user),
                 suggestion=original_translation.user,
-            ) if exchange.user_translation else None
+            )
     else:
         client = gpt()
         prompt = build_prompt_translation(
@@ -257,15 +268,17 @@ def score_dialogue_translations(
                           for exchange, original_translation in zip(exchanges, original_translations)
                           for turn in [None, exchange.user_translation.text if exchange.user_translation else None]],
         )
-        for exchange, original_translation, pre_score in zip(
-                exchanges,
-                original_translations,
-                islice(ask_and_parse_translation(client, prompt), 1, None, 2),
+        for exchange, original_translation, perfect, pre_score in zip(
+                extract_items(exchanges, indices),
+                extract_items(original_translations, indices),
+                extract_items(previous_perfect, indices),
+                ask_and_parse_translation(client, prompt),
         ):
             yield fix_scoring(
                 client,
                 target_language,
                 exchange.user_translation.text,
                 original_translation.user,
+                perfect,
                 pre_score,
-            ) if exchange.user_translation else None
+            )

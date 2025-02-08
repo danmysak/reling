@@ -1,4 +1,5 @@
 from datetime import datetime
+from enum import StrEnum
 import re
 from typing import Annotated
 
@@ -21,6 +22,7 @@ from reling.types import WordWithSense
 from reling.utils.time import DATE_FORMAT, TIME_FORMAT
 
 __all__ = [
+    'ANSWERS_OPT',
     'API_KEY',
     'ARCHIVE_OPT',
     'ASR_MODEL',
@@ -28,6 +30,8 @@ __all__ = [
     'COMPREHENSION_OPT',
     'CONTENT_ARG',
     'CONTENT_CATEGORY_OPT',
+    'EXAM_CONTENT_ARG',
+    'ExamExtraContentOptions',
     'FORCE_OPT',
     'GRAMMAR_OPT',
     'HIDE_PROMPTS_OPT',
@@ -62,6 +66,12 @@ __all__ = [
 ENV_PREFIX = 'RELING_'
 
 LAST_CONTENT_MARKER = '.'
+SPACED_REPETITION_MARKER = '..'
+
+
+class ExamExtraContentOptions(StrEnum):
+    SPACED_REPETITION = 'spaced-repetition'
+
 
 API_KEY = Annotated[TyperExtraOption, typer.Option(
     envvar=f'{ENV_PREFIX}API_KEY',
@@ -108,10 +118,23 @@ USER_GENDER = Annotated[Gender, typer.Option(
 )]
 
 type TextOrDialogue = Text | Dialogue  # Typer does not yet support union types (except for Optional)
+type TextOrDialogueOrExtra = Text | Dialogue | ExamExtraContentOptions
 
 CONTENT_ARG = Annotated[TextOrDialogue, typer.Argument(
     parser=typer_func_parser(lambda content_id: find_content(content_id, LAST_CONTENT_MARKER)),
     help=f'ID of the text or dialogue ("{LAST_CONTENT_MARKER}" for the last used content)',
+    autocompletion=find_ids_by_prefix,
+)]
+
+EXAM_CONTENT_ARG = Annotated[TextOrDialogueOrExtra, typer.Argument(
+    parser=typer_func_parser(lambda content_id: find_content(
+        content_id,
+        LAST_CONTENT_MARKER,
+        {SPACED_REPETITION_MARKER: ExamExtraContentOptions.SPACED_REPETITION},
+    )),
+    help=f'ID of the text or dialogue '
+         f'("{LAST_CONTENT_MARKER}" for the last used content; '
+         f'"{SPACED_REPETITION_MARKER}" for spaced repetition mode)',
     autocompletion=find_ids_by_prefix,
 )]
 
@@ -210,11 +233,11 @@ READ_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
     autocompletion=find_languages_by_prefix,
 )]
 
-READ_OPT = Annotated[bool | None, typer.Option(
+READ_OPT = Annotated[bool, typer.Option(
     help='Read the content out loud.',
 )]
 
-LISTEN_OPT = Annotated[bool | None, typer.Option(
+LISTEN_OPT = Annotated[bool, typer.Option(
     help='Record the response as audio and transcribe it into text.',
 )]
 
@@ -223,12 +246,16 @@ SCAN_OPT = Annotated[int | None, typer.Option(
     help='Capture the response using the specified camera index.',
 )]
 
-HIDE_PROMPTS_OPT = Annotated[bool | None, typer.Option(
+HIDE_PROMPTS_OPT = Annotated[bool, typer.Option(
     help='Hide the original language text and interlocutor\'s turn.',
 )]
 
-OFFLINE_SCORING_OPT = Annotated[bool | None, typer.Option(
+OFFLINE_SCORING_OPT = Annotated[bool, typer.Option(
     help='Score answers using an offline algorithm.',
+)]
+
+ANSWERS_OPT = Annotated[bool, typer.Option(
+    help='Display the answers and their corresponding scores.',
 )]
 
 PAIR_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
@@ -237,26 +264,26 @@ PAIR_LANGUAGE_OPT = Annotated[list[Language] | None, typer.Option(
     autocompletion=find_languages_by_prefix,
 )]
 
-GRAMMAR_OPT = Annotated[bool | None, typer.Option(
-    help='Include statistics on learned words.',
+GRAMMAR_OPT = Annotated[bool, typer.Option(
+    help='Display statistics on learned words.',
 )]
 
-COMPREHENSION_OPT = Annotated[bool | None, typer.Option(
+COMPREHENSION_OPT = Annotated[bool, typer.Option(
     help='Compute only comprehension-related statistics.',
 )]
 
-PRODUCTION_OPT = Annotated[bool | None, typer.Option(
+PRODUCTION_OPT = Annotated[bool, typer.Option(
     help='Compute only production-related statistics.',
 )]
 
-ARCHIVE_OPT = Annotated[bool | None, typer.Option(
+ARCHIVE_OPT = Annotated[bool, typer.Option(
     help='Search within archived items.',
 )]
 
-IDS_ONLY_OPT = Annotated[bool | None, typer.Option(
+IDS_ONLY_OPT = Annotated[bool, typer.Option(
     help='Display only the IDs of the items.',
 )]
 
-FORCE_OPT = Annotated[bool | None, typer.Option(
+FORCE_OPT = Annotated[bool, typer.Option(
     help='Force execution of the operation.',
 )]
