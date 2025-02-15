@@ -17,7 +17,7 @@ def init_shelf(filename: Path) -> None:
 
 def get_filename() -> str:
     if FILENAME is None:
-        raise RuntimeError('Shelf is not initialized')
+        raise RuntimeError('Shelf is not initialized.')
     return str(FILENAME.absolute())
 
 

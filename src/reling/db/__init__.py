@@ -41,7 +41,7 @@ def init_db(url: str) -> None:
 @contextmanager
 def single_session() -> Generator[Session, None, None]:
     if SESSION is None:
-        raise RuntimeError('Database is not initialized')
+        raise RuntimeError('Database is not initialized.')
     try:
         yield SESSION
     except Exception:

@@ -25,14 +25,8 @@ from reling.scanner import ScannerManager, ScannerParams
 from reling.tts import get_tts_client
 from reling.utils.prompts import enter_to_continue
 from .execution import perform_dialogue_exam, perform_text_exam
-from .explanation import build_dialogue_explainer, build_text_explainer
-from .input import collect_dialogue_translations, collect_text_translations
-from .presentation import present_dialogue_results, present_text_results
 from .repetition import compute_repetition_data, print_repetition_statistics, RepetitionData
-from .scoring import score_dialogue_translations, score_text_translations
 from .skips import get_skipped_indices
-from .storage import save_dialogue_exam, save_text_exam
-from .types import ExchangeWithTranslation, SentenceWithTranslation
 
 __all__ = [
     'exam',

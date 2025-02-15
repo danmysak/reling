@@ -30,6 +30,8 @@ def build_level_prompt(level: Level, category: ContentCategory) -> str:
                 return 'rather simple'
             case Level.ADVANCED:
                 return 'complex'
+            case _:
+                raise NotImplementedError
 
     def get_vocabulary_description() -> str:
         match level:
@@ -39,6 +41,8 @@ def build_level_prompt(level: Level, category: ContentCategory) -> str:
                 return 'intermediate'
             case Level.ADVANCED:
                 return 'advanced'
+            case _:
+                raise NotImplementedError
 
     return (f'The {category.value} should consist of {get_sentences_description()} sentences '
             f'and use {get_vocabulary_description()} vocabulary.')

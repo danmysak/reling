@@ -31,3 +31,5 @@ class Gender(StrEnum):
                 return 'a female'
             case Gender.NONBINARY:
                 return 'a nonbinary person'
+            case _:
+                raise NotImplementedError

@@ -21,7 +21,7 @@ def get_migration_commands(from_version: str) -> list[str]:
                 'ALTER TABLE dialogue_exams add scanned BOOLEAN NOT NULL default 0',
             ]
         case _:
-            raise ValueError(f'Unknown migration from version {from_version}')
+            raise ValueError(f'Unknown migration from version {from_version}.')
 
 
 def migrate(database: Path, from_version: str) -> None:

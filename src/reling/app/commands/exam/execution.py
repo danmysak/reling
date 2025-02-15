@@ -2,12 +2,11 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from typing import cast
 
-from tqdm import tqdm
-
 from reling.app.exceptions import AlgorithmException
 from reling.app.translation import get_dialogue_exchanges, get_text_sentences
 from reling.asr import ASRClient
 from reling.config import MAX_SCORE
+from reling.db.enums import ContentCategory
 from reling.db.models import Dialogue, DialogueExam, Language, Text, TextExam
 from reling.gpt import GPTClient
 from reling.helpers.typer import typer_raise
@@ -15,14 +14,12 @@ from reling.helpers.voices import pick_voices
 from reling.scanner import ScannerManager
 from reling.tts import TTSClient
 from reling.types import Promise
-from reling.utils.iterables import intersperse
 from reling.utils.timetracker import TimeTracker
 from .explanation import build_dialogue_explainer, build_text_explainer
 from .input import collect_dialogue_translations, collect_text_translations
 from .presentation import present_dialogue_results, present_text_results
-from .scoring import score_dialogue_translations, score_text_translations
+from .scoring import score_translations
 from .storage import save_dialogue_exam, save_text_exam
-from .types import ScoreWithSuggestion
 
 __all__ = [
     'perform_dialogue_exam',
@@ -88,27 +85,16 @@ def perform_text_exam(
             tracker.stop()
 
         try:
-            total_non_skipped = len(sentences) - len(skipped_indices)
-            pre_results = list(tqdm(
-                score_text_translations(
-                    gpt=gpt,
-                    sentences=translated,
-                    original_translations=original_translations,
-                    previous_perfect=collect_perfect(text, target_language),
-                    source_language=source_language,
-                    target_language=target_language,
-                    offline=offline_scoring,
-                ),
-                desc='Scoring translations',
-                total=total_non_skipped,
-                leave=False,
+            results = list(score_translations(
+                category=ContentCategory.TEXT,
+                gpt=gpt,
+                items=translated,
+                original_translations=original_translations,
+                previous_perfect=collect_perfect(text, target_language),
+                source_language=source_language,
+                target_language=target_language,
+                offline=offline_scoring,
             ))
-            if len(pre_results) != total_non_skipped:
-                raise AlgorithmException('The number of results does not match the number of translations.')
-            results = list(intersperse(
-                cast(list[ScoreWithSuggestion | None], pre_results),
-                ((None, index) for index in sorted(skipped_indices))),
-            )
         except AlgorithmException as e:
             typer_raise(e.msg)
 
@@ -130,7 +116,6 @@ def perform_text_exam(
         present_text_results(
             sentences=translated,
             original_translations=original_translations,
-            show_original=not offline_scoring,
             exam=text_exam,
             source_tts=voice_source_tts,
             target_tts=voice_target_tts,
@@ -190,27 +175,16 @@ def perform_dialogue_exam(
             tracker.stop()
 
         try:
-            total_non_skipped = len(exchanges) - len(skipped_indices)
-            pre_results = list(tqdm(
-                score_dialogue_translations(
-                    gpt=gpt,
-                    exchanges=translated,
-                    original_translations=original_translations,
-                    previous_perfect=collect_perfect(dialogue, target_language),
-                    source_language=source_language,
-                    target_language=target_language,
-                    offline=offline_scoring,
-                ),
-                desc='Scoring translations',
-                total=total_non_skipped,
-                leave=False,
+            results = list(score_translations(
+                category=ContentCategory.DIALOGUE,
+                gpt=gpt,
+                items=translated,
+                original_translations=original_translations,
+                previous_perfect=collect_perfect(dialogue, target_language),
+                source_language=source_language,
+                target_language=target_language,
+                offline=offline_scoring,
             ))
-            if len(pre_results) != total_non_skipped:
-                raise AlgorithmException('The number of results does not match the number of translations.')
-            results = list(intersperse(
-                cast(list[ScoreWithSuggestion | None], pre_results),
-                ((None, index) for index in sorted(skipped_indices))),
-            )
         except AlgorithmException as e:
             typer_raise(e.msg)
 
@@ -232,7 +206,6 @@ def perform_dialogue_exam(
         present_dialogue_results(
             exchanges=translated,
             original_translations=original_translations,
-            show_original=not offline_scoring,
             exam=dialogue_exam,
             source_user_tts=source_user_tts,
             target_speaker_tts=target_speaker_tts,

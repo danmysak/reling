@@ -184,7 +184,7 @@ def get_input(
 ) -> Input:
     """Get user input, optionally via audio recording or image capture."""
     if transcriber_params and scanner_params:
-        raise ValueError('Cannot use both transcriber and scanner')
+        raise ValueError('Cannot use both transcriber and scanner.')
 
     while True:
         try:

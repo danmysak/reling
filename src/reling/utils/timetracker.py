@@ -24,11 +24,11 @@ class TimeTracker:
 
     def pause(self) -> None:
         if self._paused_at is not None:
-            raise RuntimeError('Already paused')
+            raise RuntimeError('Already paused.')
         self._paused_at = now()
 
     def resume(self) -> None:
         if self._paused_at is None:
-            raise RuntimeError('Not paused')
+            raise RuntimeError('Not paused.')
         self.total_pause_time += now() - self._paused_at
         self._paused_at = None

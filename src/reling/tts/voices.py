@@ -40,4 +40,4 @@ class Voice(StrEnum):
             case Voice.SHIMMER:
                 return Gender.FEMALE
             case _:
-                raise ValueError(f'Unknown voice: {self}')
+                raise NotImplementedError

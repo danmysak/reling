@@ -24,6 +24,8 @@ class DiffType(StrEnum):
                 return lambda section: list(section)
             case DiffType.TOKEN:
                 return lambda section: tokenize(section)
+            case _:
+                raise NotImplementedError
 
     def get_normalizer(self) -> Callable[[str], Any]:
         match self:
@@ -31,6 +33,8 @@ class DiffType(StrEnum):
                 return lambda section: section
             case DiffType.TOKEN:
                 return lambda section: FuzzyWord(section)
+            case _:
+                raise NotImplementedError
 
 
 def highlight_diff(worse: str, better: str, diff_type: DiffType = DiffType.TOKEN) -> tuple[Text, Text]:

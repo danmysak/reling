@@ -22,6 +22,7 @@ def generate_id(suggested_id: str) -> str:
     for suffix in count(2):
         if (suffixed_id := f'{suggested_id}-{suffix}') not in taken_ids:
             return suffixed_id
+    raise RuntimeError('Exhausted all suffixes—this should never happen.')
 
 
 def save_text(

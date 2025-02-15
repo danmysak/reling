@@ -61,12 +61,12 @@ def init_db(versions: Iterable[DatabaseVersion]) -> None:
     """
     global DB_PATH
     if DB_PATH is not None:
-        raise RuntimeError('Database is already initialized')
+        raise RuntimeError('Database is already initialized.')
     DB_PATH = try_migrate(versions).path
     do_init_db(f'sqlite:///{DB_PATH}')
 
 
 def get_db_path() -> Path:
     if DB_PATH is None:
-        raise RuntimeError('Database is not initialized')
+        raise RuntimeError('Database is not initialized.')
     return DB_PATH

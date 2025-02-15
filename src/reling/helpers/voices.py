@@ -24,14 +24,14 @@ def pick_voices(*positions: Gender | None) -> tuple[Voice, ...]:
 
         required_count = positions.count(gender)
         if len(gender_voices) < required_count:
-            raise ValueError(f'Not enough voices of {gender}')
+            raise ValueError(f'Not enough voices of {gender}.')
 
         shuffle(gender_voices)
         pools[cast(Gender, gender)] = gender_voices[:required_count]
         pools[None].extend(gender_voices[required_count:])
 
     if len(pools[None]) < positions.count(None):
-        raise ValueError('Not enough voices')
+        raise ValueError('Not enough voices.')
 
     shuffle(pools[None])
     return tuple(pools[position].pop() for position in positions)

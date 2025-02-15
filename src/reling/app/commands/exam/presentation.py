@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from functools import partial
-from itertools import repeat
 from typing import Callable, cast, Iterable
 
 from rich.text import Text
@@ -61,7 +60,7 @@ def build_explanation_printer(
 def present_results(
         titles: list[list[TitleData]],
         provided_translations: list[Input | None],
-        original_translations: list[str] | None,
+        original_translations: list[str],
         exam: TextExam | DialogueExam,
         target_tts: TTSVoiceClient | None,
         explain: Callable[[ExplanationRequest], Iterable[str]],
@@ -71,7 +70,7 @@ def present_results(
     for title_items, provided_translation, original_translation, result in zip(
             extract_items(titles, result_indices),
             extract_items(provided_translations, result_indices),
-            extract_items(original_translations, result_indices) if original_translations is not None else repeat(None),
+            extract_items(original_translations, result_indices),
             cast(list[TextExamResult] | list[DialogueExamResult], exam.results),
     ):
         for title in title_items:
@@ -83,9 +82,7 @@ def present_results(
         print(f'Your score: {result.score}/{MAX_SCORE}')
         provided_text = provided_translation.text or None
         perfect_text = (((result.suggested_answer if result.suggested_answer != provided_text else None)
-                         or (provided_text if result.score == MAX_SCORE else None))
-                        if (provided_text or original_translation is None)
-                        else None)
+                         or (provided_text if result.score == MAX_SCORE else None)) if provided_text else None)
         provided_print_text, improved_print_text = format_provided_and_suggestion(provided_text, perfect_text)
         output(*[
             SentenceData(
@@ -101,12 +98,12 @@ def present_results(
                 print_prefix='Improved: ',
                 reader_id='improved',
             ),
-            *([SentenceData.from_tts(
+            SentenceData.from_tts(
                 text=original_translation,
                 client=target_tts,
                 print_prefix='Original: ',
                 reader_id='original',
-            )] if original_translation is not None else []),
+            ),
         ], extra_options=[
             PromptOption(
                 'explain',
@@ -122,7 +119,6 @@ def present_results(
 def present_text_results(
         sentences: list[SentenceWithTranslation],
         original_translations: list[str],
-        show_original: bool,
         exam: TextExam,
         source_tts: TTSVoiceClient | None,
         target_tts: TTSVoiceClient | None,
@@ -138,7 +134,7 @@ def present_text_results(
             ),
         ] for sentence in sentences],
         provided_translations=[sentence.translation for sentence in sentences],
-        original_translations=original_translations if show_original else None,
+        original_translations=original_translations,
         exam=exam,
         target_tts=target_tts,
         explain=explain,
@@ -148,7 +144,6 @@ def present_text_results(
 def present_dialogue_results(
         exchanges: list[ExchangeWithTranslation],
         original_translations: list[DialogueExchangeData],
-        show_original: bool,
         exam: DialogueExam,
         source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
@@ -173,7 +168,7 @@ def present_dialogue_results(
             exchanges,
         )],
         provided_translations=[exchange.user_translation for exchange in exchanges],
-        original_translations=[exchange.user for exchange in original_translations] if show_original else None,
+        original_translations=[exchange.user for exchange in original_translations],
         exam=exam,
         target_tts=target_user_tts,
         explain=explain,

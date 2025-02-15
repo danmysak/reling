@@ -1,6 +1,7 @@
-from typing import cast, Generator
+from typing import Generator
 
 from lcs2 import lcs_indices
+from tqdm import tqdm
 
 from reling.app.exceptions import AlgorithmException
 from reling.config import MAX_SCORE
@@ -10,13 +11,13 @@ from reling.gpt import GPTClient
 from reling.helpers.scoring import calculate_diff_score
 from reling.types import DialogueExchangeData, Promise
 from reling.utils.english import pluralize
-from reling.utils.iterables import extract_items, group_items
+from reling.utils.iterables import extract_items, group_items, intersperse
 from reling.utils.transformers import add_numbering, apply, get_number, omit_empty, remove_numbering, strip
+from reling.utils.values import wrap_in_list
 from .types import ExchangeWithTranslation, PreScoreWithSuggestion, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
-    'score_dialogue_translations',
-    'score_text_translations',
+    'score_translations',
 ]
 
 NA = 'N/A'
@@ -132,6 +133,7 @@ def ask_and_parse_averaging(gpt: GPTClient, prompt: str) -> PreScoreWithSuggesti
             transformers=[strip, omit_empty, remove_numbering],
     ), 2):
         return parse_scoring(string_score, suggestion)
+    raise AlgorithmException('The model did not provide a response.')
 
 
 def lcs_indices_a(a: str, b: str) -> set[int | tuple[int, int]]:
@@ -149,17 +151,35 @@ def lcs_indices_a(a: str, b: str) -> set[int | tuple[int, int]]:
     return result
 
 
-def finalize_scoring(provided_translation: str, score: PreScoreWithSuggestion) -> ScoreWithSuggestion:
+def finalize_scoring(
+        provided_translation: str,
+        default_score: int | None = None,
+        default_suggestion: str | None | None = None,
+        perfect_options: set[str] | None = None,
+) -> ScoreWithSuggestion:
     """
-    Return the highest score among the original score and the score calculated
-    using the diff between the provided translation and the suggested translation;
-    clear the suggestion if it is the same as the provided translation or the score is 0.
+    Finalize the scoring by comparing the provided translation with the default suggestion and the perfect options
+    and returning the best score and suggestion.
     """
-    final_score = max([score.score] + ([calculate_diff_score(score.suggestion, provided_translation)]
-                                       if score.suggestion is not None and provided_translation != '' else []))
+    if default_score is None and default_suggestion is None and perfect_options is None:
+        raise ValueError('At least one of the optional arguments must be provided.')
+
+    if not provided_translation:
+        return ScoreWithSuggestion(0, None)
+
+    options = wrap_in_list(default_suggestion) + sorted(perfect_options - set(wrap_in_list(default_suggestion)))
+    option_scores = [calculate_diff_score(provided_translation, option) for option in options]
+    best_option_index = option_scores.index(max(option_scores)) if option_scores else None
+
+    score, suggestion = (
+        (option_scores[best_option_index], options[best_option_index])
+        if option_scores and (default_score is None or option_scores[best_option_index] >= default_score)
+        else (default_score, default_suggestion)
+    )
+
     return ScoreWithSuggestion(
-        score=final_score,
-        suggestion=score.suggestion if score.suggestion != provided_translation and final_score > 0 else None,
+        score=score,
+        suggestion=suggestion if suggestion != provided_translation and score > 0 else None,
     )
 
 
@@ -168,14 +188,14 @@ def fix_scoring(
         language: Language,
         provided_translation: str,
         original_translation: str,
-        previous_perfect: set[str],
+        perfect_options: set[str],
         score: PreScoreWithSuggestion,
 ) -> ScoreWithSuggestion:
     """
-    Fix the scoring by comparing the provided translation with the original translation and the suggested translation.
+    Fix the scoring by comparing the provided translation with the original translation and the suggested translation,
+    as well as the perfect options, and returning the best score and suggestion.
     """
-    return finalize_scoring(
-        provided_translation,
+    default = (
         score if (score.suggestion is None
                   # If the provided translation shares as much or more common characters (individual indices)
                   # and omissions (pairs of consecutive indices) with the suggestion as with the original translation,
@@ -185,100 +205,125 @@ def fix_scoring(
         else ask_and_parse_averaging(
             gpt,
             build_prompt_averaging(language, provided_translation, a=original_translation, b=score.suggestion),
-        ),
-    ) if provided_translation not in {original_translation} | previous_perfect else ScoreWithSuggestion(
-        score=MAX_SCORE,
-        suggestion=None,
+        )
+    )
+    return finalize_scoring(
+        provided_translation,
+        default.score,
+        default.suggestion,
+        perfect_options,
     )
 
 
-def score_text_translations(
+def extract_translation(translation: str | DialogueExchangeData) -> str:
+    """Extract the translation from a sentence or a user turn in a dialogue."""
+    return translation.user if isinstance(translation, DialogueExchangeData) else translation
+
+
+def map_to_null_if_not[T](condition: bool, items: list[T]) -> list[T | None]:
+    """Map the items to `None` if the condition is not met."""
+    return [item if condition else None for item in items]
+
+
+def score_offline(
+        items: list[SentenceWithTranslation] | list[ExchangeWithTranslation],
+        original_translations: list[str] | list[DialogueExchangeData],
+        previous_perfect: list[set[str]],
+) -> Generator[ScoreWithSuggestion | None, None, None]:
+    """Score the translations of a text or user turns in a dialogue offline."""
+    for item, original_translation, perfect in zip(items, original_translations, previous_perfect):
+        yield finalize_scoring(
+            provided_translation=item.input.text,
+            default_score=None,
+            default_suggestion=extract_translation(original_translation),
+            perfect_options=perfect,
+        ) if item.input else None
+
+
+def score_with_gpt(
+        category: ContentCategory,
         gpt: Promise[GPTClient],
-        sentences: list[SentenceWithTranslation],
-        original_translations: list[str],
+        items: list[SentenceWithTranslation] | list[ExchangeWithTranslation],
+        original_translations: list[str] | list[DialogueExchangeData],
         previous_perfect: list[set[str]],
         source_language: Language,
         target_language: Language,
-        offline: bool,
-) -> Generator[ScoreWithSuggestion, None, None]:
-    """
-    Score the translations of a text and provide suggestions for improvement.
-    :raises AlgorithmException: If there is an issue with the scoring algorithm.
-    """
-    indices = [index for index in range(len(sentences)) if sentences[index].translation]
-    if offline:
-        for sentence, original_translation in extract_items(zip(sentences, original_translations), indices):
-            yield ScoreWithSuggestion(
-                score=calculate_diff_score(sentence.translation.text, original_translation),
-                suggestion=original_translation,
-            )
-    else:
-        client = gpt()
-        prompt = build_prompt_translation(
-            category=ContentCategory.TEXT,
-            source_language=source_language,
-            target_language=target_language,
-            blocks=[cast(str, sentence.sentence) for sentence in sentences],
-            translations=[sentence.translation.text if sentence.translation else None for sentence in sentences],
-        )
-        for sentence, original_translation, perfect, pre_score in zip(
-                extract_items(sentences, indices),
-                extract_items(original_translations, indices),
-                extract_items(previous_perfect, indices),
+) -> Generator[ScoreWithSuggestion | None, None, None]:
+    """Score the translations of a text or user turns in a dialogue with the help of a GPT model."""
+    translated_indices_set = {index for index in range(len(items)) if items[index].input}
+    indices = [
+        index for index in range(len(items))
+        if index in translated_indices_set and items[index].input.text not in
+        {extract_translation(original_translations[index])} | previous_perfect[index]
+    ]
+    indices_set = set(indices)
+    client, prompt = (gpt(), build_prompt_translation(
+        category=category,
+        source_language=source_language,
+        target_language=target_language,
+        blocks=[block for item in items for block in item.all()],
+        translations=[translation for index, item in enumerate(items)
+                      for translation in map_to_null_if_not(index in indices_set, item.input_within_all())],
+    )) if indices_set else (None, None)
+    outer: list[
+        tuple[SentenceWithTranslation, str, set[str], PreScoreWithSuggestion] |
+        tuple[ExchangeWithTranslation, DialogueExchangeData, set[str], PreScoreWithSuggestion] |
+        None
+    ] = [None] * (len(items) - len(indices))
+    for index, data in enumerate(intersperse(outer, zip(zip(
+            extract_items(items, indices),
+            extract_items(original_translations, indices),
+            extract_items(previous_perfect, indices),
+            tqdm(
                 ask_and_parse_translation(client, prompt),
-        ):
+                desc='Scoring translations',
+                total=len(indices),
+                leave=False,
+            ) if client and prompt else [],
+    ), indices))):
+        if data is None:
+            yield ScoreWithSuggestion(MAX_SCORE, None) if index in translated_indices_set else None
+        else:
+            item, original_translation, perfect, pre_score = data
+            assert client is not None
             yield fix_scoring(
                 client,
                 target_language,
-                sentence.translation.text,
-                original_translation,
+                item.input.text,
+                extract_translation(original_translation),
                 perfect,
                 pre_score,
             )
 
 
-def score_dialogue_translations(
+def score_translations(
+        category: ContentCategory,
         gpt: Promise[GPTClient],
-        exchanges: list[ExchangeWithTranslation],
-        original_translations: list[DialogueExchangeData],
+        items: list[SentenceWithTranslation] | list[ExchangeWithTranslation],
+        original_translations: list[str] | list[DialogueExchangeData],
         previous_perfect: list[set[str]],
         source_language: Language,
         target_language: Language,
         offline: bool,
-) -> Generator[ScoreWithSuggestion, None, None]:
+) -> Generator[ScoreWithSuggestion | None, None, None]:
     """
-    Score the translations of user turns in a dialogue and provide suggestions for improvement.
+    Score the translations of a text or user turns in a dialogue and provide suggestions for improvement.
+    `None`s are yielded for the sentences or turns that are not translated.
     :raises AlgorithmException: If there is an issue with the scoring algorithm.
     """
-    indices = [index for index in range(len(exchanges)) if exchanges[index].user_translation]
     if offline:
-        for exchange, original_translation in extract_items(zip(exchanges, original_translations), indices):
-            yield ScoreWithSuggestion(
-                score=calculate_diff_score(exchange.user_translation.text, original_translation.user),
-                suggestion=original_translation.user,
-            )
+        yield from score_offline(
+            items=items,
+            original_translations=original_translations,
+            previous_perfect=previous_perfect,
+        )
     else:
-        client = gpt()
-        prompt = build_prompt_translation(
-            category=ContentCategory.DIALOGUE,
+        yield from score_with_gpt(
+            category=category,
+            gpt=gpt,
+            items=items,
+            original_translations=original_translations,
+            previous_perfect=previous_perfect,
             source_language=source_language,
             target_language=target_language,
-            blocks=[turn for exchange in exchanges for turn in exchange.exchange.all()],
-            translations=[turn
-                          for exchange, original_translation in zip(exchanges, original_translations)
-                          for turn in [None, exchange.user_translation.text if exchange.user_translation else None]],
         )
-        for exchange, original_translation, perfect, pre_score in zip(
-                extract_items(exchanges, indices),
-                extract_items(original_translations, indices),
-                extract_items(previous_perfect, indices),
-                ask_and_parse_translation(client, prompt),
-        ):
-            yield fix_scoring(
-                client,
-                target_language,
-                exchange.user_translation.text,
-                original_translation.user,
-                perfect,
-                pre_score,
-            )
