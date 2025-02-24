@@ -20,6 +20,11 @@ def get_migration_commands(from_version: str) -> list[str]:
                 'ALTER TABLE text_exams add scanned BOOLEAN NOT NULL default 0',
                 'ALTER TABLE dialogue_exams add scanned BOOLEAN NOT NULL default 0',
             ]
+        case 'c':
+            # noinspection SqlWithoutWhere
+            return [
+                'DELETE FROM grammar_cache_sentences',
+            ]
         case _:
             raise ValueError(f'Unknown migration from version {from_version}.')
 
@@ -27,6 +32,7 @@ def get_migration_commands(from_version: str) -> list[str]:
 def migrate(database: Path, from_version: str) -> None:
     connection = sqlite3.connect(database)
     cursor = connection.cursor()
+    cursor.execute('PRAGMA foreign_keys=ON')
     for command in get_migration_commands(from_version):
         cursor.execute(command)
     connection.commit()

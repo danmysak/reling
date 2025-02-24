@@ -91,16 +91,16 @@ class Analyzer:
 
     def _do_analyze(self, sentence: str) -> list[WordInfo]:
         """Analyze a sentence."""
-        for section in self._nlp(sentence).sentences:
-            return [
-                WordInfo(
-                    text=word.text,
-                    lemma=word.lemma,
-                    upos=word.upos,
-                )
-                for word in section.words
-                if word.upos not in EXCLUDED_UPOS
-            ]
+        return [
+            WordInfo(
+                text=word.text,
+                lemma=word.lemma,
+                upos=word.upos,
+            )
+            for nlp_sentence in self._nlp(sentence).sentences
+            for word in nlp_sentence.words
+            if word.upos not in EXCLUDED_UPOS
+        ]
 
     def analyze(self, sentence: str) -> list[WordInfo]:
         """Analyze a sentence and cache the result."""
