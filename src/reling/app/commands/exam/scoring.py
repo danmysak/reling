@@ -21,7 +21,6 @@ __all__ = [
 ]
 
 NA = 'N/A'
-EMPTY_TRANSLATION = '<empty>'
 
 
 def build_prompt_translation(
@@ -61,7 +60,7 @@ def build_prompt_translation(
         *apply(add_numbering, blocks),
         f'',
         f'The translations are:',
-        *(add_numbering(translation or EMPTY_TRANSLATION, index)
+        *(add_numbering(translation, index)
           for index, translation in enumerate(translations)
           if translation is not None),
     ])
@@ -251,10 +250,14 @@ def score_with_gpt(
 ) -> Generator[ScoreWithSuggestion | None, None, None]:
     """Score the translations of a text or user turns in a dialogue with the help of a GPT model."""
     translated_indices_set = {index for index in range(len(items)) if items[index].input}
+    empty_translation_indices_set = {
+        index for index in range(len(items))
+        if index in translated_indices_set and not items[index].input.text
+    }
     indices = [
         index for index in range(len(items))
-        if index in translated_indices_set and items[index].input.text not in
-        {extract_translation(original_translations[index])} | previous_perfect[index]
+        if index in translated_indices_set and index not in empty_translation_indices_set
+        and items[index].input.text not in {extract_translation(original_translations[index])} | previous_perfect[index]
     ]
     indices_set = set(indices)
     client, prompt = (gpt(), build_prompt_translation(
@@ -282,7 +285,8 @@ def score_with_gpt(
             ) if client and prompt else [],
     ), indices))):
         if data is None:
-            yield ScoreWithSuggestion(MAX_SCORE, None) if index in translated_indices_set else None
+            yield (ScoreWithSuggestion(0 if index in empty_translation_indices_set else MAX_SCORE, None)
+                   if index in translated_indices_set else None)
         else:
             item, original_translation, perfect, pre_score = data
             assert client is not None
