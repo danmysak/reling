@@ -57,8 +57,8 @@ def text(
 ) -> None:
     """Create a text and save it to the database."""
     gpt = GPTClient(api_key=api_key.get(), model=model.get())
-    topic = topic or get_random_modifier(Topic).name
-    style = style or get_random_modifier(Style).name
+    topic = topic or get_random_modifier(Topic, level).name
+    style = style or get_random_modifier(Style, level).name
 
     sentences = list(tqdm(
         generate_text_sentences(
@@ -104,7 +104,7 @@ def dialogue(
 ) -> None:
     """Create a dialogue and save it to the database."""
     gpt = GPTClient(api_key=api_key.get(), model=model.get())
-    speaker = speaker or get_random_modifier(Speaker).name
+    speaker = speaker or get_random_modifier(Speaker, level).name
     speaker_gender = speaker_gender or choice([Gender.MALE, Gender.FEMALE])
 
     exchanges = list(tqdm(

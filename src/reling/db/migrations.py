@@ -25,6 +25,12 @@ def get_migration_commands(from_version: str) -> list[str]:
             return [
                 'DELETE FROM grammar_cache_sentences',
             ]
+        case 'd':
+            return [
+                'DROP TABLE speakers',
+                'DROP TABLE styles',
+                'DROP TABLE topics',
+            ]
         case _:
             raise ValueError(f'Unknown migration from version {from_version}.')
 

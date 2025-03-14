@@ -15,7 +15,7 @@ __all__ = [
 
 APP_NAME = 'ReLing'
 
-LATEST_DB_VERSION = 'd'
+LATEST_DB_VERSION = 'e'
 OLDEST_DB_VERSION = 'a'
 DB_NAME = 'reling-{version}.db'
 
