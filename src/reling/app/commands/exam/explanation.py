@@ -32,25 +32,38 @@ def explain_structure(sentence: str, language: Language) -> list[str]:
 
 
 def explain_mistakes(sentence: str, corrected: str, language: Language, source_language: Language) -> list[str]:
-    """Generate a prompt section for explaining why a corrected translation is preferred over the provided one."""
+    """Generate a prompt section explaining why a corrected translation is preferred over the provided one."""
     return [
         f'A learner of {language.name} translated the last line as follows:',
         f'"""{sentence}"""',
-        f'Explain why the following translation is more appropriate:'
+        f'',
+        f'Compare it to the following reference translation:',
         f'"""{corrected}"""',
-        f'You may translate the learner\'s sentence or any of its parts back into {source_language.name} '
-        f'to better explain the differences.'
+        f'',
+        f'Enumerate the individual differences between the two versions. For each difference:',
+        f'- Determine whether it is a mistake.',
+        f'- If it is a mistake, specify its type:',
+        f'  • **Grammatical error** – the learner’s translation is ungrammatical.',
+        f'  • **Unidiomatic phrasing** – the translation is unnatural or awkward.',
+        f'  • **Deviation from the original meaning** – the translation alters the intended message.',
+        f'- If the mistake is a deviation from the original meaning, translate the learner’s version '
+        f'(or relevant parts of it) back into {source_language.name} to clarify the difference.',
     ]
 
 
 def explain_difference(sentence: str, alternative: str, language: Language) -> list[str]:
-    """Generate a prompt section for explaining differences between a provided and alternative translation."""
+    """Generate a prompt section for explaining differences between a provided and an alternative translation."""
     return [
         f'A learner of {language.name} translated the last line as follows:',
         f'"""{sentence}"""',
-        f'Explain whether there is any difference from the alternative translation below '
-        f'and which option is more appropriate:',
+        f'',
+        f'Compare it to the following alternative translation:',
         f'"""{alternative}"""',
+        f'',
+        f'Enumerate the individual differences between the two versions. For each difference:',
+        f'- Explain whether it affects meaning, grammar, or naturalness.',
+        f'- Indicate which version is more appropriate and why.',
+        f'- If both versions are acceptable, clarify the nuances in their usage and context.',
     ]
 
 
@@ -103,8 +116,6 @@ def do_explain(
                     language=target_language,
                 )
             ),
-            f'',
-            f'Be concise. Do not repeat the sentences; start directly with the answer.',
         ]),
         creative=False,
         feeder_type=CharFeeder,
