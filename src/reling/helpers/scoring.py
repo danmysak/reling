@@ -1,6 +1,5 @@
 from math import ceil, floor
 from statistics import mean
-from typing import cast
 
 from lcs2 import diff, lcs_indices, lcs_length
 
@@ -73,10 +72,7 @@ def calculate_diff_score(a: str, b: str) -> int:
 
 def get_average_score(exam: TextExam | DialogueExam) -> float:
     """Return the average score of the exam."""
-    return mean(
-        [result.score for result in exam.results]
-        + [MAX_SCORE] * (exam.content.size - len(cast(list, exam.results))),
-    )
+    return mean(result.score for result in exam.results)
 
 
 def format_average_score(exam: TextExam | DialogueExam) -> str:
