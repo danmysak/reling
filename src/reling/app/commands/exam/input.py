@@ -109,7 +109,6 @@ def collect_dialogue_translations(
             output(SentenceData.from_tts(
                 original_translation.speaker,
                 target_speaker_tts,
-                print_text=HIDDEN_TEXT if hide_prompts else None,
             ))
             output(SentenceData.from_tts(
                 exchange.user,
