@@ -1,7 +1,11 @@
 from contextlib import contextmanager
+from itertools import chain
 from shutil import get_terminal_size
 from typing import Callable, Generator, Iterable
 
+from rich.console import Console
+from rich.live import Live
+from rich.markdown import Markdown
 from wcwidth import wcwidth
 
 from .strings import universal_normalize
@@ -12,7 +16,7 @@ __all__ = [
     'interruptible_input',
     'print_and_erase',
     'print_and_maybe_erase',
-    'stream_print',
+    'stream_print_markdown',
 ]
 
 
@@ -73,8 +77,11 @@ def print_and_maybe_erase(text: str) -> Generator[Callable[[], None], None, None
     yield lambda: erase_previous(text)
 
 
-def stream_print(stream: Iterable[str], start: str = '', end: str = '\n') -> None:
-    print(start, end='', flush=True)
-    for part in stream:
-        print(part, end='', flush=True)
-    print(end, end='', flush=True)
+def stream_print_markdown(stream: Iterable[str], start: str = '', end: str = '\n') -> None:
+    """Print a stream of Markdown-formatted text."""
+    console = Console()
+    buffer: list[str] = []
+    with Live(console=console) as live:
+        for chunk in chain([start], stream, [end]):
+            buffer.append(chunk)
+            live.update(Markdown(''.join(buffer)))

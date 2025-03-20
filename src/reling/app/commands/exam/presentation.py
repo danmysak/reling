@@ -13,7 +13,7 @@ from reling.helpers.scoring import format_average_score
 from reling.helpers.wave import play
 from reling.tts import TTSVoiceClient
 from reling.types import DialogueExchangeData, Input
-from reling.utils.console import stream_print
+from reling.utils.console import stream_print_markdown
 from reling.utils.iterables import extract_items
 from reling.utils.prompts import PROMPT_SEPARATOR, PromptOption
 from reling.utils.time import format_time_delta
@@ -54,7 +54,7 @@ def build_explanation_printer(
         request: ExplanationRequest,
 ) -> Callable[[], None]:
     """Create a function to print an explanation."""
-    return lambda: stream_print(explain(request), start=PROMPT_SEPARATOR + '\n')
+    return lambda: stream_print_markdown(explain(request), start=PROMPT_SEPARATOR + '\n')
 
 
 def present_results(
