@@ -6,13 +6,12 @@ from reling.utils.ids import generate_id
 from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
-    'save_dialogue_exam',
-    'save_text_exam',
+    'save_exam',
 ]
 
 
-def save_text_exam(
-        text: Text,
+def save_exam(
+        content: Text | Dialogue,
         source_language: Language,
         target_language: Language,
         read_source: bool,
@@ -22,14 +21,15 @@ def save_text_exam(
         started_at: datetime,
         finished_at: datetime,
         total_pause_time: timedelta,
-        sentences: list[SentenceWithTranslation],
+        items: list[SentenceWithTranslation | ExchangeWithTranslation],
         results: list[ScoreWithSuggestion | None],
-) -> TextExam:
-    """Save the results of a text exam."""
+) -> TextExam | DialogueExam:
+    """Save the results of a text or dialogue exam."""
+    is_text = isinstance(content, Text)
     with single_session() as session:
-        exam = TextExam(
+        exam = (TextExam if is_text else DialogueExam)(
             id=generate_id(),
-            text_id=text.id,
+            content_id=content.id,
             source_language_id=source_language.id,
             target_language_id=target_language.id,
             read_source=read_source,
@@ -41,55 +41,12 @@ def save_text_exam(
             total_pause_time=total_pause_time,
         )
         session.add(exam)
-        for index, (sentence, result) in enumerate(zip(sentences, results)):
+        for index, (item, result) in enumerate(zip(items, results)):
             if result is not None:
-                session.add(TextExamResult(
-                    text_exam_id=exam.id,
-                    text_sentence_index=index,
-                    answer=sentence.translation.text,
-                    suggested_answer=result.suggestion,
-                    score=result.score,
-                ))
-        session.commit()
-        return exam
-
-
-def save_dialogue_exam(
-        dialogue: Dialogue,
-        source_language: Language,
-        target_language: Language,
-        read_source: bool,
-        read_target: bool,
-        listened: bool,
-        scanned: bool,
-        started_at: datetime,
-        finished_at: datetime,
-        total_pause_time: timedelta,
-        exchanges: list[ExchangeWithTranslation],
-        results: list[ScoreWithSuggestion | None],
-) -> DialogueExam:
-    """Save the results of a dialogue exam."""
-    with single_session() as session:
-        exam = DialogueExam(
-            id=generate_id(),
-            dialogue_id=dialogue.id,
-            source_language_id=source_language.id,
-            target_language_id=target_language.id,
-            read_source=read_source,
-            read_target=read_target,
-            listened=listened,
-            scanned=scanned,
-            started_at=started_at,
-            finished_at=finished_at,
-            total_pause_time=total_pause_time,
-        )
-        session.add(exam)
-        for index, (exchange, result) in enumerate(zip(exchanges, results)):
-            if result is not None:
-                session.add(DialogueExamResult(
-                    dialogue_exam_id=exam.id,
-                    dialogue_exchange_index=index,
-                    answer=exchange.user_translation.text,
+                session.add((TextExamResult if is_text else DialogueExamResult)(
+                    exam_id=exam.id,
+                    index=index,
+                    answer=item.translation.text if is_text else item.user_translation.text,
                     suggested_answer=result.suggestion,
                     score=result.score,
                 ))

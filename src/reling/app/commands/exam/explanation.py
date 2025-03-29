@@ -10,8 +10,7 @@ from reling.utils.values import coalesce
 from .types import ExchangeWithTranslation, ExplanationRequest, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
-    'build_dialogue_explainer',
-    'build_text_explainer',
+    'build_explainer',
 ]
 
 MISTAKE_THRESHOLD_RATIO = 0.5
@@ -75,8 +74,8 @@ def explain_source_structure(sentence: str) -> list[str]:
 
 
 def do_explain(
-        gpt: Promise[GPTClient],
         category: ContentCategory,
+        gpt: Promise[GPTClient],
         initial_sentences: list[str],
         provided: str,
         original: str,
@@ -123,53 +122,35 @@ def do_explain(
     )
 
 
-def build_text_explainer(
+def build_explainer(
+        category: ContentCategory,
         gpt: Promise[GPTClient],
-        sentences: list[SentenceWithTranslation],
-        original_translations: list[str],
+        items: list[SentenceWithTranslation | ExchangeWithTranslation],
+        original_translations: list[str | DialogueExchangeData],
         results: list[ScoreWithSuggestion | None],
         source_language: Language,
         target_language: Language,
 ) -> Callable[[ExplanationRequest], Generator[str, None, None]]:
-    """Create a function to generate explanations for text translations."""
+    """Create a function to generate explanations for text or dialogue translations."""
+    is_text = category == ContentCategory.TEXT
+
     def explain(request: ExplanationRequest) -> Generator[str, None, None]:
         index = request.sentence_index
         assert results[index] is not None
         return do_explain(
+            category=category,
             gpt=gpt,
-            category=ContentCategory.TEXT,
-            initial_sentences=[sentence.sentence for sentence in sentences[:index + 1]],
-            provided=sentences[index].translation.text,
-            original=original_translations[index],
+            initial_sentences=(
+                [item.sentence for item in items[:index + 1]]
+                if is_text
+                else [turn for item in items[:index + 1] for turn in item.exchange.all()]
+            ),
+            provided=items[index].translation.text if is_text else items[index].user_translation.text,
+            original=original_translations[index] if is_text else original_translations[index].user,
             result=results[index],
             source_language=source_language,
             target_language=target_language,
             explain_source=request.source,
         )
-    return explain
 
-
-def build_dialogue_explainer(
-        gpt: Promise[GPTClient],
-        exchanges: list[ExchangeWithTranslation],
-        original_translations: list[DialogueExchangeData],
-        results: list[ScoreWithSuggestion | None],
-        source_language: Language,
-        target_language: Language,
-) -> Callable[[ExplanationRequest], Generator[str, None, None]]:
-    """Create a function to generate explanations for dialogue translations."""
-    def explain(request: ExplanationRequest) -> Generator[str, None, None]:
-        index = request.sentence_index
-        assert results[index] is not None
-        return do_explain(
-            gpt=gpt,
-            category=ContentCategory.DIALOGUE,
-            initial_sentences=[turn for exchange in exchanges[:index + 1] for turn in exchange.exchange.all()],
-            provided=exchanges[index].user_translation.text,
-            original=original_translations[index].user,
-            result=results[index],
-            source_language=source_language,
-            target_language=target_language,
-            explain_source=request.source,
-        )
     return explain

@@ -21,8 +21,7 @@ from reling.utils.transformers import get_numbering_prefix
 from .types import ExchangeWithTranslation, ExplanationRequest, SentenceWithTranslation
 
 __all__ = [
-    'present_dialogue_results',
-    'present_text_results',
+    'present_results',
 ]
 
 NOTHING_TO_IMPROVE = fade('(no changes needed)')
@@ -57,7 +56,7 @@ def build_explanation_printer(
     return lambda: stream_print_markdown(explain(request), start=PROMPT_SEPARATOR + '\n')
 
 
-def present_results(
+def do_present(
         titles: list[list[TitleData]],
         provided_translations: list[Input | None],
         original_translations: list[str],
@@ -116,60 +115,39 @@ def present_results(
     print(f'Exam duration: {format_time_delta(exam.duration)}')
 
 
-def present_text_results(
-        sentences: list[SentenceWithTranslation],
-        original_translations: list[str],
-        exam: TextExam,
+def present_results(
+        items: list[SentenceWithTranslation | ExchangeWithTranslation],
+        original_translations: list[str | DialogueExchangeData],
+        exam: TextExam | DialogueExam,
         source_tts: TTSVoiceClient | None,
         target_tts: TTSVoiceClient | None,
-        explain: Callable[[ExplanationRequest], Iterable[str]],
-) -> None:
-    """Present the results of scoring text translations."""
-    present_results(
-        titles=[[
-            TitleData(
-                text=sentence.sentence,
-                should_number=True,
-                tts=source_tts,
-            ),
-        ] for sentence in sentences],
-        provided_translations=[sentence.translation for sentence in sentences],
-        original_translations=original_translations,
-        exam=exam,
-        target_tts=target_tts,
-        explain=explain,
-    )
-
-
-def present_dialogue_results(
-        exchanges: list[ExchangeWithTranslation],
-        original_translations: list[DialogueExchangeData],
-        exam: DialogueExam,
-        source_user_tts: TTSVoiceClient | None,
         target_speaker_tts: TTSVoiceClient | None,
-        target_user_tts: TTSVoiceClient | None,
         explain: Callable[[ExplanationRequest], Iterable[str]],
 ) -> None:
-    """Present the results of scoring dialogue translations."""
-    present_results(
-        titles=[[
+    """Present the results of scoring text or dialogue translations."""
+    is_dialogue = isinstance(exam, DialogueExam)
+    do_present(
+        titles=[([
             TitleData(
                 text=original_translation.speaker,
                 should_number=False,
                 tts=target_speaker_tts,
             ),
+        ] if is_dialogue else []) + [
             TitleData(
-                text=exchange.exchange.user,
+                text=item.exchange.user if is_dialogue else item.sentence,
                 should_number=True,
-                tts=source_user_tts,
+                tts=source_tts,
             ),
-        ] for original_translation, exchange in zip(
+        ] for original_translation, item in zip(
             original_translations,
-            exchanges,
+            items,
         )],
-        provided_translations=[exchange.user_translation for exchange in exchanges],
-        original_translations=[exchange.user for exchange in original_translations],
+        provided_translations=[item.user_translation if is_dialogue else item.translation for item in items],
+        original_translations=([exchange.user for exchange in original_translations]
+                               if is_dialogue
+                               else original_translations),
         exam=exam,
-        target_tts=target_user_tts,
+        target_tts=target_tts,
         explain=explain,
     )

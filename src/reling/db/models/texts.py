@@ -105,6 +105,10 @@ class TextExam(Base):
     def content_id(self) -> str:
         return self.text_id
 
+    @content_id.setter
+    def content_id(self, value: str) -> None:
+        self.text_id = value
+
     @property
     def duration(self) -> timedelta:
         return self.finished_at - self.started_at - self.total_pause_time
@@ -123,5 +127,17 @@ class TextExamResult(Base):
     score: Mapped[int]
 
     @property
+    def exam_id(self) -> str:
+        return self.text_exam_id
+
+    @exam_id.setter
+    def exam_id(self, value: str) -> None:
+        self.text_exam_id = value
+
+    @property
     def index(self) -> int:
         return self.text_sentence_index
+
+    @index.setter
+    def index(self, value: int) -> None:
+        self.text_sentence_index = value

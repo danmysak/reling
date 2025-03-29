@@ -115,6 +115,10 @@ class DialogueExam(Base):
     def content_id(self) -> str:
         return self.dialogue_id
 
+    @content_id.setter
+    def content_id(self, value: str) -> None:
+        self.dialogue_id = value
+
     @property
     def duration(self) -> timedelta:
         return self.finished_at - self.started_at - self.total_pause_time
@@ -133,5 +137,17 @@ class DialogueExamResult(Base):
     score: Mapped[int]
 
     @property
+    def exam_id(self) -> str:
+        return self.dialogue_exam_id
+
+    @exam_id.setter
+    def exam_id(self, value: str) -> None:
+        self.dialogue_exam_id = value
+
+    @property
     def index(self) -> int:
         return self.dialogue_exchange_index
+
+    @index.setter
+    def index(self, value: int) -> None:
+        self.dialogue_exchange_index = value

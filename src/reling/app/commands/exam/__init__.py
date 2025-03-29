@@ -24,7 +24,7 @@ from reling.helpers.typer import typer_raise
 from reling.scanner import ScannerManager, ScannerParams
 from reling.tts import get_tts_client
 from reling.utils.prompts import enter_to_continue
-from .execution import perform_dialogue_exam, perform_text_exam
+from .execution import perform_exam
 from .repetition import compute_repetition_data, print_repetition_statistics, RepetitionData
 from .skips import get_skipped_indices
 
@@ -133,7 +133,7 @@ def exam(
     def get_gpt() -> GPTClient:
         return GPTClient(api_key=api_key.get(), model=model.get())
 
-    (perform_text_exam if isinstance(content, Text) else perform_dialogue_exam)(
+    perform_exam(
         get_gpt,
         content,
         skipped_indices=skipped_indices,
