@@ -51,6 +51,7 @@ __all__ = [
     'READ_LANGUAGE_OPT',
     'READ_OPT',
     'REGEX_CONTENT_OPT',
+    'RETRY_OPT',
     'SCAN_OPT',
     'SIZE_DIALOGUE_OPT',
     'SIZE_TEXT_OPT',
@@ -252,6 +253,10 @@ HIDE_PROMPTS_OPT = Annotated[bool, typer.Option(
 
 OFFLINE_SCORING_OPT = Annotated[bool, typer.Option(
     help='Score answers using an offline algorithm.',
+)]
+
+RETRY_OPT = Annotated[bool, typer.Option(
+    help='Retry until a perfect score is achieved or the input is left blank. The best attempt will be saved.',
 )]
 
 ANSWERS_OPT = Annotated[bool, typer.Option(

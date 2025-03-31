@@ -247,7 +247,7 @@ Refer to [Setting Models and API Key](#setting-models-and-api-key).
 To translate a text or dialogue and receive feedback, run:
 
 ```bash
-reling exam <CONTENT-ID> [--from en] [--to fr] [--skip 3] [--read fr] [--listen] [--scan 0] [--hide-prompts] [--offline-scoring] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
+reling exam <CONTENT-ID> [--from en] [--to fr] [--skip 3] [--read fr] [--listen] [--scan 0] [--hide-prompts] [--offline-scoring] [--retry] [--model <GPT-MODEL>] [--tts-model <TTS-MODEL>] [--asr-model <ASR-MODEL>] [--api-key <OPENAI-KEY>]
 ```
 
 While inputting your answers during an exam, you can press `Ctrl + C` to pause. This affects the calculation of exam duration and, consequently, your [learning statistics](#learning-statistics).
@@ -289,6 +289,15 @@ This flag allows you to hide the original language text as well as the interlocu
 ### `offline-scoring`
 
 Use this flag to score answers based on an offline algorithm instead of the OpenAI API.
+
+### `retry`
+
+If this flag is enabled, the system will automatically retry each sentence until you either:
+
+- Achieve a perfect score (10/10), or
+- Submit a blank input to skip further retries.
+
+If multiple attempts are made, the best translation (highest score) will be saved in the exam history.
 
 ### `model`, `tts-model`, `asr-model` & `api-key`
 

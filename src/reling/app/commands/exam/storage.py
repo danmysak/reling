@@ -46,7 +46,7 @@ def save_exam(
                 session.add((TextExamResult if is_text else DialogueExamResult)(
                     exam_id=exam.id,
                     index=index,
-                    answer=item.translation.text if is_text else item.user_translation.text,
+                    answer=item.input.text,
                     suggested_answer=result.suggestion,
                     score=result.score,
                 ))

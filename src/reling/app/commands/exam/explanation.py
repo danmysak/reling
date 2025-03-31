@@ -145,7 +145,7 @@ def build_explainer(
                 if is_text
                 else [turn for item in items[:index + 1] for turn in item.exchange.all()]
             ),
-            provided=items[index].translation.text if is_text else items[index].user_translation.text,
+            provided=items[index].input.text,
             original=original_translations[index] if is_text else original_translations[index].user,
             result=results[index],
             source_language=source_language,

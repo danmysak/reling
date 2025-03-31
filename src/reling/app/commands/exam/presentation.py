@@ -143,7 +143,7 @@ def present_results(
             original_translations,
             items,
         )],
-        provided_translations=[item.user_translation if is_dialogue else item.translation for item in items],
+        provided_translations=[item.input for item in items],
         original_translations=([exchange.user for exchange in original_translations]
                                if is_dialogue
                                else original_translations),

@@ -11,15 +11,16 @@ from reling.db.models import Dialogue, DialogueExam, Language, Text, TextExam
 from reling.gpt import GPTClient
 from reling.helpers.typer import typer_raise
 from reling.helpers.voices import pick_voices
-from reling.scanner import ScannerManager
+from reling.scanner import Scanner, ScannerManager
 from reling.tts import TTSClient, TTSVoiceClient
-from reling.types import Promise
+from reling.types import DialogueExchangeData, Promise
 from reling.utils.timetracker import TimeTracker
 from .explanation import build_explainer
 from .input import collect_translations
 from .presentation import present_results
 from .scoring import score_translations
 from .storage import save_exam
+from .types import ExchangeWithTranslation, ScoreWithSuggestion, SentenceWithTranslation
 
 __all__ = [
     'perform_exam',
@@ -70,6 +71,68 @@ def get_voices(
         )
 
 
+def perform_exam_round(
+        gpt: Promise[GPTClient],
+        content: Text | Dialogue,
+        items: list[str | DialogueExchangeData],
+        original_translations: list[str | DialogueExchangeData],
+        skipped_indices: set[int],
+        source_language: Language,
+        target_language: Language,
+        source_tts: TTSVoiceClient | None,
+        target_speaker_tts: TTSVoiceClient | None,
+        asr: ASRClient | None,
+        scanner_manager: ScannerManager,
+        hide_prompts: bool,
+        offline_scoring: bool,
+        previous_attempts: list[list[SentenceWithTranslation | ExchangeWithTranslation]],
+        previous_scores: list[list[ScoreWithSuggestion]],
+        storage: Path,
+        tracker: TimeTracker,
+) -> tuple[
+    list[SentenceWithTranslation | ExchangeWithTranslation],
+    list[ScoreWithSuggestion | None],
+    Scanner | None,
+]:
+    """Collect user translations of the text or dialogue, score them, and return the results, all in a single round."""
+    with scanner_manager.get_scanner() as scanner:
+        tracker.resume()
+        translated = list(collect_translations(
+            category=ContentCategory.TEXT if isinstance(content, Text) else ContentCategory.DIALOGUE,
+            items=items,
+            original_translations=original_translations,
+            skipped_indices=skipped_indices,
+            target_language=target_language,
+            source_tts=source_tts,
+            target_speaker_tts=target_speaker_tts,
+            asr=asr,
+            scanner=scanner,
+            hide_prompts=hide_prompts,
+            previous_attempts=previous_attempts,
+            previous_scores=previous_scores,
+            storage=storage,
+            on_pause=tracker.pause,
+            on_resume=tracker.resume,
+        ))
+        tracker.pause()
+
+    try:
+        results = list(score_translations(
+            category=ContentCategory.TEXT if isinstance(content, Text) else ContentCategory.DIALOGUE,
+            gpt=gpt,
+            items=translated,
+            original_translations=original_translations,
+            previous_perfect=collect_perfect(content, target_language),
+            source_language=source_language,
+            target_language=target_language,
+            offline=offline_scoring,
+        ))
+    except AlgorithmException as e:
+        typer_raise(e.msg)
+
+    return translated, results, scanner
+
+
 def perform_exam(
         gpt: Promise[GPTClient],
         content: Text | Dialogue,
@@ -82,6 +145,7 @@ def perform_exam(
         scanner_manager: ScannerManager,
         hide_prompts: bool,
         offline_scoring: bool,
+        retry: bool,
 ) -> None:
     """
     Collect user translations of the text or dialogue, score them, save and present the results to the user,
@@ -89,7 +153,6 @@ def perform_exam(
     """
     with TemporaryDirectory() as file_storage:
         is_text = isinstance(content, Text)
-        category = ContentCategory.TEXT if is_text else ContentCategory.DIALOGUE
 
         voice_source_tts, voice_target_tts, voice_target_speaker_tts = get_voices(content, source_tts, target_tts)
         items, original_translations = (
@@ -97,38 +160,56 @@ def perform_exam(
             for language in (source_language, target_language)
         )
 
-        with scanner_manager.get_scanner() as scanner:
-            tracker = TimeTracker()
-            translated = list(collect_translations(
-                category=category,
+        updated_skipped_indices = {*skipped_indices}
+
+        translated: list[SentenceWithTranslation | ExchangeWithTranslation] | None = None
+        results: list[ScoreWithSuggestion] | None = None
+
+        previous_attempts: list[list[SentenceWithTranslation | ExchangeWithTranslation]] = []
+        previous_scores: list[list[ScoreWithSuggestion]] = []
+
+        tracker = TimeTracker()
+        tracker.pause()
+        while True:
+            current_translated, current_results, scanner = perform_exam_round(
+                gpt=gpt,
+                content=content,
                 items=items,
                 original_translations=original_translations,
-                skipped_indices=skipped_indices,
+                skipped_indices=updated_skipped_indices,
+                source_language=source_language,
                 target_language=target_language,
                 source_tts=voice_source_tts,
                 target_speaker_tts=voice_target_speaker_tts,
                 asr=asr,
-                scanner=scanner,
+                scanner_manager=scanner_manager,
                 hide_prompts=hide_prompts,
+                offline_scoring=offline_scoring,
+                previous_attempts=previous_attempts,
+                previous_scores=previous_scores,
                 storage=Path(file_storage),
-                on_pause=tracker.pause,
-                on_resume=tracker.resume,
-            ))
-            tracker.stop()
+                tracker=tracker,
+            )
 
-        try:
-            results = list(score_translations(
-                category=category,
-                gpt=gpt,
-                items=translated,
-                original_translations=original_translations,
-                previous_perfect=collect_perfect(content, target_language),
-                source_language=source_language,
-                target_language=target_language,
-                offline=offline_scoring,
-            ))
-        except AlgorithmException as e:
-            typer_raise(e.msg)
+            if translated is None:
+                translated = [*current_translated]
+                results = [*current_results]
+            else:
+                for index, (attempt, score) in enumerate(zip(current_translated, current_results)):
+                    if attempt.input and attempt.input.text and score and score.score >= results[index].score:
+                        translated[index] = attempt
+                        results[index] = score
+
+            for index, (attempt, score) in enumerate(zip(current_translated, current_results)):
+                if (score and score.score == MAX_SCORE) or (attempt.input and attempt.input.text == ''):
+                    updated_skipped_indices.add(index)
+
+            if not retry or len(updated_skipped_indices) == content.size:
+                break
+
+            previous_attempts.append(current_translated)
+            previous_scores.append(current_results)
+        tracker.stop()
 
         exam = save_exam(
             content=content,
@@ -153,7 +234,7 @@ def perform_exam(
             target_tts=voice_target_tts,
             target_speaker_tts=voice_target_speaker_tts,
             explain=build_explainer(
-                category=category,
+                category=ContentCategory.TEXT if is_text else ContentCategory.DIALOGUE,
                 gpt=gpt,
                 items=translated,
                 original_translations=original_translations,

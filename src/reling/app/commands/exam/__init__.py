@@ -12,6 +12,7 @@ from reling.app.types import (
     MODEL,
     OFFLINE_SCORING_OPT,
     READ_LANGUAGE_OPT,
+    RETRY_OPT,
     SCAN_OPT,
     SKIP_OPT,
     TTS_MODEL,
@@ -104,6 +105,7 @@ def exam(
         scan: SCAN_OPT = None,
         hide_prompts: HIDE_PROMPTS_OPT = False,
         offline_scoring: OFFLINE_SCORING_OPT = False,
+        retry: RETRY_OPT = False,
 ) -> None:
     """
     Test the user's ability to translate content from one language to another.
@@ -150,4 +152,5 @@ def exam(
         ) if scan is not None else None),
         hide_prompts=hide_prompts,
         offline_scoring=offline_scoring,
+        retry=retry,
     )
