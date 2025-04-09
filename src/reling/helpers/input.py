@@ -30,12 +30,20 @@ class ImageAction(StrEnum):
     MANUAL_INPUT = 'manual input'
 
 
-ENTER_TO_START_RECORDING = f'({ENTER} to start recording)'
+MANUAL_SHORTCUT = 'm'
+assert MANUAL_SHORTCUT == AudioAction.MANUAL_INPUT.value[0] == ImageAction.MANUAL_INPUT.value[0]
+SKIP_SHORTCUT = 's'
+
+MULTIMEDIA_PROMPT = (f'({ENTER} to {{action}},'
+                     f' {format_shortcut(MANUAL_SHORTCUT)} to input manually,'
+                     f' {format_shortcut(SKIP_SHORTCUT)} to skip)')
+
+START_RECORDING = 'start recording'
 RECORDING_REDO_SHORTCUT = AudioAction.RE_RECORD.value[0]
 RECORDING_UNTIL_ENTER = f'(recording... {ENTER} to stop, {format_shortcut(RECORDING_REDO_SHORTCUT)} to redo)'
 TRANSCRIBING = '(transcribing...)'
 
-ENTER_TO_CAPTURE_IMAGE = f'({ENTER} to capture image)'
+CAPTURE_IMAGE = 'capture image'
 CAPTURING = '(capturing...)'
 PROCESSING = '(processing...)'
 
@@ -52,6 +60,22 @@ class TranscriberParams:
 class ScannerParams:
     scanner: Scanner
     language: Language
+
+
+@dataclass
+class ResultToReturn:
+    result: Input | None
+
+
+def prompt_multimedia(prefix: str, action: str) -> ResultToReturn | None:
+    """Prompt the user for an action related to multimedia input."""
+    response = input_and_erase(prefix + MULTIMEDIA_PROMPT.format(action=action)).strip().lower()
+    if response == MANUAL_SHORTCUT.lower():
+        return ResultToReturn(None)
+    elif response == SKIP_SHORTCUT.lower():
+        return ResultToReturn(Input(''))
+    else:
+        return None
 
 
 @contextmanager
@@ -97,7 +121,8 @@ def get_audio_input(
     Get input from the user via audio recording, with options for re-recording, listening, and manual input.
     :return: The user's input, or None if the user has chosen to manually input the text.
     """
-    input_and_erase(prompt + ENTER_TO_START_RECORDING)
+    if result := prompt_multimedia(prompt, START_RECORDING):
+        return result.result
     file = get_temp_file(params.storage)
     while True:
         if not do_record(prompt, file):
@@ -152,7 +177,8 @@ def get_image_input(
     Get input from the user via image capture, with options for retaking or manual input.
     :return: The user's input, or None if the user has chosen to manually input the text.
     """
-    input_and_erase(prompt + ENTER_TO_CAPTURE_IMAGE)
+    if result := prompt_multimedia(prompt, CAPTURE_IMAGE):
+        return result.result
     while True:
         with pausing(on_pause, on_resume):
             text = do_scan(prompt, params.scanner, params.language)
