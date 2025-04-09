@@ -1,10 +1,12 @@
-from typing import cast, Generator, Iterable
+from itertools import zip_longest
+from typing import cast, Generator, Iterable, Iterator, overload
 
 __all__ = [
     'extract_items',
     'intersperse',
     'group_items',
     'pair_items',
+    'strict_zip',
 ]
 
 
@@ -57,3 +59,39 @@ def intersperse[T](outer: Iterable[T], inner_with_indices: Iterable[tuple[T, int
             yield outer_value
             outer_value = next(outer_iter, nothing)
         index += 1
+
+
+@overload
+def strict_zip[T1, T2](
+        exception: Exception,
+        __iter1: Iterable[T1],
+        __iter2: Iterable[T2],
+) -> Iterator[tuple[T1, T2]]: ...
+
+
+@overload
+def strict_zip[T1, T2, T3](
+        exception: Exception,
+        __iter1: Iterable[T1],
+        __iter2: Iterable[T2],
+        __iter3: Iterable[T3],
+) -> Iterator[tuple[T1, T2, T3]]: ...
+
+
+@overload
+def strict_zip[T1, T2, T3, T4](
+        exception: Exception,
+        __iter1: Iterable[T1],
+        __iter2: Iterable[T2],
+        __iter3: Iterable[T3],
+        __iter4: Iterable[T4],
+) -> Iterator[tuple[T1, T2, T3, T4]]: ...
+
+
+def strict_zip(exception: Exception, *iterables: Iterable) -> Generator[tuple, None, None]:
+    """Zip the iterables together, raising an exception if they are not the same length."""
+    sentinel = object()
+    for i, values in enumerate(zip_longest(*iterables, fillvalue=sentinel)):
+        if sentinel in values:
+            raise exception
+        yield values

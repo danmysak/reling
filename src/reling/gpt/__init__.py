@@ -2,6 +2,7 @@ from typing import Generator
 
 from openai import OpenAI
 
+from reling.gpt_log import GptLogItem, log
 from reling.helpers.openai import openai_handler
 from reling.types import Image
 from reling.utils.feeders import Feeder, LineFeeder
@@ -35,6 +36,7 @@ class GPTClient:
         Ask the model a question and yield sections of the response as they become available, applying transformers.
         """
         feeder = feeder_type()
+        temperature = CREATIVE_TEMPERATURE if creative else 0.0
 
         with openai_handler():
             stream = self._client.chat.completions.create(
@@ -44,7 +46,7 @@ class GPTClient:
                     {'type': 'text', 'text': prompt},
                     *([{'type': 'image_url', 'image_url': {'url': image.get_url()}}] if image else []),
                 ]}],
-                temperature=CREATIVE_TEMPERATURE if creative else 0.0,
+                temperature=temperature,
             )
 
         section_index = 0
@@ -60,9 +62,18 @@ class GPTClient:
                     yield section
                     section_index += 1
 
+        chunks: list[str] = []
         for chunk in stream:
-            feeder.put(chunk.choices[0].delta.content or '')
+            content = chunk.choices[0].delta.content or ''
+            chunks.append(content)
+            feeder.put(content)
             yield from flush()
 
         feeder.end()
         yield from flush()
+
+        log(GptLogItem(
+            prompt=prompt,
+            temperature=temperature,
+            response=''.join(chunks),
+        ))

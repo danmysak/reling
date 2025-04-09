@@ -11,7 +11,7 @@ from reling.gpt import GPTClient
 from reling.helpers.scoring import calculate_diff_score
 from reling.types import DialogueExchangeData, Promise
 from reling.utils.english import pluralize
-from reling.utils.iterables import extract_items, group_items, intersperse
+from reling.utils.iterables import extract_items, group_items, intersperse, strict_zip
 from reling.utils.transformers import add_numbering, apply, get_number, omit_empty, remove_numbering, strip
 from reling.utils.values import wrap_in_list
 from .types import ExchangeWithTranslation, PreScoreWithSuggestion, ScoreWithSuggestion, SentenceWithTranslation
@@ -248,7 +248,10 @@ def score_with_gpt(
         source_language: Language,
         target_language: Language,
 ) -> Generator[ScoreWithSuggestion | None, None, None]:
-    """Score the translations of a text or user turns in a dialogue with the help of a GPT model."""
+    """
+    Score the translations of a text or user turns in a dialogue with the help of a GPT model.
+    :raises AlgorithmException: If there is an issue with the output of the model.
+    """
     translated_indices_set = {index for index in range(len(items)) if items[index].input}
     empty_translation_indices_set = {
         index for index in range(len(items))
@@ -273,7 +276,8 @@ def score_with_gpt(
         tuple[ExchangeWithTranslation, DialogueExchangeData, set[str], PreScoreWithSuggestion] |
         None
     ] = [None] * (len(items) - len(indices))
-    for index, data in enumerate(intersperse(outer, zip(zip(
+    for index, data in enumerate(intersperse(outer, zip(strict_zip(
+            AlgorithmException('The model returned an unexpected number of results.'),
             extract_items(items, indices),
             extract_items(original_translations, indices),
             extract_items(previous_perfect, indices),

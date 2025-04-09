@@ -1,7 +1,9 @@
 from pathlib import Path
 import shelve
+from typing import Any
 
 __all__ = [
+    'delete_value',
     'get_value',
     'init_shelf',
     'set_value',
@@ -21,11 +23,17 @@ def get_filename() -> str:
     return str(FILENAME.absolute())
 
 
-def get_value(key: str) -> str | None:
+def get_value[T](key: str, default: T | None = None) -> T | None:
     with shelve.open(get_filename()) as db:
-        return db.get(key)
+        return db.get(key, default)
 
 
-def set_value(key: str, value: str | None) -> None:
+def set_value(key: str, value: Any) -> None:
     with shelve.open(get_filename()) as db:
         db[key] = value
+
+
+def delete_value(key: str) -> None:
+    with shelve.open(get_filename()) as db:
+        if key in db:
+            del db[key]
