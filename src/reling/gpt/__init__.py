@@ -13,6 +13,7 @@ __all__ = [
 ]
 
 CREATIVE_TEMPERATURE = 1.0
+INCOMPLETE_LOG_MARKER = '\n...'
 
 
 class GPTClient:
@@ -63,17 +64,20 @@ class GPTClient:
                     section_index += 1
 
         chunks: list[str] = []
-        for chunk in stream:
-            content = chunk.choices[0].delta.content or ''
-            chunks.append(content)
-            feeder.put(content)
+        complete = False
+        try:
+            for chunk in stream:
+                content = chunk.choices[0].delta.content or ''
+                chunks.append(content)
+                feeder.put(content)
+                yield from flush()
+
+            feeder.end()
             yield from flush()
-
-        feeder.end()
-        yield from flush()
-
-        log(GptLogItem(
-            prompt=prompt,
-            temperature=temperature,
-            response=''.join(chunks),
-        ))
+            complete = True
+        finally:
+            log(GptLogItem(
+                prompt=prompt,
+                temperature=temperature,
+                response=''.join(chunks + ([INCOMPLETE_LOG_MARKER] if not complete else [])),
+            ))
