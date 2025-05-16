@@ -3,6 +3,8 @@ from itertools import chain
 from shutil import get_terminal_size
 from typing import Callable, Generator, Iterable
 
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import InMemoryHistory
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -45,17 +47,23 @@ def count_lines(text: str, num_columns: int) -> int:
     return lines
 
 
-def erase_previous(text: str, include_extra_line: bool = True) -> None:
+def erase_previous(text: str) -> None:
     clear_current_line()
-    clear_previous(count_lines(text, get_terminal_size().columns) + (0 if include_extra_line else -1))
+    clear_previous(count_lines(text, get_terminal_size().columns))
 
 
-def interruptible_input(prompt: str) -> str:
+def interruptible_input(prompt: str, suggestions: list[str] | None = None) -> str:
+    history = InMemoryHistory()
+    for suggestion in suggestions or []:
+        if suggestion:
+            history.append_string(suggestion)
+    session = PromptSession(history=history)
     try:
-        return universal_normalize(input(prompt))
+        user_input = session.prompt(prompt, mouse_support=True)
     except KeyboardInterrupt:
-        erase_previous(prompt, include_extra_line=False)
+        erase_previous(prompt)
         raise
+    return universal_normalize(user_input)
 
 
 def input_and_erase(prompt: str) -> str:

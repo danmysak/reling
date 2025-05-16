@@ -86,9 +86,9 @@ def pausing(on_pause: Callable[[], None], on_resume: Callable[[], None]) -> Gene
     on_resume()
 
 
-def get_manual_input(prompt: str) -> Input:
+def get_manual_input(prompt: str, suggestions: list[str]) -> Input:
     """Prompt the user for manual input."""
-    return Input(interruptible_input(prompt))
+    return Input(interruptible_input(prompt, suggestions))
 
 
 def get_temp_file(storage: Path) -> Path:
@@ -116,6 +116,7 @@ def get_audio_input(
         params: TranscriberParams,
         on_pause: Callable[[], None],
         on_resume: Callable[[], None],
+        dynamic_suggestions: list[str],
 ) -> Input | None:
     """
     Get input from the user via audio recording, with options for re-recording, listening, and manual input.
@@ -129,6 +130,7 @@ def get_audio_input(
             continue
         with pausing(on_pause, on_resume):
             transcription = do_transcribe(prompt, params.transcribe, file)
+            dynamic_suggestions.append(transcription)
         with print_and_maybe_erase(prompt + transcription) as do_erase:
             try:
                 while True:
@@ -172,6 +174,7 @@ def get_image_input(
         params: ScannerParams,
         on_pause: Callable[[], None],
         on_resume: Callable[[], None],
+        dynamic_suggestions: list[str],
 ) -> Input | None:
     """
     Get input from the user via image capture, with options for retaking or manual input.
@@ -182,6 +185,7 @@ def get_image_input(
     while True:
         with pausing(on_pause, on_resume):
             text = do_scan(prompt, params.scanner, params.language)
+            dynamic_suggestions.append(text)
         with print_and_maybe_erase(prompt + text) as do_erase:
             try:
                 while True:
@@ -205,19 +209,34 @@ def get_input(
         on_pause: Callable[[], None],
         on_resume: Callable[[], None],
         prompt: str = '',
+        input_suggestions: list[str] | None = None,
         transcriber_params: TranscriberParams | None = None,
         scanner_params: ScannerParams | None = None,
 ) -> Input:
     """Get user input, optionally via audio recording or image capture."""
     if transcriber_params and scanner_params:
         raise ValueError('Cannot use both transcriber and scanner.')
-
+    dynamic_suggestions = [*(input_suggestions or [])]
     while True:
         try:
             return (
-                (transcriber_params and get_audio_input(prompt, transcriber_params, on_pause, on_resume)) or
-                (scanner_params and get_image_input(prompt, scanner_params, on_pause, on_resume)) or
-                get_manual_input(prompt)
+                (transcriber_params and get_audio_input(
+                    prompt,
+                    transcriber_params,
+                    on_pause,
+                    on_resume,
+                    dynamic_suggestions,
+                ))
+                or
+                (scanner_params and get_image_input(
+                    prompt,
+                    scanner_params,
+                    on_pause,
+                    on_resume,
+                    dynamic_suggestions,
+                ))
+                or
+                get_manual_input(prompt, dynamic_suggestions)
             )
         except KeyboardInterrupt:
             with pausing(on_pause, on_resume):

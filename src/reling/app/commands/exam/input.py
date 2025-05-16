@@ -93,6 +93,7 @@ def collect_translations(
                 on_pause=on_pause,
                 on_resume=on_resume,
                 prompt=(attempt_title or TRANSLATION) + PROMPT_SUFFIX,
+                input_suggestions=[attempts[index].input.text for attempts in previous_attempts],
                 transcriber_params=TranscriberParams(
                     transcribe=asr.get_transcriber(target_language, '\n'.join(
                         (turn for exchange in zip_longest(speaker_translations, collected) for turn in exchange if turn)
