@@ -52,14 +52,14 @@ def erase_previous(text: str) -> None:
     clear_previous(count_lines(text, get_terminal_size().columns))
 
 
-def interruptible_input(prompt: str, suggestions: list[str] | None = None) -> str:
+def interruptible_input(prompt: str, suggestions: list[str] | None = None, mouse_support: bool = False) -> str:
     history = InMemoryHistory()
     for suggestion in suggestions or []:
         if suggestion:
             history.append_string(suggestion)
     session = PromptSession(history=history)
     try:
-        user_input = session.prompt(prompt, mouse_support=True)
+        user_input = session.prompt(prompt, mouse_support=mouse_support)
     except KeyboardInterrupt:
         erase_previous(prompt)
         raise

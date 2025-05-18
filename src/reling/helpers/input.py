@@ -88,7 +88,7 @@ def pausing(on_pause: Callable[[], None], on_resume: Callable[[], None]) -> Gene
 
 def get_manual_input(prompt: str, suggestions: list[str]) -> Input:
     """Prompt the user for manual input."""
-    return Input(interruptible_input(prompt, suggestions))
+    return Input(interruptible_input(prompt, suggestions, mouse_support=True))
 
 
 def get_temp_file(storage: Path) -> Path:
