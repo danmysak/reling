@@ -41,7 +41,7 @@ def calculate_fuzzy_word_diff_score(a: str, b: str, cj: bool) -> int:
     a_words, b_words = (tokenize(sentence, punctuation=False, whitespace=False, cj=cj) for sentence in (a, b))
     a_len, b_len = (sum(map(len, words)) for words in (a_words, b_words))
     lcs_len = 0
-    for a_index, b_index in lcs_indices(map(FuzzyWord, a_words), map(FuzzyWord, b_words)):
+    for a_index, b_index in lcs_indices(map(FuzzyWord, a_words), map(FuzzyWord, b_words), FuzzyWord.compare):
         lcs_len += lcs_length(a_words[a_index], b_words[b_index])
     return calculate_lcs_score(lcs_len, a_len, b_len)
 

@@ -36,12 +36,24 @@ class DiffType(StrEnum):
             case _:
                 raise NotImplementedError
 
+    def get_weight[T](self) -> Callable[[T, T], float] | None:
+        match self:
+            case DiffType.CHAR:
+                return None
+            case DiffType.TOKEN:
+                return FuzzyWord.compare
+            case _:
+                raise NotImplementedError
+
 
 def highlight_diff(worse: str, better: str, diff_type: DiffType = DiffType.TOKEN) -> tuple[Text, Text]:
     """Return the formatted pair of strings, highlighting the difference between the two."""
-    tokenizer, normalizer = diff_type.get_tokenizer(), diff_type.get_normalizer()
+    tokenizer, normalizer, weight = diff_type.get_tokenizer(), diff_type.get_normalizer(), diff_type.get_weight()
     worse_tokens, better_tokens = tokenizer(worse), tokenizer(better)
-    lcs = lcs_indices(*([normalizer(token) for token in tokens] for tokens in (worse_tokens, better_tokens)))
+    lcs = lcs_indices(
+        *([normalizer(token) for token in tokens] for tokens in (worse_tokens, better_tokens)),
+        weight=weight,
+    )
     worse_segments: list[Text] = []
     better_segments: list[Text] = []
 

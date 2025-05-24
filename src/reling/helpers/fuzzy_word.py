@@ -2,19 +2,24 @@ from __future__ import annotations
 
 from lcs2 import lcs_length
 
-FUZZY_RATIO = 0.61
+SHARED_THRESHOLD = 0.61
 
 
 class FuzzyWord:
-    """
-    A class representing a word for fuzzy comparison.
-    Two words are considered equal if they share at least FUZZY_RATIO of their characters, ignoring case.
-    """
     _normalized: str
 
     def __init__(self, word: str) -> None:
         self._normalized = word.lower()
 
-    def __eq__(self, other: FuzzyWord) -> bool:
-        return (2 * lcs_length(self._normalized, other._normalized)
-                >= (len(self._normalized) + len(other._normalized)) * FUZZY_RATIO)
+    @staticmethod
+    def compare(a: FuzzyWord, b: FuzzyWord) -> float:
+        """
+        Return the similarity score between two FuzzyWord instances.
+        Two words are considered more similar if, when lowercased, they share a greater number
+        of characters and have a higher ratio of shared characters.
+        """
+        if not a._normalized and not b._normalized:
+            return 1.0
+        shared_count = lcs_length(a._normalized, b._normalized)
+        shared_ratio = 2 * shared_count / (len(a._normalized) + len(b._normalized))
+        return shared_count * shared_ratio if shared_ratio >= SHARED_THRESHOLD else 0.0

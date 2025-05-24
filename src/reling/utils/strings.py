@@ -31,17 +31,19 @@ def replace_prefix_casing(string: str, prefix: str) -> str:
     return prefix + string[len(prefix):] if string.lower().startswith(prefix.lower()) else string
 
 
-def is_punctuation(char: str) -> bool:
-    """Return whether the character is a punctuation symbol."""
-    return category(char).startswith('P')
-
-
-def is_whitespace(char: str) -> bool:
+def is_whitespace(char: str, _before: str | None = None, _after: str | None = None) -> bool:
     """Return whether the character is a whitespace character."""
     return category(char).startswith('Z')
 
 
-def is_cj(char: str) -> bool:
+def is_punctuation(char: str, before: str | None = None, after: str | None = None) -> bool:
+    """Return whether the character is a punctuation symbol."""
+    if char in ["'", '’'] and before and not is_whitespace(before) and after and not is_whitespace(after):
+        return False
+    return category(char).startswith('P')
+
+
+def is_cj(char: str, _before: str | None = None, _after: str | None = None) -> bool:
     """Return whether the character is a Chinese or Japanese character."""
     return CJ.fullmatch(char) is not None
 
@@ -50,13 +52,17 @@ def tokenize(string: str, *, punctuation: bool = True, whitespace: bool = True, 
     """Tokenize a string into words, punctuation, whitespace, and individual CJ characters."""
     tokens: list[str] = []
     current: list[str] = []
-    for char in string:
+    for index, char in enumerate(string):
         for (checker, should_include) in [
             (is_punctuation, punctuation),
             (is_whitespace, whitespace),
             (is_cj, cj),
         ]:
-            if checker(char):
+            if checker(
+                    char,
+                    string[index - 1] if index > 0 else None,
+                    string[index + 1] if index + 1 < len(string) else None,
+            ):
                 if current:
                     tokens.append(''.join(current))
                     current.clear()
