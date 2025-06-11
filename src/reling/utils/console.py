@@ -89,7 +89,7 @@ def stream_print_markdown(stream: Iterable[str], start: str = '', end: str = '\n
     """Print a stream of Markdown-formatted text."""
     console = Console()
     buffer: list[str] = []
-    with Live(console=console, vertical_overflow='visible') as live:
+    with Live(console=console) as live:
         for chunk in chain([start], stream, [end]):
             buffer.append(chunk)
             live.update(Markdown(''.join(buffer)))
