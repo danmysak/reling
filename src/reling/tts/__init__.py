@@ -19,4 +19,4 @@ def get_tts_client(model: str, api_key: Promise[str], language: Language) -> TTS
     if model == GTTS_MODEL:
         return GTTSClient(language)
     else:
-        return OpenAITTSClient(api_key=api_key(), model=model)
+        return OpenAITTSClient(api_key=api_key(), model=model, language=language)

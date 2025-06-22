@@ -1,5 +1,8 @@
+from typing import Literal
+
 from openai import OpenAI
 
+from reling.db.models import Language
 from reling.helpers.openai import openai_handler
 from reling.helpers.pyaudio import get_audio, get_stream
 from reling.types import Speed
@@ -13,16 +16,18 @@ __all__ = [
 CHANNELS = 1
 RATE = 24000
 CHUNK_SIZE = 1024
-RESPONSE_FORMAT = 'pcm'
+RESPONSE_FORMAT: Literal['pcm'] = 'pcm'
 
 
 class OpenAITTSClient(TTSClient):
     _client: OpenAI
     _model: str
+    _language: Language
 
-    def __init__(self, *, api_key: str, model: str) -> None:
+    def __init__(self, *, api_key: str, model: str, language: Language) -> None:
         self._client = OpenAI(api_key=api_key)
         self._model = model
+        self._language = language
 
     def read(self, text: str, voice: Voice, speed: Speed) -> None:
         with (
@@ -35,13 +40,13 @@ class OpenAITTSClient(TTSClient):
                 output=True,
             ) as stream,
             openai_handler(),
-            self._client.audio.speech.with_streaming_response.create(
+        ):
+            response = self._client.audio.speech.create(
                 model=self._model,
-                voice=voice.value,
+                voice=voice.value,  # type: ignore
                 response_format=RESPONSE_FORMAT,
                 input=text,
                 speed=speed.value,
-            ) as response,
-        ):
-            for chunk in response.iter_bytes(chunk_size=CHUNK_SIZE):
-                stream.write(chunk)
+                instructions=f'Read in {self._language.name}.',
+            )
+            stream.write(response.content)
